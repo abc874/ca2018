@@ -1,0 +1,272 @@
+New in 0.9.13.16 (development)
+- Added display of pin information to used filters.
+- Improved multi-thread behaviour of ShowFrames method.
+- Enabled command line parameter -trycutlistdownload.
+- Fixed duplicate search result items when searching local cutlists by size and name.
+- Force extension of search result entries to ".cutlist".
+- Improved copy snapshot method.
+- Fixed message string when rating cutlist.
+- Use additional setting "ActivateKeyFrameGrabber" to activate experimental use of key frame grabber.
+- Use additional setting "AutoReplaceCuts" for automatic replacement of intervening cuts.
+- Added automatic selection of active cut when navigating through cuts.
+- Auto select single search result in BatchMode.
+- Use additional setting "ShowSearchResultInBatch" to enable search result selection in batch mode.
+
+New in 0.9.13.14 (development)
+- Many bugfixes regarding localization of user interface.
+- Added option: Automatically search for cutlists after opening movie file.
+- Added feature: Search for cutlists in standard cutlist directory.
+- Added options to select cutlist search methods for auto-search feature.
+- Fixed possible exception when converting cutlists (thanks to mabba for reporting the bug).
+- Improvements in german translation. Merged changes from Georg H. (Thanks for initial translation).
+- Some small improvements and bugfixes
+- Added mouse wheel support in main and frames window.
+- Invert auto search setting when holding shift (local) or ctrl (server), invert auto search setting with Alt-key..
+- Improvements in handling of fine positioning trackbar.
+- Added option to decide, if downloaded cutlists should get saved automatically.
+- Improved detection of smart rendering codec errors with VirtualDub.
+- Added feature: Search Cutlists by name.
+- Improved communication with cutlist server
+
+New in 0.9.13.5 (development)
+- Do not use TopMost style for Check cut movie window.
+- Added handling of special keys on multimedia keyboards.
+- Improved error message in some places.
+- Fixed some issues in DSPack components.
+- Show "real" frame number in frames form.
+- Added new action xx framea around to open frames form around current position.
+- FR 1849353: Changed usage of term "crop" to "trim".
+- FR 1834206: Improved tab order and shortcuts in cutlist info and rate dialog.
+- Added localization of user interface.
+- Added ability to log all exceptions to cut_assistant.debug.log.
+
+New in 0.9.12.1
+- Fixed codec detection for some Windows versions (e.g. Win98).
+- Sort codec list by description.
+- Fixed codec configuration bug, leading to program crash in certain situations.
+
+New in 0.9.12.0
+- New stable version, based on 0.9.11.25
+- Fixed close behaviour of filter info dialog.
+- Do not remove decouple cutlist when editing cutlist info, but after save when cutlist is changed.
+- Changed shortcuts for next/prev frames to F8/Shift-F8 due to conflicts with other control behaviour.
+
+New in 0.9.11.25 (development)
+- Fixed data not applied bug when editing cutlist properties.
+- Refresh GUI when author changes on saving.
+- Fixed possible exceptions in program when no movie is loaded (e.g. JumpTo-buttons).
+- Next/prev cut did not always work due to rounding errors.
+- Added some shortcuts to frames window: Page-Up => Prev frames, Page-Down => Next frames, Enter => Show main window, Escape => Hide form.
+- Added shortcuts to several commands in main window.
+- Several minor improvements.
+- Fixed Bug 1787080: Look&Feel for Windows (order of OK, Cancel buttons)
+
+New in 0.9.11.21 (development)
+- Fixed bug in directory check of configuration settings.
+- Improved error handling when (un)registering application in registry.
+- Show movie rate (fps) in main window. Changed recognition of movie rate.
+- Save frame duration and frame rate in cutlist (visible to user in info dialog). Use own values instead of movieinfo.frame_duration.
+- Ask user which frame rate to use, if frame rates differ too much.
+- Hide frames images when closing Movie.
+- Make next / prev frames work, if frame stepping is not supported (untested).
+- Improved comparison of intended and own CutApplication.
+- Improve speed of next / prev frames.
+- Fixed performance issues when showing Frames form: Lock update when grabbing sample, since VCL is not thread-safe.
+
+New in 0.9.11.17 (development)
+- Fixed error in handling of frames window size.
+- Fixed error in handling of preferred source filter.
+- Solve FR1752242: Added new movie type "HQ Avi File".
+- Tweaked default configuration settings.
+- Show movie type and associated cut application in main window.
+- Fixed tab order in settings dialog.
+- Sound when displaying frames window is controlled with setting "Auto-mute on seek".
+- Disable closing frames window while getting frames.
+
+New in 0.9.11.15 (development)
+- FR1750858: Window states (maximized, normal) are stored too.
+- Fixed display of frames count in menu items when frames count <> 12.
+- Auto-Mute sound while showing frames form.
+- Improved error handling in open file functions.
+- Fixed position of timeout edit in settings dialog, improved layout of many dialogs.
+- Try to fix problems on some systems with large fonts (please give feedback).
+- FR1750860: Added new user setting AutoMuteOnSeek (auto mute sound when seeking framewise).
+- Automatically show settings dialog on first start (when no settings are found).
+- Use /console-switch for virtualdub only when activated in options.
+- Show buttons in taskbar for frames and preview window.
+- Fixed missing codec configuration bug.
+- Solve FR1752242: Use separate codec settings for each cut application.
+- FR1750862: Preselect cutlist rating by user or author rating if present.
+- Implemented cancelling of Http requests.
+
+New in 0.9.11.3 (development)
+- FR1750858: Save window size and position (main, frames and preview).
+- Code cleanups
+- Use background thread and progress dialog for Http requests.
+  - Progress dialog will show transfer status messages.
+  - Progress dialog showing only, if transfer needs at least 500 msecs.
+- Added network timeout to settings dialog.
+- Fixed EConvertError when clicking on a blacklist entry (Thanks to all users sending bugreports!)
+
+New in 0.9.9.8
+- new menu entries: Manual update check, Cut Assistant project page
+- Fixed access violation when getting update infos (Thanks to all users sending bugreports!).
+- Improved error handling when communicating with cutlist server (Thanks again).
+
+New in 0.9.9.6
+- usage of madExcept (http://www.madshi.net/) to improve reporting bugs.
+- new About dialog.
+- Allow usage of relative paths in save directories (cutlist, movie).
+- Automatically show progress window of VirtualDub when cutting movie.
+- New functionality: Automatically close cutting window after some time (configurable).
+- Added Navigation submenu with all navigation actions (single, medium, big skip)
+- Standard cut mode is configurable in settings.
+- New actions for medium(2s) and big(20s) jumps in video. Skipped time duration of 
+  medium and big skip is configurable in settings.
+- Size and count of frames in frame window is now configurable.
+- FR1715458: Display frame in addition to time at timeline.
+- Show progress in DirectShow-filter checking (in settings dialog).
+- Show filter blacklist in settings dialog.
+- layout improvements in several dialogs.
+- misc minor bug fixes
+
+New in 0.9.9.5
+- minor bugfixes
+
+New in 0.9.9.4
+- "prev. / next 12 frames" commands can now be called from context menu for frame samples
+- misc. minor bugfixes
+
+New in 0.9.9.3 beta
+- fixed bug concerning path names with mp3box
+- New Settings: User can chose preferred source filters for each file type
+- Experimental: Filters can be blacklisted in ini file. Blacklisted Filters are 
+  never used in filtergraphs.
+  To black list filters add a section like the following to the cut_assistant.ini file:
+  
+  [Filter Blacklist]
+  Count=2                                          //number of blacklisted filters
+  Filter_0={78766964-0000-0010-8000-00AA00389B71}  //GUID of Filter
+  Filter_1= ...
+
+New in 0.9.9.2 beta
+- fixed bug in 0.9.9.1 beta: Settings for VirtualDub were not read properly
+
+New in 0.9.9.1 beta
+- Integration of CutApplications completely new (so don't be surprised if there are a few bugs now ;-))
+- Support for MP4 Iso Files and MP4Box
+- Output of Console Applications is redirected in own window
+
+New in 0.9.8.2
+- Support for new download method from cutlist.de
+- Improved calling and scripting for AviDemux
+- Can check for new Versions of Application on cutlist.de
+- Bugfix: Umlaute in VirtualDub Scripts could not be handled by VD
+
+New in 0.9.7 beta
+- Support for Avidemux
+- Settings for Codec in VD when using "Smart Rendering"
+
+New in 0.9.6.10.beta
+- Supports "Smart Rendering" with VirtualDub 1.7. DivX encoder must be installed for this feature.
+- Full Screen Mode (Double click on video window or Alt+Return)
+
+New in 0.9.6.6
+- Bug fixed: OLE Error when opening movie on some configurations.
+
+New in 0.9.6.5
+- Bug fixed: Wrong cut mode after saving cutlist. This bug is only present in some of the versions 0.9.6.0 to 0.9.6.3
+
+New in 0.9.6.3
+- Bug "Invalid File Name" fixed
+
+New in 0.9.6.0
+- Only one instance of the application will be opened.
+- Application can be associated with .cutlist files. 
+- Frame numbers will only be removed from cutlists if cuts are changed
+- Can change playing speed (depends on movie type)
+- New Buttons: Next / Previous cut.
+
+New in 0.9.5.1
+- included midasLib, so midas.dll is no longer necessary
+- cleaned up source code (I hope this did not produce new bugs :))
+- minor improvements
+- fixed bug in 0.9.5.0
+
+New in 0.9.4.0
+- Upload History, can delete cutlists from server
+- Can read cutlists with frame numbers (but does not write them), will use frame numbers in VirtualDub script if possible
+- Suggested filenames in cutlists
+- Settings: Dir for VirtualDubScripts, checkbox to leave VirtualDub open after cutting
+- cuts are displayed in timeline
+- total cut time and remaining movie duratien calculated
+- double click on cutlist entry = edit entry
+- minor bugs fixed
+
+New in 0.9.0.0
+- Added support for avi files and virtualdub (vdub.exe)
+- renamed from asfbin_assistant to cut_assistant.
+
+New in 0.8.3.0
+- New cutlist search on Server
+- Send Rating to Server
+- Improved Checking of cut movies
+
+New in 0.8.2.0
+- Support for Proxy Server (->Settings)
+
+New in 0.8.1.0
+- Menu rearranged
+- UserName (will be saved with cutlist) and UserID (for later use)
+- Calculate resulting times: Calculate the beginning and ending times of the resulting parts after cutting. After Cutting, click on this menu entry, load cut movie and use the table to check your cuts. Double click on a table entry to view the movie at cut time -2 seconds.
+- Search Cutlist by File Size (experimental)
+
+New in 0.7.5.5
+- drag'n drop bug fixed
+- cutlist name bug fixed
+
+New in 0.7.5.2
+- Choose between Cutlist Save or Save as
+- new command line options (experimental):
+  -batchmode             No GUI, programm terminates automatically, cutlists will be overwritten without asking
+  -trycutlistdownload    Try to download matching cutlist from server
+  -trycutting            Try to cut movie
+
+New in V.0.7.5.0
+- CutApplication -> Repair files    
+- Save Movie Infos with cutlist
+- URLs can be changed
+- Show Filtergraph CLSIDs
+- misc...
+
+New in V. 0.7.4.4
+- Automatic search for matching cutlist on cutlist-server 
+- Keyboard Shortcuts for Framestep back (= left arrow or "j") and framestep 
+  forward (right arrow or "l")
+    
+New in V. 0.7.4.1
+- Bug in upload procedure fixed
+
+New in V. 0.7.4
+- Link to OTR Wiki Help
+- Link to Cutlist download
+- Upload of Culists to Cutlist Server (experimental)
+- Cleaned code, removed minor bugs, 
+  changed range of fine tuning to +/- 50 frames
+
+New in V. 0.7
+- Drag & Drop for movie files and cutlists     
+- Scan selected interval and extract frames
+- Improved user interface 
+
+New in V. 0.6.0.2 beta
+- bugfix: frames window correctly displayed
+
+New in V. 0.6 beta
+- Replaced WindowsMediaPlayer Object by DirectShow Filtergraph.
+- Frames are displayed in dedicated window.
+- bugfix: filenames with spaces are now handled correctly 
+
+New in V. 0.5 beta
+- Settings are now saved in ini-file.
+- cutlists can be loaded and saved.
