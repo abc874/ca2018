@@ -18,6 +18,10 @@ The author of Cut_assistant.exe is in no way responsible for these 3rd party app
 
 _________________________________________________________________________
 
+## For version changelog see [news.txt](news.txt)
+
+_________________________________________________________________________
+
 ## Requirements:
 DirectShow installed (uses InfinitePinTee, VideoRenderer, SampleGrabber, NullRenderer).
 Codecs for the movie files to edit.
@@ -34,10 +38,6 @@ cut_assistant.exe [-open:<moviefile> [-cutlist:<cutlistfile>]]
 loads <moviefile> as movie and cutlistfile as cutlist on startup
 
 For further options see online help.
-
-_________________________________________________________________________
-
-## For version changelog see News.txt
 
 _________________________________________________________________________
 
