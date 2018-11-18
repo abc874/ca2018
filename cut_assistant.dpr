@@ -1,20 +1,16 @@
-PROGRAM cut_assistant;
+program cut_assistant;
 
-{%File 'readme.txt'}
-{%File 'news.txt'}
-{%File 'license.txt'}
-{%File 'cut_assistant_info.xml'}
-{%File 'cut_assistant.en.lng'}
-{%File 'cut_assistant.lng'}
-{%File 'cut_assistant.de.lng'}
+{$I Information.inc}
 
 uses
-  madExcept,
-  uFreeLocalizer,
-  SysUtils,
+  {$IFDEF DEBUG}
+  FastMM4,
+  {$ENDIF}
+  Winapi.Windows,
+  System.Classes,
+  System.SysUtils,
+  Vcl.Forms,
   PBOnceOnly in 'lib\PBOnceOnly.pas',
-  Forms,
-  Classes,
   Main in 'Main.pas' {FMain},
   Settings_dialog in 'Settings_dialog.pas' {FSettings},
   UMemoDialog in 'UMemoDialog.pas' {frmMemoDialog},
@@ -28,7 +24,6 @@ uses
   Utils in 'Utils.pas',
   Movie in 'Movie.pas',
   CodecSettings in 'CodecSettings.pas',
-  VfW in 'lib\VfW.pas',
   UCutlist in 'UCutlist.pas',
   UCutApplicationBase in 'UCutApplicationBase.pas' {frmCutApplicationBase: TFrame},
   UCutApplicationMP4Box in 'UCutApplicationMP4Box.pas' {frmCutApplicationMP4Box: TFrame},
@@ -43,77 +38,90 @@ uses
   ULogging in 'ULogging.pas' {FLogging},
   UDSAStorage in 'UDSAStorage.pas',
   UAbout in 'UAbout.pas' {AboutBox},
-  CAResources in 'CAResources.pas';
+  CAResources in 'CAResources.pas',
+  uFreeLocalizer in 'KDL\uFreeLocalizer.pas',
+  uStringUtils in 'KDL\uStringUtils.pas';
 
 {$R *.res}
-CONST
-  ProcessName                      = '{B3FD8E3A-7C76-404D-81D3-201CC4A4522B}';
 
-VAR
-  iParam                           : integer;
-  FileList                         : TStringList;
-  MessageList                      : TStringList;
-  MessageListStream                : TFileStream;
+{$SetPEFlags IMAGE_FILE_RELOCS_STRIPPED}
+{$WEAKLINKRTTI ON}
+{$RTTI EXPLICIT METHODS([]) PROPERTIES([]) FIELDS([])}
 
-BEGIN
-  MessageListStream := NIL;
+procedure CheckLocalizer;
+begin
+  {$IFDEF DEBUG}
+  if FreeLocalizer.Errors <> '' then
+  begin
+    ErrMsg(FreeLocalizer.Errors);
+    FreeLocalizer.ClearErrors;
+  end;
+  {$ENDIF}
+end;
+
+const
+  ProcessName = '{B3FD8E3A-7C76-404D-81D3-201CC4A4522B}';
+
+var
+  iParam: Integer;
+  FileList: TStringList;
+  MessageList: TStringList;
+  MessageListStream: TFileStream;
+
+begin
   MessageList := TStringList.Create;
-  TRY
-    IF AlreadyRunning(ProcessName, TApplication, TFMain) THEN
+  try
+    if AlreadyRunning(ProcessName, TApplication, TFMain) then
       Exit;
 
     Application.Initialize;
     Application.Title := 'Cut Assistant';
 
-    IF FreeLocalizer.Errors <> '' THEN BEGIN
-      Application.MessageBox(pChar(FreeLocalizer.Errors), 'Localizer Errors');
-      FreeLocalizer.ClearErrors;
-    END;
+    CheckLocalizer;
 
     Application.CreateForm(TFMain, FMain);
-  Application.CreateForm(TFSettings, FSettings);
-  Application.CreateForm(TfrmMemoDialog, frmMemoDialog);
-  Application.CreateForm(TFManageFilters, FManageFilters);
-  Application.CreateForm(TFFrames, FFrames);
-  Application.CreateForm(TFCutlistRate, FCutlistRate);
-  Application.CreateForm(TFResultingTimes, FResultingTimes);
-  Application.CreateForm(TFCutlistSearchResults, FCutlistSearchResults);
-  Application.CreateForm(TFCutlistInfo, FCutlistInfo);
-  Application.CreateForm(TFUploadList, FUploadList);
-  Application.CreateForm(TfrmCutting, frmCutting);
-  Application.CreateForm(TFLogging, FLogging);
-  Application.CreateForm(TAboutBox, AboutBox);
-  FFrames.MainForm := FMain;
+    Application.CreateForm(TFSettings, FSettings);
+    Application.CreateForm(TfrmMemoDialog, frmMemoDialog);
+    Application.CreateForm(TFManageFilters, FManageFilters);
+    Application.CreateForm(TFFrames, FFrames);
+    Application.CreateForm(TFCutlistRate, FCutlistRate);
+    Application.CreateForm(TFResultingTimes, FResultingTimes);
+    Application.CreateForm(TFCutlistSearchResults, FCutlistSearchResults);
+    Application.CreateForm(TFCutlistInfo, FCutlistInfo);
+    Application.CreateForm(TFUploadList, FUploadList);
+    Application.CreateForm(TfrmCutting, frmCutting);
+    Application.CreateForm(TFLogging, FLogging);
+    Application.CreateForm(TAboutBox, AboutBox);
+    FFrames.MainForm := FMain;
 
-    IF FreeLocalizer.Errors <> '' THEN BEGIN
-      Application.MessageBox(pChar(FreeLocalizer.Errors), 'Localizer Errors');
-      FreeLocalizer.ClearErrors;
-    END;
+    CheckLocalizer;
 
     FileList := TStringList.Create;
-    FOR iParam := 1 TO ParamCount DO BEGIN
-      FileList.Add(ParamStr(iParam));
-    END;
-    TRY
+    try
+      for iParam := 1 TO ParamCount do
+        FileList.Add(ParamStr(iParam));
       FMain.ProcessFileList(FileList, true);
-    FINALLY
-      FreeAndNIL(FileList);
-      IF BatchMode OR exit_after_commandline THEN
-        application.Terminate
-      ELSE
+    finally
+      FileList.Free;
+      if BatchMode OR exit_after_commandline then
+        Application.Terminate
+      else
         Application.Run;
-    END;
-  FINALLY
-    IF MessageList.Count > 0 THEN BEGIN
+    end;
+  finally
+    CheckLocalizer;
+
+    if MessageList.Count > 0 then
+    begin
       MessageListStream := TFileStream.Create(ChangeFileExt(Application.ExeName, '.log'), fmCreate OR fmOpenReadWrite, fmShareDenyWrite);
-      TRY
+      try
         MessageListStream.Seek(0, soFromEnd);
         MessageList.SaveToStream(MessageListStream);
-      FINALLY
-        FreeAndNil(MessageListStream);
-      END;
-    END;
-    FreeAndNIL(MessageList);
-  END;
-END.
+      finally
+        MessageListStream.Free;
+      end;
+    end;
+    MessageList.Free;
+  end;
+end.
 
