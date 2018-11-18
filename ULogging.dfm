@@ -1,11 +1,11 @@
 object FLogging: TFLogging
   Left = 340
   Top = 379
-  Width = 717
-  Height = 229
   BorderIcons = [biSystemMenu]
   BorderStyle = bsSizeToolWin
   Caption = 'Logging messages'
+  ClientHeight = 195
+  ClientWidth = 701
   Color = clBtnFace
   Font.Charset = ANSI_CHARSET
   Font.Color = clWindowText
@@ -21,7 +21,7 @@ object FLogging: TFLogging
   object reMessages: TRichEdit
     Left = 0
     Top = 0
-    Width = 709
+    Width = 701
     Height = 195
     Align = alClient
     Font.Charset = ANSI_CHARSET
@@ -37,6 +37,7 @@ object FLogging: TFLogging
     TabOrder = 0
     WantReturns = False
     WordWrap = False
+    Zoom = 100
   end
   object JvFormMagnet1: TJvFormMagnet
     Active = True
