@@ -1,9 +1,9 @@
 object FCutlistInfo: TFCutlistInfo
   Left = 360
   Top = 238
-  Width = 580
-  Height = 625
   Caption = 'Cutlist Info'
+  ClientHeight = 591
+  ClientWidth = 564
   Color = clBtnFace
   Constraints.MaxHeight = 625
   Constraints.MinHeight = 625
@@ -18,7 +18,7 @@ object FCutlistInfo: TFCutlistInfo
   Position = poMainFormCenter
   OnShow = FormShow
   DesignSize = (
-    572
+    564
     591)
   PixelsPerInch = 96
   TextHeight = 13
@@ -64,7 +64,7 @@ object FCutlistInfo: TFCutlistInfo
   object rgRatingByAuthor: TRadioGroup
     Left = 7
     Top = 33
-    Width = 559
+    Width = 550
     Height = 151
     Anchors = [akLeft, akTop, akRight, akBottom]
     Caption = 'How do you rate your cutlist?'
@@ -87,18 +87,18 @@ object FCutlistInfo: TFCutlistInfo
   object grpDetails: TGroupBox
     Left = 7
     Top = 273
-    Width = 559
+    Width = 550
     Height = 185
     Anchors = [akLeft, akRight, akBottom]
     Caption = 'Infos about the movie:'
     TabOrder = 2
     DesignSize = (
-      559
+      550
       185)
     object edtOtherErrorDescription: TEdit
       Left = 24
       Top = 153
-      Width = 523
+      Width = 514
       Height = 21
       Anchors = [akLeft, akTop, akRight]
       TabOrder = 7
@@ -107,7 +107,7 @@ object FCutlistInfo: TFCutlistInfo
     object edtActualContent: TEdit
       Left = 24
       Top = 39
-      Width = 523
+      Width = 514
       Height = 21
       Anchors = [akLeft, akTop, akRight]
       TabOrder = 1
@@ -124,12 +124,6 @@ object FCutlistInfo: TFCutlistInfo
       TabOrder = 0
       OnClick = cbEPGErrorClick
       LinkedControls = <>
-      HotTrackFont.Charset = ANSI_CHARSET
-      HotTrackFont.Color = clWindowText
-      HotTrackFont.Height = -11
-      HotTrackFont.Name = 'Microsoft Sans Serif'
-      HotTrackFont.Pitch = fpVariable
-      HotTrackFont.Style = []
     end
     object cbMissingBeginning: TJvCheckBox
       Left = 7
@@ -140,12 +134,6 @@ object FCutlistInfo: TFCutlistInfo
       TabOrder = 2
       OnClick = EnableOK
       LinkedControls = <>
-      HotTrackFont.Charset = ANSI_CHARSET
-      HotTrackFont.Color = clWindowText
-      HotTrackFont.Height = -11
-      HotTrackFont.Name = 'Microsoft Sans Serif'
-      HotTrackFont.Pitch = fpVariable
-      HotTrackFont.Style = []
     end
     object cbMissingEnding: TJvCheckBox
       Left = 7
@@ -156,12 +144,6 @@ object FCutlistInfo: TFCutlistInfo
       TabOrder = 3
       OnClick = EnableOK
       LinkedControls = <>
-      HotTrackFont.Charset = ANSI_CHARSET
-      HotTrackFont.Color = clWindowText
-      HotTrackFont.Height = -11
-      HotTrackFont.Name = 'Microsoft Sans Serif'
-      HotTrackFont.Pitch = fpVariable
-      HotTrackFont.Style = []
     end
     object cbMissingVideo: TJvCheckBox
       Left = 7
@@ -172,12 +154,6 @@ object FCutlistInfo: TFCutlistInfo
       TabOrder = 4
       OnClick = EnableOK
       LinkedControls = <>
-      HotTrackFont.Charset = ANSI_CHARSET
-      HotTrackFont.Color = clWindowText
-      HotTrackFont.Height = -11
-      HotTrackFont.Name = 'Microsoft Sans Serif'
-      HotTrackFont.Pitch = fpVariable
-      HotTrackFont.Style = []
     end
     object cbMissingAudio: TJvCheckBox
       Left = 7
@@ -188,12 +164,6 @@ object FCutlistInfo: TFCutlistInfo
       TabOrder = 5
       OnClick = EnableOK
       LinkedControls = <>
-      HotTrackFont.Charset = ANSI_CHARSET
-      HotTrackFont.Color = clWindowText
-      HotTrackFont.Height = -11
-      HotTrackFont.Name = 'Microsoft Sans Serif'
-      HotTrackFont.Pitch = fpVariable
-      HotTrackFont.Style = []
     end
     object cbOtherError: TJvCheckBox
       Left = 7
@@ -204,16 +174,10 @@ object FCutlistInfo: TFCutlistInfo
       TabOrder = 6
       OnClick = cbOtherErrorClick
       LinkedControls = <>
-      HotTrackFont.Charset = ANSI_CHARSET
-      HotTrackFont.Color = clWindowText
-      HotTrackFont.Height = -11
-      HotTrackFont.Name = 'Microsoft Sans Serif'
-      HotTrackFont.Pitch = fpVariable
-      HotTrackFont.Style = []
     end
   end
   object cmdCancel: TButton
-    Left = 480
+    Left = 472
     Top = 561
     Width = 85
     Height = 23
@@ -224,7 +188,7 @@ object FCutlistInfo: TFCutlistInfo
     TabOrder = 8
   end
   object cmdOk: TButton
-    Left = 390
+    Left = 382
     Top = 561
     Width = 85
     Height = 23
@@ -236,7 +200,7 @@ object FCutlistInfo: TFCutlistInfo
   object edtUserComment: TEdit
     Left = 7
     Top = 533
-    Width = 559
+    Width = 550
     Height = 21
     Anchors = [akLeft, akRight, akBottom]
     TabOrder = 5
@@ -245,7 +209,7 @@ object FCutlistInfo: TFCutlistInfo
   object pnlAuthor: TPanel
     Left = 7
     Top = 560
-    Width = 376
+    Width = 368
     Height = 25
     Anchors = [akLeft, akRight, akBottom]
     BevelInner = bvLowered
@@ -253,7 +217,7 @@ object FCutlistInfo: TFCutlistInfo
     object lblAuthor: TLabel
       Left = 2
       Top = 5
-      Width = 372
+      Width = 364
       Height = 18
       Align = alBottom
       Alignment = taCenter
@@ -274,14 +238,14 @@ object FCutlistInfo: TFCutlistInfo
   object edtMovieName: TEdit
     Left = 7
     Top = 487
-    Width = 422
+    Width = 414
     Height = 21
     Anchors = [akLeft, akRight, akBottom]
     TabOrder = 3
     OnChange = EnableOK
   end
   object cmdMovieNameCopy: TButton
-    Left = 435
+    Left = 426
     Top = 486
     Width = 131
     Height = 23
@@ -291,7 +255,7 @@ object FCutlistInfo: TFCutlistInfo
     OnClick = cmdMovieNameCopyClick
   end
   object cbFramesPresent: TJvCheckBox
-    Left = 434
+    Left = 426
     Top = 8
     Width = 131
     Height = 17
@@ -301,23 +265,17 @@ object FCutlistInfo: TFCutlistInfo
     Enabled = False
     TabOrder = 0
     LinkedControls = <>
-    HotTrackFont.Charset = ANSI_CHARSET
-    HotTrackFont.Color = clWindowText
-    HotTrackFont.Height = -11
-    HotTrackFont.Name = 'Microsoft Sans Serif'
-    HotTrackFont.Pitch = fpVariable
-    HotTrackFont.Style = []
   end
   object grpServerRating: TGroupBox
     Left = 8
     Top = 191
-    Width = 557
+    Width = 550
     Height = 77
     Anchors = [akLeft, akRight, akBottom]
     Caption = 'Cutlist Server'
     TabOrder = 9
     DesignSize = (
-      557
+      550
       77)
     object lblRatingOnServer: TLabel
       Left = 52
@@ -328,7 +286,7 @@ object FCutlistInfo: TFCutlistInfo
       Caption = 'Average Rating:'
     end
     object lblRatingCountOnServer: TLabel
-      Left = 223
+      Left = 216
       Top = 20
       Width = 82
       Height = 13
@@ -345,7 +303,7 @@ object FCutlistInfo: TFCutlistInfo
       Caption = 'Downloaded at:'
     end
     object lblRatingSent: TLabel
-      Left = 422
+      Left = 415
       Top = 20
       Width = 59
       Height = 13
@@ -362,7 +320,7 @@ object FCutlistInfo: TFCutlistInfo
       TabOrder = 0
     end
     object edtRatingCountOnServer: TEdit
-      Left = 308
+      Left = 301
       Top = 16
       Width = 60
       Height = 21
@@ -373,14 +331,14 @@ object FCutlistInfo: TFCutlistInfo
     object edtDownloadTime: TEdit
       Left = 132
       Top = 44
-      Width = 237
+      Width = 230
       Height = 21
       Anchors = [akLeft, akTop, akRight]
       ReadOnly = True
       TabOrder = 2
     end
     object edtRatingSent: TEdit
-      Left = 484
+      Left = 477
       Top = 16
       Width = 60
       Height = 21
