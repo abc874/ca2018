@@ -1,7 +1,6 @@
 object frmCutting: TfrmCutting
   Left = 286
   Top = 125
-  AutoScroll = False
   BorderIcons = [biMaximize]
   Caption = 'Cutting ...'
   ClientHeight = 440

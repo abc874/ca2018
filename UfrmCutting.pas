@@ -1,186 +1,186 @@
-UNIT UfrmCutting;
+unit UfrmCutting;
 
-INTERFACE
+{$I Information.inc}
 
-USES
-  Windows,
-  Messages,
-  SysUtils,
-  Variants,
-  Classes,
-  Graphics,
-  Controls,
-  Forms,
-  Dialogs,
-  JvComponentBase,
-  JvCreateProcess,
-  StdCtrls,
-  UCutApplicationBase,
-  ExtCtrls;
+// basic review and reformatting: done
 
-TYPE
-  TfrmCutting = CLASS(TForm)
+interface
+
+uses
+  // Delphi
+  System.Classes, Vcl.Forms, Vcl.ExtCtrls, Vcl.StdCtrls, Vcl.Controls,
+
+  // CA
+  UCutApplicationBase;
+
+type
+  TfrmCutting = class(TForm)
     memOutput: TMemo;
     cmdClose_nl: TButton;
     cmdAbort: TButton;
     cmdCopyClipbrd: TButton;
     cmdEmergencyExit: TButton;
     timAutoClose: TTimer;
-    PROCEDURE CutAppTerminate(Sender: TObject; ExitCode: Cardinal);
-    PROCEDURE cmdAbortClick(Sender: TObject);
-    PROCEDURE cmdCopyClipbrdClick(Sender: TObject);
-    PROCEDURE FormCreate(Sender: TObject);
-    PROCEDURE FormDestroy(Sender: TObject);
-    PROCEDURE cmdEmergencyExitClick(Sender: TObject);
-    PROCEDURE timAutoCloseTimer(Sender: TObject);
-    PROCEDURE memOutputClick(Sender: TObject);
-    PROCEDURE FormClose(Sender: TObject; VAR Action: TCloseAction);
-  PRIVATE
-    { Private declarations }
-    FAborted: boolean;
+    procedure CutAppTerminate(Sender: TObject; AExitCode: Cardinal);
+    procedure cmdAbortClick(Sender: TObject);
+    procedure cmdCopyClipbrdClick(Sender: TObject);
+    procedure FormCreate(Sender: TObject);
+    procedure FormDestroy(Sender: TObject);
+    procedure cmdEmergencyExitClick(Sender: TObject);
+    procedure timAutoCloseTimer(Sender: TObject);
+    procedure memOutputClick(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
+  private
+    { private declarations }
+    FAborted: Boolean;
     FTerminateTime: TDateTime;
     //FCommandLineCounter: Integer;
     FCutApplication: TCutApplicationBase;
-    PROCEDURE SetCutApplication(CONST Value: TCutApplicationBase);
-  PUBLIC
-    { Public declarations }
+    procedure SetCutApplication(const Value: TCutApplicationBase);
+  public
+    { public declarations }
     CommandLines: TStringList;
     ExitCode: Cardinal;
-    FUNCTION GetCutAppOutput: STRING;
-    FUNCTION ExecuteCutApp: Integer;
-    PROPERTY CutApplication: TCutApplicationBase READ FCutApplication WRITE SetCutApplication;
-  END;
+    function GetCutAppOutput: string;
+    function ExecuteCutApp: Integer;
+    property CutApplication: TCutApplicationBase read FCutApplication write SetCutApplication;
+  end;
 
-VAR
-  frmCutting                       : TfrmCutting;
+var
+  frmCutting: TfrmCutting;
 
-IMPLEMENTATION
+implementation
 
-USES Clipbrd,
-  DateTools,
-  DateUtils,
-  Utils,
-  Main,
-  CAResources;
+uses
+  // Delphi
+  Winapi.Windows, System.SysUtils, System.DateUtils, Vcl.Clipbrd,
+
+  // CA
+  CAResources, DateTools, Main, Utils;
 
 {$R *.dfm}
 
-FUNCTION TfrmCutting.GetCutAppOutput: STRING;
-BEGIN
+function TfrmCutting.GetCutAppOutput: string;
+begin
   Result := memOutput.Text;
-END;
+end;
 
-FUNCTION TfrmCutting.ExecuteCutApp: Integer;
-BEGIN
-  result := mrNone;
-  FAborted := false;
+function TfrmCutting.ExecuteCutApp: Integer;
+begin
+  Result   := mrNone;
+  FAborted := False;
   ExitCode := 0;
-  IF NOT assigned(CutApplication) THEN exit;
 
-  cmdAbort.Enabled := true;
-  cmdEmergencyExit.Enabled := true;
-  cmdClose_nl.Enabled := false;
-  timAutoClose.Enabled := false;
-  cmdClose_nl.Caption := CAResources.RsCaptionCuttingClose;
+  if Assigned(CutApplication) then
+  begin
+    cmdAbort.Enabled         := True;
+    cmdEmergencyExit.Enabled := True;
+    cmdClose_nl.Enabled      := False;
+    timAutoClose.Enabled     := False;
+    cmdClose_nl.Caption      := RsCaptionCuttingClose;
 
-  CutApplication.StartCutting;
-  Result := self.ShowModal;
-  IF CutApplication.CleanUp THEN BEGIN
-    IF NOT CutApplication.CleanUpAfterCutting THEN
-      IF NOT batchmode THEN
-        ShowMessage(CAResources.RsErrorCleanUpCutting);
-  END;
-END;
+    CutApplication.StartCutting;
+    Result := ShowModal;
+    if CutApplication.CleanUp then
+      if not CutApplication.CleanUpAfterCutting then
+        if not batchmode then
+          ErrMsg(RsErrorCleanUpCutting);
+  end;
+end;
 
-PROCEDURE TfrmCutting.CutAppTerminate(Sender: TObject;
-  ExitCode: Cardinal);
-BEGIN
-  self.ExitCode := ExitCode;
-  IF ExitCode = 0 THEN BEGIN
-    cmdClose_nl.ModalResult := mrOK;
-  END ELSE BEGIN
+procedure TfrmCutting.CutAppTerminate(Sender: TObject; AExitCode: Cardinal);
+begin
+  ExitCode := AExitCode;
+
+  if ExitCode = 0 then
+    cmdClose_nl.ModalResult := mrOK
+  else
     cmdClose_nl.ModalResult := mrCancel;
-  END;
-  cmdAbort.Enabled := false;
-  cmdEmergencyExit.Enabled := false;
-  cmdClose_nl.Enabled := true;
+
+  cmdAbort.Enabled := False;
+  cmdEmergencyExit.Enabled := False;
+  cmdClose_nl.Enabled := True;
   FTerminateTime := NowUTC;
-  IF Settings.CuttingWaitTimeout > 0 THEN
-    timAutoClose.Enabled := true;
+  if Settings.CuttingWaitTimeout > 0 then
+    timAutoClose.Enabled := True;
   Beep;
-END;
+end;
 
-PROCEDURE TfrmCutting.cmdAbortClick(Sender: TObject);
-BEGIN
-  self.FAborted := true;
-  IF assigned(self.FCutApplication) THEN
+procedure TfrmCutting.cmdAbortClick(Sender: TObject);
+begin
+  FAborted := True;
+  if Assigned(FCutApplication) then
     FCutApplication.AbortCutProcess;
-END;
+end;
 
-PROCEDURE TfrmCutting.cmdCopyClipbrdClick(Sender: TObject);
-BEGIN
+procedure TfrmCutting.cmdCopyClipbrdClick(Sender: TObject);
+begin
   Clipboard.AsText := memOutput.Text;
-END;
+end;
 
-PROCEDURE TfrmCutting.FormCreate(Sender: TObject);
-BEGIN
-  self.CommandLines := TStringList.Create;
-END;
+procedure TfrmCutting.FormCreate(Sender: TObject);
+begin
+  CommandLines := TStringList.Create;
+end;
 
-PROCEDURE TfrmCutting.FormDestroy(Sender: TObject);
-BEGIN
-  FreeAndNIL(self.CommandLines);
-END;
+procedure TfrmCutting.FormDestroy(Sender: TObject);
+begin
+  FreeAndNil(CommandLines);
+end;
 
-PROCEDURE TfrmCutting.SetCutApplication(CONST Value: TCutApplicationBase);
-BEGIN
+procedure TfrmCutting.SetCutApplication(const Value: TCutApplicationBase);
+begin
   FCutApplication := Value;
-  IF assigned(FCutApplication) THEN BEGIN
-    FCutApplication.OnCuttingTerminate := self.CutAppTerminate;
-    FCutApplication.OutputMemo := self.memOutput;
-  END ELSE BEGIN
-    FCutApplication.OnCuttingTerminate := NIL;
-    FCutApplication.OutputMemo := NIL;
-  END;
-END;
+  if Assigned(FCutApplication) then
+  begin
+    FCutApplication.OnCuttingTerminate := CutAppTerminate;
+    FCutApplication.OutputMemo := memOutput;
+  end else
+  begin
+    FCutApplication.OnCuttingTerminate := nil;
+    FCutApplication.OutputMemo := nil;
+  end;
+end;
 
-PROCEDURE TfrmCutting.cmdEmergencyExitClick(Sender: TObject);
-BEGIN
-  IF (application.messagebox(PChar(CAResources.RsMsgWarnOnTerminateCutApplication), PChar(CAResources.RsTitleWarning), MB_YESNO + MB_ICONQUESTION + MB_DEFBUTTON2) = IDYES) THEN BEGIN
+procedure TfrmCutting.cmdEmergencyExitClick(Sender: TObject);
+begin
+  if YesNoWarnMsg(RsMsgWarnOnTerminateCutApplication) then
+  begin
     CutApplication.EmergencyTerminateProcess;
-    self.CutAppTerminate(self, Cardinal(-1));
-  END;
-END;
+    CutAppTerminate(Self, Cardinal(-1));
+  end;
+end;
 
-PROCEDURE TfrmCutting.timAutoCloseTimer(Sender: TObject);
-VAR
-  secsToWait                       : integer;
-BEGIN
+procedure TfrmCutting.timAutoCloseTimer(Sender: TObject);
+var
+  secsToWait: Integer;
+begin
   secsToWait := Settings.CuttingWaitTimeout - SecondsBetween(FTerminateTime, NowUTC);
-  IF secsToWait <= 0 THEN BEGIN
-    timAutoClose.Enabled := false;
+  if secsToWait <= 0 then
+  begin
+    timAutoClose.Enabled := False;
     cmdClose_nl.Click;
-  END
-  ELSE BEGIN
-    cmdClose_nl.Caption := Format(CAResources.RsCaptionCuttingAutoClose, [secsToWait]);
-  END;
-END;
+  end else
+    cmdClose_nl.Caption := Format(RsCaptionCuttingAutoClose, [secsToWait]);
+end;
 
-PROCEDURE TfrmCutting.memOutputClick(Sender: TObject);
-BEGIN
-  IF timAutoClose.Enabled THEN BEGIN
-    timAutoClose.Enabled := false;
-    cmdClose_nl.Caption := CAResources.RsCaptionCuttingClose;
-  END;
-END;
+procedure TfrmCutting.memOutputClick(Sender: TObject);
+begin
+  if timAutoClose.Enabled then
+  begin
+    timAutoClose.Enabled := False;
+    cmdClose_nl.Caption  := RsCaptionCuttingClose;
+  end;
+end;
 
-PROCEDURE TfrmCutting.FormClose(Sender: TObject; VAR Action: TCloseAction);
-BEGIN
-  IF self.ModalResult = mrNone THEN
-    self.ModalResult := mrCancel
-  ELSE IF self.FAborted AND (self.ModalResult <> mrOk) THEN
-    self.ModalResult := mrAbort;
-END;
+procedure TfrmCutting.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+  if ModalResult = mrNone then
+    ModalResult := mrCancel
+  else
+    if FAborted and (ModalResult <> mrOk) then
+      ModalResult := mrAbort;
+end;
 
-END.
+end.
 
