@@ -1,5 +1,5 @@
 
-# Cut_assistant 2018 v0.9.20 (development)
+# Cut Assistant 2018 v0.9.20 (development)
 
 Project website: https://github.com/abc874/ca2018
 
@@ -76,3 +76,7 @@ This program contains DSPack source code that can be obtained
 from http://sourceforge.net/projects/dspack
 
 Using The Kryvich's Delphi Localizer, https://sites.google.com/site/kryvich/localizer
+
+Using PBOnceOnly from Peter Below (TeamB)
+
+
