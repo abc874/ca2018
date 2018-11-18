@@ -1,95 +1,99 @@
-UNIT CutlistRate_dialog;
+unit CutlistRate_dialog;
 
-INTERFACE
+{$I Information.inc}
 
-USES
-  Windows,
-  Messages,
-  SysUtils,
-  Variants,
-  Classes,
-  Graphics,
-  Controls,
-  Forms,
-  Dialogs,
-  StdCtrls,
-  ExtCtrls;
+// basic review and reformatting: done
 
-TYPE
-  TFCutlistRate = CLASS(TForm)
+interface
+
+uses
+  // Delphi
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics, Vcl.Controls,
+  Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ExtCtrls;
+
+type
+  TFCutlistRate = class(TForm)
     lblSendRating: TLabel;
     RGRatingByAuthor: TRadioGroup;
     cmdCancel: TButton;
     cmdOk: TButton;
-    PROCEDURE RGRatingByAuthorClick(Sender: TObject);
-    PROCEDURE FormCloseQuery(Sender: TObject; VAR CanClose: Boolean);
-  PRIVATE
-    { Private declarations }
-    FRatingSelectedByUser: boolean;
-    FUNCTION GetSelectedRating: integer;
-    PROCEDURE SetSelectedRating(rating: integer);
-    FUNCTION GetSelectedRatingText: STRING;
-  PUBLIC
-    { Public declarations }
-    PROPERTY SelectedRating: integer READ GetSelectedRating WRITE SetSelectedRating;
-    PROPERTY SelectedRatingText: STRING READ GetSelectedRatingText;
-  END;
+    procedure RGRatingByAuthorClick(Sender: TObject);
+    procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
+  private
+    { private declarations }
+    FRatingSelectedByUser: Boolean;
+    function GetSelectedRating: Integer;
+    procedure SetSelectedRating(rating: Integer);
+    function GetSelectedRatingText: string;
+  public
+    { public declarations }
+    property SelectedRating: Integer read GetSelectedRating write SetSelectedRating;
+    property SelectedRatingText: string read GetSelectedRatingText;
+  end;
 
-VAR
-  FCutlistRate                     : TFCutlistRate;
+var
+  FCutlistRate: TFCutlistRate;
 
-IMPLEMENTATION
+implementation
 
-USES CAResources;
+uses
+  // CA
+  CAResources, Utils, Main;
 
 {$R *.dfm}
 
-PROCEDURE TFCutlistRate.RGRatingByAuthorClick(Sender: TObject);
-BEGIN
-  IF RGRatingByAuthor.ItemIndex >= 0 THEN BEGIN
-    cmdOk.Enabled := true;
+procedure TFCutlistRate.RGRatingByAuthorClick(Sender: TObject);
+begin
+  if RGRatingByAuthor.ItemIndex >= 0 then
+  begin
+    cmdOk.Enabled := True;
     FRatingSelectedByUser := (Sender = RGRatingByAuthor);
-  END;
-END;
+  end;
+end;
 
-FUNCTION TFCutlistRate.GetSelectedRatingText: STRING;
-BEGIN
-  IF SelectedRating < 0 THEN
+function TFCutlistRate.GetSelectedRatingText: string;
+begin
+  if SelectedRating < 0 then
     Result := ''
-  ELSE
+  else
     Result := RGRatingByAuthor.Items.Strings[SelectedRating];
-END;
+end;
 
-FUNCTION TFCutlistRate.GetSelectedRating: integer;
-BEGIN
+function TFCutlistRate.GetSelectedRating: Integer;
+begin
   Result := RGRatingByAuthor.ItemIndex;
-END;
+end;
 
-PROCEDURE TFCutlistRate.SetSelectedRating(rating: integer);
-BEGIN
-  IF rating >= RGRatingByAuthor.Items.Count THEN
+procedure TFCutlistRate.SetSelectedRating(rating: Integer);
+begin
+  if rating >= RGRatingByAuthor.Items.Count then
     rating := -1;
   RGRatingByAuthor.ItemIndex := rating;
-  FRatingSelectedByUser := false;
-END;
+  FRatingSelectedByUser := False;
+end;
 
-PROCEDURE TFCutlistRate.FormCloseQuery(Sender: TObject;
-  VAR CanClose: Boolean);
-VAR
-  title, msg                       : STRING;
-BEGIN
-  IF ModalResult <> mrOk THEN
-    Exit;
-  IF SelectedRating < 0 THEN CanClose := false
-  ELSE IF NOT FRatingSelectedByUser THEN BEGIN
-    title := CAResources.RsTitleConfirmRating;
-    msg := StringReplace(Format(CAResources.RsMsgConfirmRating, [SelectedRatingText]), '&', '', [rfReplaceAll]);
+procedure TFCutlistRate.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
+var
+  msg: string;
+begin
+  if ModalResult = mrOk then
+  begin
+    if SelectedRating < 0 then
+      CanClose := False
+    else
+      if not FRatingSelectedByUser then
+      begin
+        msg := StringReplace(Format(RsMsgConfirmRating, [SelectedRatingText]), '&', '', [rfReplaceAll]);
 
-    FRatingSelectedByUser := IDOK = Application.MessageBox(PChar(msg), PChar(title), MB_ICONQUESTION OR MB_OKCANCEL OR MB_DEFBUTTON2);
-    CanClose := FRatingSelectedByUser;
-  END;
-  IF NOT CanClose THEN
-    RGRatingByAuthor.SetFocus;
-END;
+        FRatingSelectedByUser := settings.NoWarnUseRate or NoYesMsg(RsTitleConfirmRating + #13#13 + msg);
 
-END.
+        CanClose := FRatingSelectedByUser;
+      end;
+
+    if not CanClose then
+      RGRatingByAuthor.SetFocus;
+  end;
+end;
+
+end.
+

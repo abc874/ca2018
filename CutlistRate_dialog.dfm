@@ -2,7 +2,7 @@ object FCutlistRate: TFCutlistRate
   Left = 371
   Top = 160
   ActiveControl = RGRatingByAuthor
-  BorderStyle = bsSingle
+  BorderStyle = bsDialog
   Caption = 'Cutlist Rating'
   ClientHeight = 223
   ClientWidth = 572
