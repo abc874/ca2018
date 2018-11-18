@@ -1,9 +1,9 @@
-UNIT CAResources;
+unit CAResources;
 
-INTERFACE
+interface
 
-RESOURCESTRING
-{(*}
+resourcestring
+
   { Main }
   RsNotAvailable                   = 'N/A';
   RsCaptionCutApplication          = 'Cut app.: %s';
@@ -91,7 +91,7 @@ RESOURCESTRING
 
   RsMsgSendRatingNotPossible       = 'Current cutlist was not downloaded. Rating not possible.';
   RsMsgSendRatingDone              = 'Rating done.';
-  RsMsgSendRatingNotDone           = 'Rating NOT done!'#13#10
+  RsMsgSendRatingNotDone           = 'Rating not done!'#13#10
                                    + #13#10;
   RsMsgAnswerFromServer            = 'Answer from Server:'#13#10
                                    + '%s';
@@ -100,9 +100,9 @@ RESOURCESTRING
 
   RsMsgCutlistDeleteUnexpected     = 'Delete command sent to server, but received unexpected response from server.';
   RsMsgCutlistDeleteEntryRemoved   = 'Database entry removed.';
-  RsMsgCutlistDeleteEntryNotRemoved= 'Database entry NOT removed.';
+  RsMsgCutlistDeleteEntryNotRemoved= 'Database entry not removed.';
   RsMsgCutlistDeleteFileRemoved    = 'File removed.';
-  RsMsgCutlistDeleteFileNotRemoved = 'File NOT removed.';
+  RsMsgCutlistDeleteFileNotRemoved = 'File not removed.';
 
   RsMsgAskUserForRating            = 'Please send a rating for the current cutlist.'#13#10
                                    + 'Would you like to do that now?';
@@ -326,7 +326,19 @@ RESOURCESTRING
   RsMsgCutlistReplaceFileInfo         = 'Do you want to adjust the file information of this cutlist'#13#10
                                       + '"%s (%d)"'#13#10
                                       + 'by current file information?';
-{*)}
-IMPLEMENTATION
 
-END.
+  // abc874
+  RsMergeCutAsk1                      = 'Merge cut %d and %d?';
+  RsMergeCutAsk2                      = 'Merge cut %d with previous (%d) or next (%d) cut?';
+  RsMergeCutPrev                      = 'Previous';
+  RsMergeCutNext                      = 'Next';
+
+  RsSplitCutAsk                       = 'Split cut at current position?';
+  RsSplitCutWarn                      = 'Current position not inside cut!';
+
+  RsShiftCutTime                      = 'shift time';
+
+implementation
+
+end.
+
