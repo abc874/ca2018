@@ -1,41 +1,37 @@
-UNIT UMemoDialog;
+unit UMemoDialog;
 
-INTERFACE
+{$I Information.inc}
 
-USES
-  Windows,
-  Messages,
-  SysUtils,
-  Variants,
-  Classes,
-  Graphics,
-  Controls,
-  Forms,
-  Dialogs,
-  StdCtrls;
+// basic review and reformatting: done
 
-TYPE
-  TfrmMemoDialog = CLASS(TForm)
+interface
+
+uses
+  // Delphi
+  System.Classes, Vcl.Forms, Vcl.StdCtrls, Vcl.Controls;
+
+type
+  TfrmMemoDialog = class(TForm)
     cmdClose: TButton;
     memInfo: TMemo;
-    PROCEDURE cmdCloseClick(Sender: TObject);
-  PRIVATE
-    { Private declarations }
-  PUBLIC
-    { Public declarations }
-  END;
+    procedure cmdCloseClick(Sender: TObject);
+  private
+    { private declarations }
+  public
+    { public declarations }
+  end;
 
-VAR
-  frmMemoDialog                    : TfrmMemoDialog;
+var
+  frmMemoDialog: TfrmMemoDialog;
 
-IMPLEMENTATION
+implementation
 
 {$R *.dfm}
 
+procedure TfrmMemoDialog.cmdCloseClick(Sender: TObject);
+begin
+  Hide;
+end;
 
-PROCEDURE TfrmMemoDialog.cmdCloseClick(Sender: TObject);
-BEGIN
-  self.Hide;
-END;
+end.
 
-END.

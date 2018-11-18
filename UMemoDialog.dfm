@@ -2,7 +2,6 @@ object frmMemoDialog: TfrmMemoDialog
   Left = 733
   Top = 218
   ActiveControl = cmdClose
-  AutoScroll = False
   Caption = 'Cut Assistant'
   ClientHeight = 393
   ClientWidth = 429
