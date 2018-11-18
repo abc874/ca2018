@@ -1,0 +1,554 @@
+*** original\DSPack.pas	Wed Sep 12 21:38:42 2018
+--- patched\DSPack.pas	Sat Oct 20 20:15:38 2018
+***************
+*** 164,183 ****
+--- 164,184 ----
+    TOnDVDSubpictureStreamChange = procedure(sender: TObject; SubNum, lcid: Integer; Lang: string) of object;                        {@exclude}
+    TOnDVDPlaybackRateChange     = procedure(sender: TObject; rate:  single) of object;                                              {@exclude}
+    TOnDVDParentalLevelChange    = procedure(sender: TObject; level: Integer) of object;                                             {@exclude}
+    TOnDVDAnglesAvailable        = procedure(sender: TObject; available: boolean) of object;                                         {@exclude}
+    TOnDVDButtonAutoActivated    = procedure(sender: TObject; Button: Cardinal) of object;                                           {@exclude}
+    TOnDVDCMD                    = procedure(sender: TObject; CmdID: Cardinal) of object;                                            {@exclude}
+    TOnDVDCurrentHMSFTime        = procedure(sender: TObject; HMSFTimeCode: TDVDHMSFTimeCode; TimeCode: TDVDTimeCode) of object;  {@exclude}
+    TOnDVDKaraokeMode            = procedure(sender: TObject; Played: boolean) of object;
+    {@exclude}
+    TOnBuffer = procedure(sender: TObject; SampleTime: Double; pBuffer: Pointer; BufferLen: longint) of object ;
++   TOnSample = procedure(sender: TObject; SampleTime: Double; ASample: IMediaSample) of object;
+  
+    TOnSelectedFilter = function (Moniker: IMoniker; FilterName: WideString; ClassID: TGuid): Boolean of Object;
+    TOnCreatedFilter  = function (Filter: IBaseFilter; ClassID: TGuid): Boolean of Object;
+    TOnUnableToRender = function (Pin: IPin): Boolean of Object;
+  // *****************************************************************************
+  //  IFilter
+  // *****************************************************************************
+  
+    {@exclude}
+    TFilterOperation = (
+***************
+*** 957,976 ****
+--- 958,978 ----
+      procedure SetFilterGraph(AFilterGraph: TFilterGraph);
+      procedure SetFullScreen(Value: boolean);
+      procedure NotifyFilter(operation: TFilterOperation; Param: integer = 0);
+      procedure GraphEvent(Event, Param1, Param2: integer);
+      function GetName: string;
+      function GetVideoHandle: THandle;
+      procedure ControlEvent(Event: TControlEvent; Param: integer = 0);
+      procedure SetTopMost(TopMost: boolean);
+      function GetVisible: boolean;
+      procedure SetVisible(Vis: boolean);
++     function GraphPlaying: boolean;
+    protected
+      FIsVideoWindowOwner: Boolean;
+      {@exclude}
+      procedure Loaded; override;
+      {@exclude}
+      procedure Notification(AComponent: TComponent; Operation: TOperation); override;
+      {@exclude}
+      procedure Resize; override;
+      {@exclude}
+      procedure ConstrainedResize(var MinWidth, MinHeight, MaxWidth, MaxHeight: Integer); override;
+***************
+*** 1051,1070 ****
+--- 1053,1073 ----
+  //******************************************************************************
+    {@exclude}
+    TSampleGrabber = class;
+  
+    { This class is designed make a snapshoot of Video or Audio Datas.
+      WARNING: There is know problems with some DIVX movies, so use RGB32 Media Type
+      instead of RBG24.}
+    TSampleGrabber = class(TComponent, IFilter, ISampleGrabberCB)
+    private
+      FOnBuffer: TOnBuffer;
++     FOnSample: TOnSample;
+      FBaseFilter: IBaseFilter;
+      FFilterGraph : TFilterGraph;
+      FMediaType: TMediaType;
+      // [pjh, 2003-07-14] delete BMPInfo field
+      // BMPInfo : PBitmapInfo;
+      FCriticalSection: TCriticalSection;
+      function GetFilter: IBaseFilter;
+      function GetName: string;
+      procedure NotifyFilter(operation: TFilterOperation; Param: integer = 0);
+      procedure SetFilterGraph(AFilterGraph: TFilterGraph);
+***************
+*** 1099,1118 ****
+--- 1102,1122 ----
+      procedure SetBMPCompatible(Source: PAMMediaType; SetDefault: cardinal);
+      { This method read the buffer received in the OnBuffer event and paint the bitmap.}
+      function GetBitmap(Bitmap: TBitmap; Buffer: Pointer; BufferLen: Integer): boolean; overload;
+      { This method read the current buffer from the Sample Grabber Filter and paint the bitmap.}
+      function GetBitmap(Bitmap: TBitmap): boolean; overload;
+      { This method check if the Sample Grabber Filter is correctly registered on the system. }
+      class function CheckFilter: boolean;
+    published
+      { Receive the Buffer from the Sample Grabber Filter. }
+      property OnBuffer: TOnBuffer read FOnBuffer write FOnBuffer;
++     property OnSample: TOnSample read FOnSample write FOnSample;
+      { The filter must connected to a TFilterGraph component.}
+      property FilterGraph: TFilterGraph read FFilterGraph write SetFilterGraph;
+      { The media type to capture. You can capture audio or video data. }
+      property MediaType: TMediaType read FMediaType write FMediaType;
+    end;
+  
+  // *****************************************************************************
+  //  TFilter
+  // *****************************************************************************
+  
+***************
+*** 1467,1487 ****
+      procedure NotifyFilter(operation: TFilterOperation; Param: integer = 0);
+      procedure GraphEvent(Event, Param1, Param2: integer);
+      function GetName: string;
+      procedure ControlEvent(Event: TControlEvent; Param: integer = 0);
+      procedure SetFilterGraph(AFilterGraph: TFilterGraph);
+      procedure SetTopMost(TopMost: boolean);
+      procedure SetZoom(Value : Integer);
+      function UpdateGraph : HResult;
+      function GetVideoInfo : HResult;
+      procedure SetAspectMode(Value : TRatioModes);
+!     procedure FullScreenCloseQuery(Sender: TObject; var CanClose: Boolean);
+      procedure SetVideoZOrder;
+    protected
+      FIsVideoWindowOwner: Boolean;
+      {@exclude}
+      function GetFilter: IBaseFilter;
+      {@exclude}
+      procedure Resize; override;
+      {@exclude}
+      procedure Loaded; override;
+      {@exclude}
+--- 1471,1491 ----
+      procedure NotifyFilter(operation: TFilterOperation; Param: integer = 0);
+      procedure GraphEvent(Event, Param1, Param2: integer);
+      function GetName: string;
+      procedure ControlEvent(Event: TControlEvent; Param: integer = 0);
+      procedure SetFilterGraph(AFilterGraph: TFilterGraph);
+      procedure SetTopMost(TopMost: boolean);
+      procedure SetZoom(Value : Integer);
+      function UpdateGraph : HResult;
+      function GetVideoInfo : HResult;
+      procedure SetAspectMode(Value : TRatioModes);
+!     //procedure FullScreenCloseQuery(Sender: TObject; var CanClose: Boolean);
+      procedure SetVideoZOrder;
+    protected
+      FIsVideoWindowOwner: Boolean;
+      {@exclude}
+      function GetFilter: IBaseFilter;
+      {@exclude}
+      procedure Resize; override;
+      {@exclude}
+      procedure Loaded; override;
+      {@exclude}
+***************
+*** 1699,1719 ****
+      // Destination
+      property Dest: TVMR9NormalizedRect read GetDest write SetDest;
+      // Set the color key for transparency.
+      property ColorKey: COLORREF read GetColorKey write SetColorKey;
+      // VMR Bitmap Options.
+      property Options: TVMRBitmapOptions read FOptions write SetOptions;
+    end;
+  
+  implementation
+  
+! uses ComObj;
+  
+  const
+    CLSID_FilterGraphCallback: TGUID = '{C7CAA944-C191-4AB1-ABA7-D8B40EF4D5B2}';
+  
+  // *****************************************************************************
+  //  TFilterGraph
+  // *****************************************************************************
+  
+  
+    constructor TFilterGraph.Create(AOwner: TComponent);
+--- 1703,1724 ----
+      // Destination
+      property Dest: TVMR9NormalizedRect read GetDest write SetDest;
+      // Set the color key for transparency.
+      property ColorKey: COLORREF read GetColorKey write SetColorKey;
+      // VMR Bitmap Options.
+      property Options: TVMRBitmapOptions read FOptions write SetOptions;
+    end;
+  
+  implementation
+  
+! uses
+!   ComObj, System.Types;
+  
+  const
+    CLSID_FilterGraphCallback: TGUID = '{C7CAA944-C191-4AB1-ABA7-D8B40EF4D5B2}';
+  
+  // *****************************************************************************
+  //  TFilterGraph
+  // *****************************************************************************
+  
+  
+    constructor TFilterGraph.Create(AOwner: TComponent);
+***************
+*** 2675,2694 ****
+--- 2680,2704 ----
+      FKeepAspectRatio := True;
+    end;
+  
+    destructor TVideoWindow.Destroy;
+    begin
+      FVMROptions.Free;
+      FilterGraph := nil;
+      inherited destroy;
+    end;
+  
++   function TVideoWindow.GraphPlaying: boolean;
++   begin
++     Result := Assigned(FFilterGraph) and (FFilterGraph.State = gsPlaying);
++   end;
++ 
+    procedure TVideoWindow.SetVideoMode(AMode: TVideoMode);
+    begin
+      if (AMode = vmVMR) and (not CheckVMR)
+        then FMode := vmNormal
+        else FMode := AMode;
+      if FilterGraph = nil then exit;
+      if not FilterGraph.Active then exit;
+      // need to reconnect
+      FilterGraph.RemoveFilter(self);
+      FilterGraph.InsertFilter(self);
+***************
+*** 2870,2889 ****
+--- 2880,2901 ----
+          begin
+            FVideoWindow     := nil;
+            FWindowLess      := nil;
+            FBaseFilter      := nil;
+          end;
+      end;
+    end;
+  
+    procedure TVideoWindow.Paint;
+    begin
++     if GraphPlaying then
++         Exit;
+      inherited Paint;
+      if Assigned(FOnPaint) then FOnPaint(self);
+    end;
+  
+    procedure TVideoWindow.Resize;
+    var ARect: TRect;
+    begin
+      inherited Resize;
+      case FMode of
+        vmNormal:
+***************
+*** 3087,3106 ****
+--- 3099,3123 ----
+              vmVMR: SetFullScreen(FFullScreen);
+            end;
+          end;
+        end;
+  
+     end;
+   end;
+  
+    procedure TVideoWindow.WndProc(var Message: TMessage);
+    begin
++     if (Message.Msg = WM_ERASEBKGND) and GraphPlaying then
++       begin
++         Message.Result := 1;
++       end
++     else 
+      if ((Message.Msg = WM_CONTEXTMENU) and FullScreen) then
+        begin
+          if assigned(PopupMenu) then
+            if PopupMenu.AutoPopup then
+            begin
+              PopupMenu.Popup(mouse.CursorPos.X, mouse.CursorPos.Y);
+              Message.Result := 1;
+            end;
+        end
+      else
+***************
+*** 3214,3244 ****
+        foAdding    : Cocreateinstance(CLSID_SampleGrabber, nil, CLSCTX_INPROC ,IID_IBASEFilter, FBaseFilter);
+        foAdded     :
+           begin
+             FBaseFilter.QueryInterface(IID_ISampleGrabber,SampleGrabber);
+             FBaseFilter.EnumPins(EnumPins);
+             EnumPins.Next(1,InPutPin,nil);
+             EnumPins.Next(1,OutPutPin,nil);
+             EnumPins := nil;
+             UpdateMediaType;
+             SampleGrabber.SetBufferSamples(true);
+!            SampleGrabber.SetCallback(Self ,1);
+           end;
+        foRemoving  :
+          begin
+            FBaseFilter.Stop;
+            InPutPin.Disconnect;
+            OutPutPin.Disconnect;
+          end;
+        foRemoved   :
+          begin
+!           SampleGrabber.SetCallback(nil ,1);
+            SampleGrabber.SetBufferSamples(false);
+            FBaseFilter   := nil;
+            SampleGrabber := nil;
+            InPutPin      := nil;
+            OutPutPin     := nil;
+          end;
+        foRefresh: UpdateMediaType;
+      end;
+    end;
+  
+--- 3231,3263 ----
+        foAdding    : Cocreateinstance(CLSID_SampleGrabber, nil, CLSCTX_INPROC ,IID_IBASEFilter, FBaseFilter);
+        foAdded     :
+           begin
+             FBaseFilter.QueryInterface(IID_ISampleGrabber,SampleGrabber);
+             FBaseFilter.EnumPins(EnumPins);
+             EnumPins.Next(1,InPutPin,nil);
+             EnumPins.Next(1,OutPutPin,nil);
+             EnumPins := nil;
+             UpdateMediaType;
+             SampleGrabber.SetBufferSamples(true);
+!            //SampleGrabber.SetCallback(Self ,1);
+!            SampleGrabber.SetCallback(Self ,0);
+           end;
+        foRemoving  :
+          begin
+            FBaseFilter.Stop;
+            InPutPin.Disconnect;
+            OutPutPin.Disconnect;
+          end;
+        foRemoved   :
+          begin
+!           //SampleGrabber.SetCallback(nil ,1);
+!           SampleGrabber.SetCallback(nil ,0);
+            SampleGrabber.SetBufferSamples(false);
+            FBaseFilter   := nil;
+            SampleGrabber := nil;
+            InPutPin      := nil;
+            OutPutPin     := nil;
+          end;
+        foRefresh: UpdateMediaType;
+      end;
+    end;
+  
+***************
+*** 3466,3485 ****
+--- 3485,3513 ----
+        finally
+          FCriticalSection.Leave;
+        end;
+      end;
+      result := S_OK;
+    end;
+  
+    function TSampleGrabber.SampleCB(SampleTime: Double;
+      pSample: IMediaSample): HResult;
+    begin
++     if assigned(FOnSample) then
++     begin
++       FCriticalSection.Enter;
++       try
++         FOnSample(self, SampleTime, pSample);
++       finally
++         FCriticalSection.Leave;
++       end;
++     end;
+      result := S_OK;
+    end;
+    
+  // *****************************************************************************
+  //  TFilter
+  // *****************************************************************************
+  
+    function TFilter.GetFilter: IBaseFilter;
+    begin
+      result := FFilter;
+***************
+*** 3856,3876 ****
+        else
+          Result := DefWindowProc(FWindowHandle, Msg, wParam, lParam);
+    end;
+  
+    procedure TDSTrackBar.MouseUp(Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+    var
+      StopPosition, CurrentPosition: int64;
+    begin
+      inherited MouseUp(Button, Shift, X, Y);
+      if Button = mbLeft then
+!      if assigned(FMediaSeeking) then
+         begin
+           FMediaSeeking.GetStopPosition(StopPosition);
+           CurrentPosition := (StopPosition * Position) div max ;
+           FMediaSeeking.SetPositions(CurrentPosition, AM_SEEKING_AbsolutePositioning,
+                                      StopPosition   , AM_SEEKING_NoPositioning);
+  
+         end;
+      FMouseDown := False;
+    end;
+  
+--- 3884,3904 ----
+        else
+          Result := DefWindowProc(FWindowHandle, Msg, wParam, lParam);
+    end;
+  
+    procedure TDSTrackBar.MouseUp(Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+    var
+      StopPosition, CurrentPosition: int64;
+    begin
+      inherited MouseUp(Button, Shift, X, Y);
+      if Button = mbLeft then
+!      if assigned(FMediaSeeking) and (max <> 0) then
+         begin
+           FMediaSeeking.GetStopPosition(StopPosition);
+           CurrentPosition := (StopPosition * Position) div max ;
+           FMediaSeeking.SetPositions(CurrentPosition, AM_SEEKING_AbsolutePositioning,
+                                      StopPosition   , AM_SEEKING_NoPositioning);
+  
+         end;
+      FMouseDown := False;
+    end;
+  
+***************
+*** 4652,4672 ****
+            put_Owner(Parent.Handle);
+          put_WindowStyle(FWindowStyle or WS_CHILD or WS_CLIPSIBLINGS);
+          put_WindowStyleEx(FWindowStyleEx);
+          if FIsVideoWindowOwner then
+            FVideoWindow.SetWindowPosition(0, 0, Width, Height)
+          else
+            FVideoWindow.SetWindowPosition(Left, Top, Width, Height);
+          if Name <> '' then
+            put_Caption(Name);
+          put_MessageDrain(Handle);
+!         Application.ProcessMessages;
+          put_AutoShow(not FDesktopPlay);
+        end;
+    end;
+  
+    function TDSVideoWindowEx2.GetFilter: IBaseFilter;
+    begin
+      result := FBaseFilter;
+    end;
+  
+    constructor TDSVideoWindowEx2.Create(AOwner: TComponent);
+--- 4680,4700 ----
+            put_Owner(Parent.Handle);
+          put_WindowStyle(FWindowStyle or WS_CHILD or WS_CLIPSIBLINGS);
+          put_WindowStyleEx(FWindowStyleEx);
+          if FIsVideoWindowOwner then
+            FVideoWindow.SetWindowPosition(0, 0, Width, Height)
+          else
+            FVideoWindow.SetWindowPosition(Left, Top, Width, Height);
+          if Name <> '' then
+            put_Caption(Name);
+          put_MessageDrain(Handle);
+!         //Application.ProcessMessages;
+          put_AutoShow(not FDesktopPlay);
+        end;
+    end;
+  
+    function TDSVideoWindowEx2.GetFilter: IBaseFilter;
+    begin
+      result := FBaseFilter;
+    end;
+  
+    constructor TDSVideoWindowEx2.Create(AOwner: TComponent);
+***************
+*** 4703,4722 ****
+--- 4731,4755 ----
+    end;
+  
+    destructor TDSVideoWindowEx2.Destroy;
+    begin
+      if DesktopPlayback then
+        NormalPlayback;
+  
+      FAppEvents.Free;
+      if FDDXM <> nil then
+        FDDXM.SetCallbackInterface(nil, 0);
++ 
++     SetFilterGraph(nil);
++     if not (csDesigning in componentstate) then
++       FFullScreenControl.Free;
++ 
+      OverlayCallback := nil;
+      FOverlayMixer   := nil;
+      FFilterGraph    := nil;
+      FVideoWindow    := nil;
+      FVideoRenderer  := nil;
+      FCaps.Free;
+      FColorControl.Free;
+      FreeAndNil(FFullscreenControl);
+  //    Application.OnIdle := nil; //SZ - fixes AV // replaced by AppEvnts
+      inherited Destroy;
+***************
+*** 5546,5577 ****
+      Else
+        FFullScreenControl.FormStyle := fsNormal;
+  
+      FFullScreenControl.Show;
+  
+      FFullScreen := True;
+  
+      RefreshVideoWindow;
+      if GraphBuildOk then SetVideoZOrder;
+    end;
+! 
+    procedure TDSVideoWindowEx2.FullScreenCloseQuery(Sender: TObject; var CanClose: Boolean);
+    begin
+      if csDestroying in componentstate then
+      begin
+        NormalPlayback;
+        CanClose := True;
+      end
+      else
+        CanClose := False;
+    end;
+! 
+    procedure TDSVideoWindowEx2.SetZoom(Value : Integer);
+    var
+      Ratio : Real;
+      TmpX, TmpY : Real;
+      TmpLeft, TmpTop : Real;
+      BasicVideo2 : IBasicVideo2;
+      SLeft, STop, SWidth, SHeight : Integer;
+    begin
+      // Set DigitalZoom
+      if (Value < 0) or (Value > 99) then
+--- 5579,5610 ----
+      Else
+        FFullScreenControl.FormStyle := fsNormal;
+  
+      FFullScreenControl.Show;
+  
+      FFullScreen := True;
+  
+      RefreshVideoWindow;
+      if GraphBuildOk then SetVideoZOrder;
+    end;
+! {
+    procedure TDSVideoWindowEx2.FullScreenCloseQuery(Sender: TObject; var CanClose: Boolean);
+    begin
+      if csDestroying in componentstate then
+      begin
+        NormalPlayback;
+        CanClose := True;
+      end
+      else
+        CanClose := False;
+    end;
+! }
+    procedure TDSVideoWindowEx2.SetZoom(Value : Integer);
+    var
+      Ratio : Real;
+      TmpX, TmpY : Real;
+      TmpLeft, TmpTop : Real;
+      BasicVideo2 : IBasicVideo2;
+      SLeft, STop, SWidth, SHeight : Integer;
+    begin
+      // Set DigitalZoom
+      if (Value < 0) or (Value > 99) then
