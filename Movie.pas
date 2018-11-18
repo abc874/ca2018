@@ -1,252 +1,224 @@
-UNIT Movie;
+unit Movie;
 
-INTERFACE
+{$I Information.inc}
 
-USES
-  MMsystem;
+// basic review and reformatting: done
 
-CONST
-  WMV_EXTENSIONS                   : ARRAY[0..1] OF STRING = ('.wmv', '.asf');
-  AVI_EXTENSIONS                   : ARRAY[0..1] OF STRING = ('.avi', '.divx');
-  MP4_EXTENSIONS                   : ARRAY[0..2] OF STRING = ('.mp4', '.m4v', '.mp4v');
+interface
 
-  //Class IDs
-  CLSID_HAALI                      : TGUID = '{55DA30FC-F16B-49FC-BAA5-AE59FC65F82D}'; //Haali File Source and Media Splitter
-  //   CLSID_AVI_DECOMPRESSOR ='{CF49D4E0-1115-11CE-B03A-0020AF0BA770}';  //Use CLSID_AVIDec from DirectShow9
+uses
+  // Delphi
+  Winapi.MMSystem;
 
-TYPE
+const
+  WMV_EXTENSIONS: array[0..1] of string = ('.wmv', '.asf');
+  AVI_EXTENSIONS: array[0..1] of string = ('.avi', '.divx');
+  MP4_EXTENSIONS: array[0..2] of string = ('.mp4', '.m4v', '.mp4v');
 
+type
   TMovieType = (mtUnknown, mtWMV, mtAVI, mtMP4, mtHQAVI, mtNone);
 
-  TMovieInfo = CLASS
-  PRIVATE
+  TMovieInfo = class
+  private
     FMovieType: TMovieType;
-    PROCEDURE SetMovieType(CONST Value: TMovieType);
-    FUNCTION GetFrameCount: Int64;
-    //movie params
-  PUBLIC
-    MovieLoaded: boolean;
-    CanStepForward: boolean;
+    function GetFrameCount: Int64;
+    procedure SetMovieType(const Value: TMovieType);
+    procedure GetAviInformation;
+  public
+    // movie params
+    MovieLoaded: Boolean;
+    CanStepForward: Boolean;
     FFourCC: FOURCC;
     TimeFormat: TGUID;
-    ratio: double;
-    nat_w, nat_h: integer;
-    current_file_duration, frame_duration: double;
-    frame_duration_source: char;
-    current_filename, target_filename: STRING;
+    ratio: Double;
+    nat_w, nat_h: Integer;
+    current_file_duration, frame_duration: Double;
+    frame_duration_source: Char;
+    current_filename, target_filename: string;
     current_filesize: Longint;
-    {current_position_seconds: double;
-    function current_position_string: string;}
-    PROPERTY FrameCount: Int64 READ GetFrameCount;
-    PROPERTY MovieType: TMovieType READ FMovieType WRITE SetMovieType;
-    FUNCTION FormatPosition(Position: double): STRING; OVERLOAD;
-    FUNCTION FormatPosition(Position: double; TimeFormat: TGUID): STRING; OVERLOAD;
-    FUNCTION FormatFrameRate: STRING; OVERLOAD;
-    FUNCTION FormatFrameRate(CONST frame_duration: double; CONST frame_duration_source: char): STRING; OVERLOAD;
-    FUNCTION MovieTypeString: STRING;
-    FUNCTION GetStringFromMovieType(aMovieType: TMovieType): STRING;
-    FUNCTION InitMovie(FileName: STRING): boolean;
-  PRIVATE
-    PROCEDURE GetAviInformation;
-  END;
+    property FrameCount: Int64 read GetFrameCount;
+    property MovieType: TMovieType read FMovieType write SetMovieType;
+    function FormatPosition(Position: Double): string; overload;
+    function FormatPosition(Position: Double; TimeFormat: TGUID): string; overload;
+    function FormatFrameRate: string;
+    function MovieTypeString: string;
+    function GetStringFromMovieType(aMovieType: TMovieType): string;
+    function InitMovie(FileName: string): Boolean;
+  end;
 
-IMPLEMENTATION
+function FrameRateToStr(const frame_duration: Double; const frame_duration_source: Char): string;
 
-USES
-  Windows,
-  SysUtils,
-  StrUtils,
+implementation
+
+uses
+  // Delphi
+  Winapi.Windows, Winapi.DirectShow9, System.SysUtils, System.StrUtils,
+
+  // Jedi
   VfW,
-  DirectShow9,
-  Utils,
-  CAResources;
+
+  // CA
+  CAResources, Utils;
+
+function FrameRateToStr(const frame_duration: Double; const frame_duration_source: Char): string;
+begin
+  if frame_duration <= 0 then
+    Result := CAResources.RsMovieFrameRateNotAvailable
+  else
+    Result := Format(CAResources.RsMovieFrameRateAvailable, [1.0 / frame_duration]);
+
+  if frame_duration_source <> #0 then
+    Result := Format(CAResources.RsMovieFrameRateSource, [Result, string(frame_duration_source)]);
+end;
 
 { TMovieInfo }
 
-FUNCTION TMovieInfo.FormatFrameRate(CONST frame_duration: double; CONST frame_duration_source: char): STRING;
-BEGIN
-  IF frame_duration <= 0 THEN
-    Result := CAResources.RsMovieFrameRateNotAvailable
-  ELSE
-    Result := Format(CAResources.RsMovieFrameRateAvailable, [1.0 / frame_duration]);
-  IF frame_duration_source <> #0 THEN
-    Result := Format(CAResources.RsMovieFrameRateSource, [Result, STRING(frame_duration_source)]);
-END;
+function TMovieInfo.FormatFrameRate: string;
+begin
+  if MovieLoaded then
+    Result := FrameRateToStr(frame_duration, frame_duration_source)
+  else
+    Result := FrameRateToStr(-1, '-');
+end;
 
-FUNCTION TMovieInfo.FormatFrameRate: STRING;
-BEGIN
-  IF NOT MovieLoaded THEN
-    Result := FormatFrameRate(-1, '-')
-  ELSE
-    Result := FormatFrameRate(frame_duration, frame_duration_source);
-END;
-
-FUNCTION TMovieInfo.GetFrameCount: Int64;
-BEGIN
+function TMovieInfo.GetFrameCount: Int64;
+begin
   Result := Trunc(current_file_duration / frame_duration);
-END;
+end;
 
-FUNCTION TMovieInfo.InitMovie(FileName: STRING): boolean;
-VAR
-  FileData                         : ARRAY[0..63] OF byte;
-  s, file_ext                      : STRING;
-  f                                : FILE OF byte;
-BEGIN
-  result := false;
-  IF NOT fileexists(filename) THEN
-    exit;
+function TMovieInfo.InitMovie(FileName: string): Boolean;
+const
+  BytesToRead = 32;
+var
+  FileData: AnsiString;
+  s, file_ext: string;
+  f: file;
+begin
+  Result := False;
+  if FileExists(FileName) then
+  begin
+    // determine filesize
+    AssignFile(f, FileName);
+    FileMode := fmOpenRead;
+    Reset(f, 1);
+    try
+      SetLength(FileData, BytesToRead);
+      current_filename := FileName;
+      current_filesize := Filesize(f);
+      BlockRead(f, FileData[1], BytesToRead);
+    finally
+      CloseFile(f)
+    end;
 
-  //determine filesize
-  AssignFile(f, filename);
-  FileMode := fmOpenRead;
-  reset(f);
-  TRY
-    current_filename := filename;
-    current_filesize := filesize(f);
-    BlockRead(f, FileData, Length(FileData));
-  FINALLY
-    closefile(f)
-  END;
+    MovieType             := mtUnknown;
+    frame_duration        := 0;
+    frame_duration_source := '-';
+    FFourCC               := 0;
+    Result                := True;
 
-  MovieType := mtUnknown;
-  frame_duration := 0;
-  frame_duration_source := '-';
-  FFourCC := 0;
-  Result := true;
-
-  //detect Avi File
-  setstring(s, Pchar(@FileData[0]), 4);
-  IF s = 'RIFF' THEN BEGIN
-    SetString(s, Pchar(@FileData[8]), 4);
-    IF s = 'AVI ' THEN
+    // detect Avi file
+    if (Copy(FileData, 1, 4) = 'RIFF') and (Copy(FileData, 9, 4) = 'AVI ') then
       MovieType := mtAVI;
-  END;
 
-  //detect ISO FIle
-  SetString(s, Pchar(@FileData[4]), 4);
-  IF s = 'ftyp' THEN
-    MovieType := mtMP4;
-
-  //for OTR
-  IF MovieType = mtUnknown THEN BEGIN
-    IF AnsiEndsText('.hq.avi', FileName) THEN
-      MovieType := mtHQAVI;
-  END;
-
-  //Try to detect MovieType from file extension
-  IF MovieType = mtUnknown THEN BEGIN
-    file_ext := ExtractFileExt(FileName);
-    IF AnsiMatchText(file_ext, WMV_EXTENSIONS) THEN
-      MovieType := mtWMV
-    ELSE IF AnsiMatchText(file_ext, AVI_EXTENSIONS) THEN
-      MovieType := mtAVI
-    ELSE IF AnsiMatchText(file_ext, MP4_EXTENSIONS) THEN
+    // detect ISO file
+    if Copy(FileData, 5, 4) = 'ftyp' then
       MovieType := mtMP4;
-  END;
 
-  //Try to get Video FourCC from AVI
-  IF MovieType IN [mtAVI, mtHQAVI] THEN BEGIN
-    GetAviInformation;
-    s := fcc2String(FFourCC);
-    IF FFourCC = 0 THEN MovieType := mtUnknown
-    ELSE IF AnsiSameText(s, 'H264') THEN MovieType := mtHQAVI;
-  END;
-END;
+    // for OTR
+    if (MovieType = mtUnknown) and FileName.EndsWith('.hq.avi', True) then
+      MovieType := mtHQAVI;
 
-FUNCTION TMovieInfo.FormatPosition(Position: double): STRING;
-BEGIN
-  IF isEqualGUID(self.TimeFormat, TIME_FORMAT_MEDIA_TIME) THEN
-    result := secondsToTimeString(Position)
-  ELSE
-    result := format('%.0n', [Position]);
-END;
+    // try to detect MovieType from file extension
+    if MovieType = mtUnknown then
+    begin
+      file_ext := ExtractFileExt(FileName);
+      if AnsiMatchText(file_ext, WMV_EXTENSIONS) then
+        MovieType := mtWMV
+      else if AnsiMatchText(file_ext, AVI_EXTENSIONS) then
+        MovieType := mtAVI
+      else if AnsiMatchText(file_ext, MP4_EXTENSIONS) then
+        MovieType := mtMP4;
+    end;
 
-FUNCTION TMovieInfo.FormatPosition(Position: double; TimeFormat: TGUID): STRING;
-BEGIN
-  IF isEqualGUID(TimeFormat, TIME_FORMAT_MEDIA_TIME) THEN
-    result := secondsToTimeString(Position)
-  ELSE IF IsEqualGUID(TimeFormat, TIME_FORMAT_FRAME) THEN
-    result := format('%.0n', [Position])
-  ELSE
-    result := format('%n', [Position]);
-END;
+    // try to get Video FourCC from AVI
+    if MovieType in [mtAVI, mtHQAVI] then
+    begin
+      GetAviInformation;
+      s := fcc2String(FFourCC);
+      if FFourCC = 0 then
+        MovieType := mtUnknown
+      else
+        if SameText(s, 'H264') then
+          MovieType := mtHQAVI;
+    end;
+  end;
+end;
 
-FUNCTION TMovieInfo.GetStringFromMovieType(aMovieType: TMovieType): STRING;
-BEGIN
-  CASE aMovieType OF
-    mtUnknown: result := CAResources.RsMovieTypeUnknown;
-    mtWMV: result := CAResources.RsMovieTypeWmf;
-    mtAVI: result := CAResources.RsMovieTypeAvi;
-    mtMP4: result := CAResources.RsMovieTypeMp4;
-    mtHQAVI: result := CAResources.RsMovieTypeHqAvi;
-  ELSE result := CAResources.RsMovieTypeNone;
-  END;
-END;
+function TMovieInfo.FormatPosition(Position: Double): string;
+begin
+  if isEqualGUID(TimeFormat, TIME_FORMAT_MEDIA_TIME) then
+    Result := secondsToTimeString(Position)
+  else
+    Result := format('%.0n', [Position]);
+end;
 
-FUNCTION TMovieInfo.MovieTypeString: STRING;
-BEGIN
-  result := GetStringFromMovieType(FMovieType);
-END;
+function TMovieInfo.FormatPosition(Position: Double; TimeFormat: TGUID): string;
+begin
+  if isEqualGUID(TimeFormat, TIME_FORMAT_MEDIA_TIME) then
+    Result := secondsToTimeString(Position)
+  else if IsEqualGUID(TimeFormat, TIME_FORMAT_FRAME) then
+    Result := format('%.0n', [Position])
+  else
+    Result := format('%n', [Position]);
+end;
 
-PROCEDURE TMovieInfo.SetMovieType(CONST Value: TMovieType);
-BEGIN
+function TMovieInfo.GetStringFromMovieType(aMovieType: TMovieType): string;
+begin
+  case aMovieType of
+    mtUnknown : Result := CAResources.RsMovieTypeUnknown;
+    mtWMV     : Result := CAResources.RsMovieTypeWmf;
+    mtAVI     : Result := CAResources.RsMovieTypeAvi;
+    mtMP4     : Result := CAResources.RsMovieTypeMp4;
+    mtHQAVI   : Result := CAResources.RsMovieTypeHqAvi;
+    else        Result := CAResources.RsMovieTypeNone;
+  end;
+end;
+
+function TMovieInfo.MovieTypeString: string;
+begin
+  Result := GetStringFromMovieType(FMovieType);
+end;
+
+procedure TMovieInfo.SetMovieType(const Value: TMovieType);
+begin
   FMovieType := Value;
-END;
+end;
 
-PROCEDURE TMovieInfo.GetAviInformation;
-VAR
-  AVIStream                        : IAVIStream;
-  StreamInfo                       : TAVIStreamInfoW;
-  {  AInfo : TAVIFileInfo;
-    AVIFile : IAVIFile;
-    ErrorMsg : String;
-    MsgBox : String;
-    Height, Width: DWord;}
-  hr                               : HRESULT;
-BEGIN
-  // Init VfW API
-  AVIFileInit;
-  TRY
-    hr := AVIStreamOpenFromFile(AVIStream, PAnsiChar(current_filename), streamtypeVIDEO, 0, OF_READ, NIL);
-    IF NOT succeeded(hr) THEN exit;
-    AVIStream.Info(StreamInfo, sizeof(streamInfo));
-    FFourCC := StreamInfo.fccHandler;
-    IF StreamInfo.dwRate <> 0 THEN BEGIN
-      frame_duration_source := 'A';
-      frame_duration := StreamInfo.dwScale / StreamInfo.dwRate;
-      //frame_duration := 1000000.0 / StreamInfo.dwRate;
-    END ELSE BEGIN
-      frame_duration_source := 'a';
-      frame_duration := 0.04;
-    END;
-
-    {//AVIFileOpen
-    Result := AVIFileOpen(AVIFile,PChar(Filename), OF_READ, nil);
-    ErrorMsg := 'Bad AVI Format !';
-    If (Result = AVIERR_BADFORMAT) Then ErrorMsg := 'Bad AVI Format !';
-    If (Result = AVIERR_MEMORY) Then ErrorMsg := 'Insufficent Memory !';
-    If (Result = AVIERR_FILEREAD) Then ErrorMsg := 'Error while reading from AVI file !';
-    If (Result = AVIERR_FILEOPEN) Then ErrorMsg := 'Error while opening AVI file !';
-    If (Result = REGDB_E_CLASSNOTREG) Then ErrorMsg := 'No process handle !';
-
-    If (ErrorMsg <> '') Then Begin
-      MessageBox(Application.Handle,PChar(ErrorMsg),PChar(MsgBox),MB_OK);
-    End;
-
-    // If AVIFile handle available then read AVI File Infos
-    If (AVIFile <> NIL) Then begin;
-
-
-      //AVIFileInfo
-      Result := AVIFileInfo(AVIFile,AInfo,SizeOf(TAVIFILEINFO));
-      Height := AInfo.dwHeight;
-      Width := AInfo.dwWidth;
-      //AVIFileRelease
-      AVIFileRelease(AVIFile);
-    end;  }
-  FINALLY
+procedure TMovieInfo.GetAviInformation;
+var
+  AVIStream: IAVIStream;
+  StreamInfo: TAVIStreamInfoW;
+begin
+  AVIFileInit; // Init VfW API
+  try
+    if Succeeded(AVIStreamOpenFromFile(AVIStream, PChar(current_filename), streamtypeVIDEO, 0, OF_READ, nil)) then
+    begin
+      AVIStream.Info(StreamInfo, SizeOf(streamInfo));
+      FFourCC := StreamInfo.fccHandler;
+      if StreamInfo.dwRate <> 0 then
+      begin
+        frame_duration_source := 'A';
+        frame_duration := StreamInfo.dwScale / StreamInfo.dwRate;
+      end else
+      begin
+        frame_duration_source := 'a';
+        frame_duration := 0.04;
+      end;
+    end;
+  finally
     AVIFileExit;
-  END;
-END;
+  end;
+end;
 
-END.
+end.
+
