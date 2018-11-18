@@ -1,293 +1,285 @@
-UNIT UDSAStorage;
+unit UDSAStorage;
 
-INTERFACE
+{$I Information.inc}
 
-USES Classes,
-  Controls,
-  Dialogs,
-  Graphics;
+// basic review and reformatting: done
+
+interface
+
+uses
+  // Delphi
+  System.Classes, System.UITypes, Vcl.Dialogs, Vcl.Graphics;
 
 //--------------------------------------------------------------------------------------------------
 // Custom "Don't Show Again" (DSA) dialog registration
 //--------------------------------------------------------------------------------------------------
 
-FUNCTION RegisterDSAMessage(CONST Name: STRING; CONST Description: STRING): Integer; overload;
-FUNCTION RegisterDSAQuestion(CONST Name: STRING; CONST Description: STRING): Integer; overload;
-FUNCTION RegisterDSAWarning(CONST Name: STRING; CONST Description: STRING): Integer; overload;
+function RegisterDSAMessage(const Name: string; const Description: string): Integer; overload;
+function RegisterDSAQuestion(const Name: string; const Description: string): Integer; overload;
+function RegisterDSAWarning(const Name: string; const Description: string): Integer; overload;
 
-FUNCTION RegisterDSAMessage(CONST DlgID: integer; CONST Name: STRING; CONST Description: STRING): Integer; overload;
-FUNCTION RegisterDSAQuestion(CONST DlgID: integer; CONST Name: STRING; CONST Description: STRING): Integer; overload;
-FUNCTION RegisterDSAWarning(CONST DlgID: integer; CONST Name: STRING; CONST Description: STRING): Integer; overload;
+function RegisterDSAMessage(const DlgID: Integer; const Name: string; const Description: string): Integer; overload;
+function RegisterDSAQuestion(const DlgID: Integer; const Name: string; const Description: string): Integer; overload;
+function RegisterDSAWarning(const DlgID: Integer; const Name: string; const Description: string): Integer; overload;
 
 // Additional values for DefaultButton, CancelButton and HelpButton parameters
 
-CONST
-  mbNone                           = TMsgDlgBtn(-1);
-  mbDefault                        = TMsgDlgBtn(-2);
+const
+  mbNone    = TMsgDlgBtn(-1);
+  mbDefault = TMsgDlgBtn(-2);
 
   //--------------------------------------------------------------------------------------------------
   // "Don't Show Again" (DSA) dialogs
   //--------------------------------------------------------------------------------------------------
 
-PROCEDURE DSAShowMessage(CONST DlgID: Integer; CONST Msg: STRING;
-  CONST Timeout: Integer = 0);
+procedure DSAShowMessage(const DlgID: Integer; const Msg: string; const Timeout: Integer = 0);
 
-PROCEDURE DSAShowMessageFmt(CONST DlgID: Integer; CONST Msg: STRING; CONST Params: ARRAY OF CONST;
-  CONST Timeout: Integer = 0);
+procedure DSAShowMessageFmt(const DlgID: Integer; const Msg: string; const Params: array of const; const Timeout: Integer = 0);
 
-FUNCTION DSAMessageDlg(CONST DlgID: Integer; CONST Msg: STRING; CONST DlgType: TMsgDlgType;
-  CONST Buttons: TMsgDlgButtons; CONST HelpCtx: Longint;
-  CONST Timeout: Integer = 0; CONST DefaultButton: TMsgDlgBtn = mbDefault;
-  CONST CancelButton: TMsgDlgBtn = mbDefault; CONST HelpButton: TMsgDlgBtn = mbHelp): TModalResult; overload;
-FUNCTION DSAMessageDlg(CONST DlgID: Integer; CONST Caption, Msg: STRING; CONST DlgType: TMsgDlgType;
-  CONST Buttons: TMsgDlgButtons; CONST HelpCtx: Longint;
-  CONST Timeout: Integer = 0; CONST DefaultButton: TMsgDlgBtn = mbDefault;
-  CONST CancelButton: TMsgDlgBtn = mbDefault; CONST HelpButton: TMsgDlgBtn = mbHelp): TModalResult; overload;
-FUNCTION DSAMessageDlg(CONST DlgID: Integer; CONST Caption, Msg: STRING; CONST Picture: TGraphic;
-  CONST Buttons: TMsgDlgButtons; CONST HelpCtx: Longint;
-  CONST Timeout: Integer = 0; CONST DefaultButton: TMsgDlgBtn = mbDefault;
-  CONST CancelButton: TMsgDlgBtn = mbDefault; CONST HelpButton: TMsgDlgBtn = mbHelp): TModalResult; overload;
+function DSAMessageDlg(const DlgID: Integer; const Msg: string; const DlgType: TMsgDlgType;
+  const Buttons: TMsgDlgButtons; const HelpCtx: Longint;
+  const Timeout: Integer = 0; const DefaultButton: TMsgDlgBtn = mbDefault;
+  const CancelButton: TMsgDlgBtn = mbDefault; const HelpButton: TMsgDlgBtn = mbHelp): TModalResult; overload;
+function DSAMessageDlg(const DlgID: Integer; const Caption, Msg: string; const DlgType: TMsgDlgType;
+  const Buttons: TMsgDlgButtons; const HelpCtx: Longint;
+  const Timeout: Integer = 0; const DefaultButton: TMsgDlgBtn = mbDefault;
+  const CancelButton: TMsgDlgBtn = mbDefault; const HelpButton: TMsgDlgBtn = mbHelp): TModalResult; overload;
+function DSAMessageDlg(const DlgID: Integer; const Caption, Msg: string; const Picture: TGraphic;
+  const Buttons: TMsgDlgButtons; const HelpCtx: Longint;
+  const Timeout: Integer = 0; const DefaultButton: TMsgDlgBtn = mbDefault;
+  const CancelButton: TMsgDlgBtn = mbDefault; const HelpButton: TMsgDlgBtn = mbHelp): TModalResult; overload;
 
-FUNCTION DSAMessageDlgEx(CONST DlgID: Integer; CONST Msg: STRING; CONST DlgType: TMsgDlgType;
-  CONST Buttons: ARRAY OF STRING; CONST Results: ARRAY OF Integer; CONST HelpCtx: Longint;
-  CONST Timeout: Integer = 0;
-  CONST DefaultButton: Integer = 0; CONST CancelButton: Integer = 1; CONST HelpButton: Integer = -1): Integer; overload;
-FUNCTION DSAMessageDlgEx(CONST DlgID: Integer; CONST Caption, Msg: STRING; CONST DlgType: TMsgDlgType;
-  CONST Buttons: ARRAY OF STRING; CONST Results: ARRAY OF Integer; CONST HelpCtx: Longint;
-  CONST Timeout: Integer = 0; CONST DefaultButton: Integer = 0;
-  CONST CancelButton: Integer = 1; CONST HelpButton: Integer = -1): TModalResult; overload;
-FUNCTION DSAMessageDlgEx(CONST DlgID: Integer; CONST Caption, Msg: STRING; CONST Picture: TGraphic;
-  CONST Buttons: ARRAY OF STRING; CONST Results: ARRAY OF Integer; CONST HelpCtx: Longint;
-  CONST Timeout: Integer = 0; CONST DefaultButton: Integer = 0;
-  CONST CancelButton: Integer = 1; CONST HelpButton: Integer = -1): Integer; overload;
+function DSAMessageDlgEx(const DlgID: Integer; const Msg: string; const DlgType: TMsgDlgType;
+  const Buttons: array of string; const Results: array of Integer; const HelpCtx: Longint;
+  const Timeout: Integer = 0;
+  const DefaultButton: Integer = 0; const CancelButton: Integer = 1; const HelpButton: Integer = -1): Integer; overload;
+function DSAMessageDlgEx(const DlgID: Integer; const Caption, Msg: string; const DlgType: TMsgDlgType;
+  const Buttons: array of string; const Results: array of Integer; const HelpCtx: Longint;
+  const Timeout: Integer = 0; const DefaultButton: Integer = 0;
+  const CancelButton: Integer = 1; const HelpButton: Integer = -1): TModalResult; overload;
+function DSAMessageDlgEx(const DlgID: Integer; const Caption, Msg: string; const Picture: TGraphic;
+  const Buttons: array of string; const Results: array of Integer; const HelpCtx: Longint;
+  const Timeout: Integer = 0; const DefaultButton: Integer = 0;
+  const CancelButton: Integer = 1; const HelpButton: Integer = -1): Integer; overload;
 
 //----------------------------------------------------------------------------
 // DSA state setting/retrieving
 //----------------------------------------------------------------------------
 
-FUNCTION GetDSAState(CONST DlgID: Integer): Boolean; overload;
-FUNCTION GetDSAState(CONST DlgID: Integer; OUT LastResult: Integer): Boolean; overload;
-PROCEDURE SetDSAState(CONST DlgID: Integer; CONST DontShowAgain: Boolean;
-  CONST LastResult: Integer = mrNone);
+function GetDSAState(const DlgID: Integer): Boolean; overload;
+function GetDSAState(const DlgID: Integer; OUT LastResult: Integer): Boolean; overload;
+procedure SetDSAState(const DlgID: Integer; const DontShowAgain: Boolean;
+  const LastResult: Integer = mrNone);
 
 //----------------------------------------------------------------------------
 // DSA state loading/saving
 //----------------------------------------------------------------------------
-PROCEDURE LoadDSAStates(CONST DSAData: TStrings);
-PROCEDURE SaveDSAStates(CONST DSAData: TStrings);
+procedure LoadDSAStates(const DSAData: TStrings);
+procedure SaveDSAStates(const DSAData: TStrings);
 
-IMPLEMENTATION
+implementation
 
-USES JvDSADialogs,
+uses JvDSADialogs,
   SysUtils,
   StrUtils;
 
-VAR
+var
   DSAStorage                       : TDSAStorage;
-  DlgID                            : integer;
+  DlgID                            : Integer;
 
-FUNCTION RegisterDSADialog(
-  CONST DlgID: integer;
-  CONST Name: STRING;
-  CONST Description: STRING;
-  CONST CheckTextKind: TDSACheckTextKind): Integer; OVERLOAD;
-BEGIN
+function RegisterDSADialog(
+  const DlgID: Integer;
+  const Name: string;
+  const Description: string;
+  const CheckTextKind: TDSACheckTextKind): Integer; overload;
+begin
   JvDSADialogs.RegisterDSA(DlgID, Name, Description, DSAStorage, CheckTextKind);
-  IF DlgID > UDSAStorage.DlgID THEN
+  if DlgID > UDSAStorage.DlgID then
     UDSAStorage.DlgID := DlgID;
   Result := DlgID;
-END;
+end;
 
-FUNCTION RegisterDSADialog(
-  CONST Name: STRING;
-  CONST Description: STRING;
-  CONST CheckTextKind: TDSACheckTextKind): Integer; OVERLOAD;
-BEGIN
+function RegisterDSADialog(
+  const Name: string;
+  const Description: string;
+  const CheckTextKind: TDSACheckTextKind): Integer; overload;
+begin
   JvDSADialogs.RegisterDSA(DlgID + 1, Name, Description, DSAStorage, CheckTextKind);
   DlgID := DlgID + 1;
   Result := DlgID;
-END;
+end;
 
-FUNCTION RegisterDSAMessage(CONST Name: STRING; CONST Description: STRING): Integer;
-BEGIN
+function RegisterDSAMessage(const Name: string; const Description: string): Integer;
+begin
   Result := RegisterDSADialog(Name, Description, ctkShow);
-END;
+end;
 
-FUNCTION RegisterDSAQuestion(CONST Name: STRING; CONST Description: STRING): Integer;
-BEGIN
+function RegisterDSAQuestion(const Name: string; const Description: string): Integer;
+begin
   Result := RegisterDSADialog(Name, Description, ctkAsk);
-END;
+end;
 
-FUNCTION RegisterDSAWarning(CONST Name: STRING; CONST Description: STRING): Integer;
-BEGIN
+function RegisterDSAWarning(const Name: string; const Description: string): Integer;
+begin
   Result := RegisterDSADialog(Name, Description, ctkWarn);
-END;
+end;
 
 
-FUNCTION RegisterDSAMessage(CONST DlgID: integer; CONST Name: STRING; CONST Description: STRING): Integer;
-BEGIN
+function RegisterDSAMessage(const DlgID: Integer; const Name: string; const Description: string): Integer;
+begin
   Result := RegisterDSADialog(DlgID, Name, Description, ctkShow);
-END;
+end;
 
-FUNCTION RegisterDSAQuestion(CONST DlgID: integer; CONST Name: STRING; CONST Description: STRING): Integer;
-BEGIN
+function RegisterDSAQuestion(const DlgID: Integer; const Name: string; const Description: string): Integer;
+begin
   Result := RegisterDSADialog(DlgID, Name, Description, ctkAsk);
-END;
+end;
 
-FUNCTION RegisterDSAWarning(CONST DlgID: integer; CONST Name: STRING; CONST Description: STRING): Integer;
-BEGIN
+function RegisterDSAWarning(const DlgID: Integer; const Name: string; const Description: string): Integer;
+begin
   Result := RegisterDSADialog(DlgID, Name, Description, ctkWarn);
-END;
+end;
 
-PROCEDURE DSAShowMessage(CONST DlgID: Integer; CONST Msg: STRING;
-  CONST Timeout: Integer = 0);
-BEGIN
+procedure DSAShowMessage(const DlgID: Integer; const Msg: string;
+  const Timeout: Integer = 0);
+begin
   JvDSADialogs.DSAShowMessage(DlgID, Msg, dckActiveForm, Timeout);
-END;
+end;
 
-PROCEDURE DSAShowMessageFmt(CONST DlgID: Integer; CONST Msg: STRING; CONST Params: ARRAY OF CONST;
-  CONST Timeout: Integer = 0);
-BEGIN
+procedure DSAShowMessageFmt(const DlgID: Integer; const Msg: string; const Params: array of const;
+  const Timeout: Integer = 0);
+begin
   JvDSADialogs.DSAShowMessageFmt(DlgID, Msg, Params, dckActiveForm, Timeout);
-END;
+end;
 
-FUNCTION DSAMessageDlg(CONST DlgID: Integer; CONST Msg: STRING; CONST DlgType: TMsgDlgType;
-  CONST Buttons: TMsgDlgButtons; CONST HelpCtx: Longint;
-  CONST Timeout: Integer = 0; CONST DefaultButton: TMsgDlgBtn = mbDefault;
-  CONST CancelButton: TMsgDlgBtn = mbDefault; CONST HelpButton: TMsgDlgBtn = mbHelp): TModalResult;
-BEGIN
+function DSAMessageDlg(const DlgID: Integer; const Msg: string; const DlgType: TMsgDlgType;
+  const Buttons: TMsgDlgButtons; const HelpCtx: Longint;
+  const Timeout: Integer = 0; const DefaultButton: TMsgDlgBtn = mbDefault;
+  const CancelButton: TMsgDlgBtn = mbDefault; const HelpButton: TMsgDlgBtn = mbHelp): TModalResult;
+begin
   Result := JvDSADialogs.DSAMessageDlg(DlgID, Msg, DlgType, Buttons, HelpCtx, dckActiveForm, Timeout, DefaultButton, CancelButton, HelpButton);
-END;
+end;
 
-FUNCTION DSAMessageDlg(CONST DlgID: Integer; CONST Caption, Msg: STRING; CONST DlgType: TMsgDlgType;
-  CONST Buttons: TMsgDlgButtons; CONST HelpCtx: Longint;
-  CONST Timeout: Integer = 0; CONST DefaultButton: TMsgDlgBtn = mbDefault;
-  CONST CancelButton: TMsgDlgBtn = mbDefault; CONST HelpButton: TMsgDlgBtn = mbHelp): TModalResult;
-BEGIN
+function DSAMessageDlg(const DlgID: Integer; const Caption, Msg: string; const DlgType: TMsgDlgType;
+  const Buttons: TMsgDlgButtons; const HelpCtx: Longint;
+  const Timeout: Integer = 0; const DefaultButton: TMsgDlgBtn = mbDefault;
+  const CancelButton: TMsgDlgBtn = mbDefault; const HelpButton: TMsgDlgBtn = mbHelp): TModalResult;
+begin
   Result := JvDSADialogs.DSAMessageDlg(DlgID, Msg, DlgType, Buttons, HelpCtx, dckActiveForm, Timeout, DefaultButton, CancelButton, HelpButton);
-END;
+end;
 
-FUNCTION DSAMessageDlg(CONST DlgID: Integer; CONST Caption, Msg: STRING; CONST Picture: TGraphic;
-  CONST Buttons: TMsgDlgButtons; CONST HelpCtx: Longint;
-  CONST Timeout: Integer = 0; CONST DefaultButton: TMsgDlgBtn = mbDefault;
-  CONST CancelButton: TMsgDlgBtn = mbDefault; CONST HelpButton: TMsgDlgBtn = mbHelp): TModalResult;
-BEGIN
+function DSAMessageDlg(const DlgID: Integer; const Caption, Msg: string; const Picture: TGraphic;
+  const Buttons: TMsgDlgButtons; const HelpCtx: Longint;
+  const Timeout: Integer = 0; const DefaultButton: TMsgDlgBtn = mbDefault;
+  const CancelButton: TMsgDlgBtn = mbDefault; const HelpButton: TMsgDlgBtn = mbHelp): TModalResult;
+begin
   Result := JvDSADialogs.DSAMessageDlg(DlgID, Caption, Msg, Picture, Buttons, HelpCtx, dckActiveForm, Timeout, DefaultButton, CancelButton, HelpButton);
-END;
+end;
 
-FUNCTION DSAMessageDlgEx(CONST DlgID: Integer; CONST Msg: STRING; CONST DlgType: TMsgDlgType;
-  CONST Buttons: ARRAY OF STRING; CONST Results: ARRAY OF Integer; CONST HelpCtx: Longint;
-  CONST Timeout: Integer = 0;
-  CONST DefaultButton: Integer = 0; CONST CancelButton: Integer = 1; CONST HelpButton: Integer = -1): Integer; OVERLOAD;
-BEGIN
+function DSAMessageDlgEx(const DlgID: Integer; const Msg: string; const DlgType: TMsgDlgType;
+  const Buttons: array of string; const Results: array of Integer; const HelpCtx: Longint;
+  const Timeout: Integer = 0;
+  const DefaultButton: Integer = 0; const CancelButton: Integer = 1; const HelpButton: Integer = -1): Integer; overload;
+begin
   Result := JvDSADialogs.DSAMessageDlgEx(DlgID, Msg, DlgType, Buttons, Results, HelpCtx, dckActiveForm, Timeout, DefaultButton, CancelButton, HelpButton);
-END;
+end;
 
-FUNCTION DSAMessageDlgEx(CONST DlgID: Integer; CONST Caption, Msg: STRING; CONST DlgType: TMsgDlgType;
-  CONST Buttons: ARRAY OF STRING; CONST Results: ARRAY OF Integer; CONST HelpCtx: Longint;
-  CONST Timeout: Integer = 0; CONST DefaultButton: Integer = 0;
-  CONST CancelButton: Integer = 1; CONST HelpButton: Integer = -1): TModalResult; OVERLOAD;
-BEGIN
+function DSAMessageDlgEx(const DlgID: Integer; const Caption, Msg: string; const DlgType: TMsgDlgType;
+  const Buttons: array of string; const Results: array of Integer; const HelpCtx: Longint;
+  const Timeout: Integer = 0; const DefaultButton: Integer = 0;
+  const CancelButton: Integer = 1; const HelpButton: Integer = -1): TModalResult; overload;
+begin
   Result := JvDSADialogs.DSAMessageDlgEx(DlgID, Caption, Msg, DlgType, Buttons, Results, HelpCtx, dckActiveForm, Timeout, DefaultButton, CancelButton, HelpButton);
-END;
+end;
 
-FUNCTION DSAMessageDlgEx(CONST DlgID: Integer; CONST Caption, Msg: STRING; CONST Picture: TGraphic;
-  CONST Buttons: ARRAY OF STRING; CONST Results: ARRAY OF Integer; CONST HelpCtx: Longint;
-  CONST Timeout: Integer = 0; CONST DefaultButton: Integer = 0;
-  CONST CancelButton: Integer = 1; CONST HelpButton: Integer = -1): Integer; OVERLOAD;
-BEGIN
+function DSAMessageDlgEx(const DlgID: Integer; const Caption, Msg: string; const Picture: TGraphic;
+  const Buttons: array of string; const Results: array of Integer; const HelpCtx: Longint;
+  const Timeout: Integer = 0; const DefaultButton: Integer = 0;
+  const CancelButton: Integer = 1; const HelpButton: Integer = -1): Integer; overload;
+begin
   Result := JvDSADialogs.DSAMessageDlgEx(DlgID, Caption, Msg, Picture, Buttons, Results, HelpCtx, dckActiveForm, Timeout, DefaultButton, CancelButton, HelpButton);
-END;
+end;
 
 //----------------------------------------------------------------------------
 // DSA state setting/retrieving
 //----------------------------------------------------------------------------
 
-FUNCTION GetDSAState(CONST DlgID: Integer): Boolean;
-BEGIN
+function GetDSAState(const DlgID: Integer): Boolean;
+begin
   Result := JvDSADialogs.GetDSAState(DlgID);
-END;
+end;
 
-FUNCTION GetDSAState(CONST DlgID: Integer; OUT LastResult: Integer): Boolean;
-BEGIN
+function GetDSAState(const DlgID: Integer; OUT LastResult: Integer): Boolean;
+begin
   Result := JvDSADialogs.GetDSAState(DlgID, LastResult);
-END;
+end;
 
-PROCEDURE SetDSAState(CONST DlgID: Integer; CONST DontShowAgain: Boolean;
-  CONST LastResult: Integer = mrNone);
-BEGIN
+procedure SetDSAState(const DlgID: Integer; const DontShowAgain: Boolean; const LastResult: Integer = mrNone);
+begin
   JvDSADialogs.SetDSAState(DlgID, DontShowAgain, LastResult);
-END;
+end;
 
 //----------------------------------------------------------------------------
 // DSA state loading/saving
 //----------------------------------------------------------------------------
 
-PROCEDURE LoadDSAStates(CONST DSAData: TStrings);
-VAR
-  idx                              : integer;
-  item                             : STRING;
-  dlgID                            : integer;
-  DontShowAgain                    : integer;
-  LastResult                       : integer;
-  Check                            : integer;
-  FUNCTION NextWord(VAR s: STRING): integer;
-  VAR
-    delimPos                       : integer;
-  BEGIN
+procedure LoadDSAStates(const DSAData: TStrings);
+  function NextWord(var s: string): Integer;
+  var
+    delimPos: Integer;
+  begin
     delimPos := Pos(';', s);
-    IF delimPos > 0 THEN BEGIN
+    if delimPos > 0 then
+    begin
       Result := StrToIntDef(Copy(s, 1, delimPos - 1), -1);
       Delete(s, 1, delimPos);
-    END
-    ELSE BEGIN
+    end else
       Result := -1;
-    END;
-  END;
-BEGIN
-  IF NOT Assigned(DSAData) THEN
-    Exit;
-  FOR idx := 0 TO DSAData.Count - 1 DO BEGIN
-    item := DSAData.Strings[idx];
-    dlgID := NextWord(item);
-    LastResult := NextWord(item);
-    DontShowAgain := NextWord(item);
-    Check := NextWord(item);
+  end;
+var
+  item: string;
+  idx, dlgID, DontShowAgain, LastResult, Check: Integer;
+begin
+  if Assigned(DSAData) then
+  begin
+    for idx := 0 to Pred(DSAData.Count) do
+    begin
+      item := DSAData.Strings[idx];
+      dlgID := NextWord(item);
+      LastResult := NextWord(item);
+      DontShowAgain := NextWord(item);
+      Check := NextWord(item);
 
-    IF (Check > 0) AND (Check = dlgID + LastResult + DontShowAgain) THEN BEGIN
-      IF (dlgId <> -1) AND (LastResult <> -1) AND (DontShowAgain <> -1) THEN
-        JvDSADialogs.SetDSAState(dlgId, DontShowAgain = 0, LastResult);
-    END;
-  END;
-END;
+      if (Check > 0) and (Check = dlgID + LastResult + DontShowAgain) then
+        if (dlgId <> -1) and (LastResult <> -1) and (DontShowAgain <> -1) then
+          JvDSADialogs.SetDSAState(dlgId, DontShowAgain = 0, LastResult);
+    end;
+  end;
+end;
 
-PROCEDURE SaveDSAStates(CONST DSAData: TStrings);
-VAR
-  idx                              : integer;
-  item                             : TDSARegItem;
-  LastResult                       : integer;
-  DontShowAgain                    : integer;
-BEGIN
-  IF NOT Assigned(DSAData) THEN
-    Exit;
-  FOR idx := 0 TO JvDSADialogs.DSACount - 1 DO BEGIN
-    item := JvDSADialogs.DSAItem(idx);
-    IF DSAStorage.GetState(item, LastResult) THEN
-      DontShowAgain := 0
-    ELSE
-      DontShowAgain := 1;
-    DSAData.Append(Format('%d;%d;%d;%d', [item.ID, LastResult, DontShowAgain, item.ID + LastResult + DontShowAgain]));
-  END;
-END;
+procedure SaveDSAStates(const DSAData: TStrings);
+var
+  item: TDSARegItem;
+  idx, LastResult, DontShowAgain: Integer;
+begin
+  if Assigned(DSAData) then
+  begin
+    for idx := 0 to Pred(JvDSADialogs.DSACount) do
+    begin
+      item := JvDSADialogs.DSAItem(idx);
+      if DSAStorage.GetState(item, LastResult) then
+        DontShowAgain := 0
+      else
+        DontShowAgain := 1;
+      DSAData.Append(Format('%d;%d;%d;%d', [item.ID, LastResult, DontShowAgain, item.ID + LastResult + DontShowAgain]));
+    end;
+  end;
+end;
 
-INITIALIZATION
-  BEGIN
-    DlgID := -1;
-    DSAStorage := TDSAQueueStorage.Create;
-  END;
+initialization
+  DlgID := -1;
+  DSAStorage := TDSAQueueStorage.Create;
+finalization
+  FreeAndNil(DSAStorage);
+end.
 
-FINALIZATION
-  BEGIN
-    FreeAndNil(DSAStorage);
-  END;
-END.
