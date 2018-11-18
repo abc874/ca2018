@@ -2,7 +2,6 @@ object FResultingTimes: TFResultingTimes
   Left = 373
   Top = 377
   ActiveControl = cmdClose
-  AutoScroll = False
   Caption = 'Check cuts after cutting'
   ClientHeight = 396
   ClientWidth = 592
