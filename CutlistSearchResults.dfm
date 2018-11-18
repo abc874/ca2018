@@ -2,7 +2,6 @@ object FCutlistSearchResults: TFCutlistSearchResults
   Left = 175
   Top = 316
   ActiveControl = lvLinklist
-  AutoScroll = False
   Caption = 'Cutlist Search Results'
   ClientHeight = 288
   ClientWidth = 933
@@ -15,6 +14,8 @@ object FCutlistSearchResults: TFCutlistSearchResults
   Font.Style = []
   OldCreateOrder = False
   Position = poMainFormCenter
+  OnClose = FormClose
+  OnCreate = FormCreate
   PixelsPerInch = 96
   TextHeight = 13
   object pnlButtons: TPanel
@@ -81,6 +82,9 @@ object FCutlistSearchResults: TFCutlistSearchResults
         Width = 325
       end
       item
+        Caption = 'Format'
+      end
+      item
         Caption = 'User Rating'
         Width = 81
       end
@@ -95,6 +99,9 @@ object FCutlistSearchResults: TFCutlistSearchResults
       item
         Caption = 'Author Name'
         Width = 81
+      end
+      item
+        Caption = 'Title'
       end
       item
         Caption = 'Comment'
@@ -115,12 +122,14 @@ object FCutlistSearchResults: TFCutlistSearchResults
         Caption = 'Path'
       end>
     GridLines = True
-    HideSelection = False
     ReadOnly = True
     RowSelect = True
     SortType = stText
     TabOrder = 0
     ViewStyle = vsReport
     OnClick = lvLinklistClick
+    OnColumnClick = lvLinklistColumnClick
+    OnCompare = lvLinklistCompare
+    OnCustomDrawSubItem = lvLinklistCustomDrawSubItem
   end
 end
