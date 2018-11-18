@@ -1,9 +1,9 @@
 object FUploadList: TFUploadList
   Left = 334
   Top = 396
-  Width = 813
-  Height = 322
   Caption = 'Uploaded Cutlists'
+  ClientHeight = 288
+  ClientWidth = 797
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -18,16 +18,16 @@ object FUploadList: TFUploadList
   object pnlButtons: TPanel
     Left = 0
     Top = 254
-    Width = 805
+    Width = 797
     Height = 34
     Align = alBottom
     BevelOuter = bvNone
     TabOrder = 1
     DesignSize = (
-      805
+      797
       34)
     object cmdCancel: TButton
-      Left = 705
+      Left = 697
       Top = 6
       Width = 95
       Height = 25
@@ -38,7 +38,7 @@ object FUploadList: TFUploadList
       TabOrder = 0
     end
     object cmdDelete: TButton
-      Left = 604
+      Left = 596
       Top = 6
       Width = 95
       Height = 25
@@ -51,7 +51,7 @@ object FUploadList: TFUploadList
   object lvLinklist: TListView
     Left = 0
     Top = 0
-    Width = 805
+    Width = 797
     Height = 254
     Align = alClient
     Columns = <

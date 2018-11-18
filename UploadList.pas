@@ -1,40 +1,35 @@
-UNIT UploadList;
+unit UploadList;
 
-INTERFACE
+{$I Information.inc}
 
-USES
-  Windows,
-  Messages,
-  SysUtils,
-  Variants,
-  Classes,
-  Graphics,
-  Controls,
-  Forms,
-  Dialogs,
-  StdCtrls,
-  ComCtrls,
-  ExtCtrls;
+// basic review and reformatting: done
 
-TYPE
-  TFUploadList = CLASS(TForm)
+interface
+
+uses
+  // Delphi
+  System.Classes, Vcl.Forms, Vcl.Controls, Vcl.ComCtrls, Vcl.StdCtrls, Vcl.ExtCtrls;
+
+type
+  TFUploadList = class(TForm)
     pnlButtons: TPanel;
     lvLinklist: TListView;
     cmdCancel: TButton;
     cmdDelete: TButton;
-  PRIVATE
-    { Private declarations }
-  PUBLIC
-    { Public declarations }
-  END;
+  private
+    { private declarations }
+  public
+    { public declarations }
+  end;
 
-VAR
-  FUploadLIst                      : TFUploadLIst;
+var
+  FUploadLIst: TFUploadLIst;
 
-IMPLEMENTATION
+implementation
 
 {$R *.dfm}
 
-{ TFCutlistSearchResults }
+{ TFUploadList }
 
-END.
+end.
+
