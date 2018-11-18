@@ -1,24 +1,26 @@
-UNIT Utils;
+unit Utils;
 
-INTERFACE
+{$I Information.inc}
 
-USES
-  Classes,
-  Forms,
-  StdCtrls,
-  Windows,
-  Graphics,
-  SysUtils,
-  IniFiles,
-  MMSystem,
-  DSUtil,
-  madExcept,
+// basic review and reformatting: done
+
+interface
+
+uses
+  // Delphi
+  Winapi.Windows, Winapi.MMSystem, System.Classes, System.SysUtils, System.IniFiles, Vcl.Forms, Vcl.StdCtrls,
+  Vcl.Graphics, Vcl.Dialogs, Vcl.Controls,
+
+  // DSPack
+  DXSUtils,
+
+  // Indy
   IdMultipartFormData;
 
-CONST
+const
   Application_name                 = 'Cut_assistant.exe'; //for use in cutlist files etc.
 
-CONST // Multimedia key codes
+const // Multimedia key codes
   VK_BROWSER_BACK                  = $A6;
 {$EXTERNALSYM VK_BROWSER_BACK}
   VK_BROWSER_FORWARD               = $A7;
@@ -57,446 +59,462 @@ CONST // Multimedia key codes
   VK_LAUNCH_APP2                   = $B7;
 {$EXTERNALSYM VK_LAUNCH_APP2}
 
+// global Vars
+var
+  batchmode: Boolean;
 
-  //global Vars
-VAR
-  batchmode                        : boolean;
+type
+  ARFileVersion = array[0 .. 3] of Word;
 
-TYPE
-  ARFileVersion = ARRAY[0..3] OF WORD;
-
-  RCutAppSettings = RECORD
-    CutAppName: STRING;
+  RCutAppSettings = record
+    CutAppName: string;
     PreferredSourceFilter: TGUID;
-    CodecName: STRING;
+    CodecName: string;
     CodecFourCC: FOURCC;
     CodecVersion: DWORD;
-    CodecSettingsSize: integer;
-    CodecSettings: STRING;
-  END;
+    CodecSettingsSize: Integer;
+    CodecSettings: string;
+  end;
 
-  THttpRequest = CLASS(TObject)
-  PRIVATE
-    FUrl: STRING;
-    FHandleRedirects: boolean;
-    FResponse: STRING;
-    FErrorMessage: STRING;
+  THttpRequest = class(TObject)
+  private
+    FUrl: string;
+    FHandleRedirects: Boolean;
+    FResponse: string;
+    FErrorMessage: string;
     FPostData: TIdMultiPartFormDataStream;
-    FIsPost: boolean;
-  PUBLIC
-    CONSTRUCTOR Create(CONST Url: STRING; CONST handleRedirects: boolean; CONST Error_message: STRING); OVERLOAD;
-    DESTRUCTOR Destroy; OVERRIDE;
-  PROTECTED
-    PROCEDURE SetIsPost(CONST value: boolean);
-  PUBLISHED
-    PROPERTY IsPostRequest: boolean READ FIsPost WRITE SetIsPost;
-    PROPERTY Url: STRING READ FUrl WRITE FUrl;
-    PROPERTY HandleRedirects: boolean READ FHandleRedirects WRITE FHandleRedirects;
-    PROPERTY Response: STRING READ FResponse WRITE FResponse;
-    PROPERTY ErrorMessage: STRING READ FErrorMessage WRITE FErrorMessage;
-    PROPERTY PostData: TIdMultiPartFormDataStream READ FPostData;
-  END;
+    FIsPost: Boolean;
+  protected
+    procedure SetIsPost(const Value: Boolean);
+  public
+    constructor Create(const Url: string; const handleRedirects: Boolean; const Error_message: string); overload;
+    destructor Destroy; override;
+    property IsPostRequest: Boolean read FIsPost write SetIsPost;
+    property Url: string read FUrl write FUrl;
+    property HandleRedirects: Boolean read FHandleRedirects write FHandleRedirects;
+    property Response: string read FResponse write FResponse;
+    property ErrorMessage: string read FErrorMessage write FErrorMessage;
+    property PostData: TIdMultiPartFormDataStream read FPostData;
+  end;
 
   { TGUIDList - A strong typed list for TGUID }
 
-  TGUIDList = CLASS
-  PRIVATE
-    FGUIDList: ARRAY OF TGUID;
+  TGUIDList = class
+  private
+    FGUIDList: array of TGUID;
     FCount: Integer;
-    FUNCTION GetItem(Index: Integer): TGUID;
-    PROCEDURE SetItem(Index: Integer; CONST Value: TGUID);
-    FUNCTION GetItemString(Index: Integer): STRING;
-    PROCEDURE SetItemString(Index: Integer; CONST Value: STRING);
-  PUBLIC
-    CONSTRUCTOR Create; VIRTUAL;
-    DESTRUCTOR Destroy; OVERRIDE;
-    PROPERTY Item[Index: Integer]: TGUID READ GetItem WRITE SetItem; DEFAULT;
-    PROPERTY ItemString[Index: Integer]: STRING READ GetItemString WRITE SetItemString;
-    PROCEDURE Clear;
-    FUNCTION Add(aGUID: TGUID): Integer;
-    FUNCTION AddFromString(aGUIDString: STRING): Integer;
-    PROCEDURE Delete(Index: Integer); OVERLOAD;
-    PROCEDURE Delete(Item: TGUID); OVERLOAD;
-    FUNCTION IndexOf(aGUID: TGUID): Integer; OVERLOAD;
-    FUNCTION IndexOf(aGUIDString: STRING): Integer; OVERLOAD;
-    FUNCTION IsInList(aGUID: TGUID): boolean; OVERLOAD;
-    FUNCTION IsInList(aGUIDString: STRING): boolean; OVERLOAD;
-    PROPERTY Count: Integer READ FCount;
-  END;
+    function GetItem(Index: Integer): TGUID;
+    procedure SetItem(Index: Integer; const Value: TGUID);
+    function GetItemString(Index: Integer): string;
+    procedure SetItemString(Index: Integer; const Value: string);
+  public
+    constructor Create; virtual;
+    destructor Destroy; override;
+    property Item[Index: Integer]: TGUID read GetItem write SetItem; DEFAULT;
+    property ItemString[Index: Integer]: string read GetItemString write SetItemString;
+    procedure Clear;
+    function Add(aGUID: TGUID): Integer;
+    function AddFromString(aGUIDString: string): Integer;
+    procedure Delete(Index: Integer); overload;
+    procedure Delete(Item: TGUID); overload;
+    function IndexOf(aGUID: TGUID): Integer; overload;
+    function IndexOf(aGUIDString: string): Integer; overload;
+    function IsInList(aGUID: TGUID): Boolean; overload;
+    function IsInList(aGUIDString: string): Boolean; overload;
+    property Count: Integer read FCount;
+  end;
 
   { TMemIniFileEx - An enhanced version of TMemIniFile that has more
-    strong typed read and write methods. If FileName is empty, the file
+    strong typed read and write methods. if FileName is empty, the file
     will not get saved to disk. }
 
-  TMemIniFileEx = CLASS(TMemIniFile)
-  PRIVATE
+  TMemIniFileEx = class(TMemIniFile)
+  private
     FFormatSettings: TFormatSettings;
-    FVolatile: boolean;
-    FUNCTION GetIsVolatile: boolean;
-  PUBLISHED
-    PROPERTY Volatile: boolean READ FVolatile WRITE FVolatile DEFAULT false;
-    PROPERTY IsVolatile: boolean READ GetIsVolatile;
-  PUBLIC
-    CONSTRUCTOR Create(CONST FileName: STRING); OVERLOAD;
-    CONSTRUCTOR Create(CONST FileName: STRING; CONST formatSettings: TFormatSettings); OVERLOAD;
+    FVolatile: Boolean;
+    function GetIsVolatile: Boolean;
+  public
+    constructor Create(const FileName: string); overload;
+    constructor Create(const FileName: string; const formatSettings: TFormatSettings); overload;
 
-    FUNCTION ReadFloat(CONST Section, Name: STRING; Default: Double): Double; OVERRIDE;
-    PROCEDURE WriteFloat(CONST Section, Name: STRING; Value: Double); OVERRIDE;
+    function ReadFloat(const Section, Name: string; Default: Double): Double; override;
+    procedure WriteFloat(const Section, Name: string; Value: Double); override;
 
-    FUNCTION ReadDate(CONST Section, Name: STRING; Default: TDateTime): TDateTime; OVERRIDE;
-    PROCEDURE WriteDate(CONST Section, Name: STRING; Value: TDateTime); OVERRIDE;
-    FUNCTION ReadTime(CONST Section, Name: STRING; Default: TDateTime): TDateTime; OVERRIDE;
-    PROCEDURE WriteTime(CONST Section, Name: STRING; Value: TDateTime); OVERRIDE;
-    FUNCTION ReadDateTime(CONST Section, Name: STRING; Default: TDateTime): TDateTime; OVERRIDE;
-    PROCEDURE WriteDateTime(CONST Section, Name: STRING; Value: TDateTime); OVERRIDE;
+    function ReadDate(const Section, Name: string; Default: TDateTime): TDateTime; override;
+    procedure WriteDate(const Section, Name: string; Value: TDateTime); override;
+    function ReadTime(const Section, Name: string; Default: TDateTime): TDateTime; override;
+    procedure WriteTime(const Section, Name: string; Value: TDateTime); override;
+    function ReadDateTime(const Section, Name: string; Default: TDateTime): TDateTime; override;
+    procedure WriteDateTime(const Section, Name: string; Value: TDateTime); override;
 
-    FUNCTION ReadRect(CONST Section, Prefix: STRING; CONST Default: TRect): TRect; VIRTUAL;
-    PROCEDURE WriteRect(CONST Section, Prefix: STRING; CONST Value: TRect); VIRTUAL;
+    function ReadRect(const Section, Prefix: string; const Default: TRect): TRect; virtual;
+    procedure WriteRect(const Section, Prefix: string; const Value: TRect); virtual;
 
-    FUNCTION ReadGuid(CONST Section, Name: STRING; CONST Default: TGUID): TGUID; VIRTUAL;
-    PROCEDURE WriteGuid(CONST Section, Name: STRING; CONST Value: TGUID); VIRTUAL;
+    function ReadGuid(const Section, Name: string; const Default: TGUID): TGUID; virtual;
+    procedure WriteGuid(const Section, Name: string; const Value: TGUID); virtual;
 
-    PROCEDURE ReadCutAppSettings(CONST Section: STRING; VAR CutAppSettings: RCutAppSettings);
-    PROCEDURE WriteCutAppSettings(CONST Section: STRING; VAR CutAppSettings: RCutAppSettings);
+    procedure ReadCutAppSettings(const Section: string; var CutAppSettings: RCutAppSettings);
+    procedure WriteCutAppSettings(const Section: string; var CutAppSettings: RCutAppSettings);
 
-    PROCEDURE WriteStrings(CONST section, name: STRING; CONST writeCount: boolean; CONST value: STRING); OVERLOAD;
-    PROCEDURE WriteStrings(CONST section, name: STRING; CONST writeCount: boolean; CONST value: TStrings); OVERLOAD;
+    procedure WriteStrings(const section, name: string; const writeCount: Boolean; const value: string); overload;
+    procedure WriteStrings(const section, name: string; const writeCount: Boolean; const value: TStrings); overload;
 
-    PROCEDURE UpdateFile; OVERRIDE;
+    procedure UpdateFile; override;
 
-    FUNCTION GetDataString: STRING;
+    function GetDataString: string;
 
-    PROCEDURE LoadFromStream(CONST Stream: TStream);
-    PROCEDURE LoadFromString(CONST data: STRING);
-    PROCEDURE SaveToStream(CONST Stream: TStream);
-    PROCEDURE SaveToFile(CONST FileName: STRING);
-  END;
+    procedure LoadFromStream(const Stream: TStream);
+    procedure LoadFromString(const data: string);
+    procedure SaveToStream(const Stream: TStream);
+    procedure SaveToFile(const FileName: string);
 
-PROCEDURE PatchINT3;
+    property Volatile: Boolean read FVolatile write FVolatile DEFAULT False;
+    property IsVolatile: Boolean read GetIsVolatile;
+  end;
 
-FUNCTION rand_string: STRING;
-FUNCTION Get_File_Version(CONST FileName: STRING): STRING; overload;
-FUNCTION Get_File_Version(CONST FileName: STRING; VAR FileVersionMS, FileVersionLS: DWORD): boolean; overload;
-FUNCTION Application_version: STRING;
-FUNCTION Application_Dir: STRING;
-FUNCTION Application_File: STRING;
-FUNCTION Application_Friendly_Name: STRING;
-FUNCTION UploadData_Path(useCSV: boolean): STRING;
-FUNCTION cleanURL(aURL: STRING): STRING;
-FUNCTION cleanFileName(CONST filename: STRING): STRING;
-PROCEDURE ListBoxToClipboard(ListBox: TListBox; BufferSizePerLine: Integer; CopyAll: Boolean);
-FUNCTION STO_ShellExecute(CONST AppName, AppArgs: STRING; CONST Wait: Cardinal;
-  CONST Hide: Boolean; VAR ExitCode: DWORD): Boolean;
-FUNCTION STO_ShellExecute_Capture(CONST AppName, AppArgs: STRING; CONST Wait: Cardinal;
-  CONST Hide: Boolean; VAR ExitCode: DWORD; AMemo: TMemo): Boolean;
-FUNCTION CallApplication(AppPath, Command: STRING; VAR ErrorString: STRING): boolean;
-FUNCTION secondsToTimeString(t: double): STRING;
-FUNCTION fcc2String(fcc: DWord): STRING;
-FUNCTION SaveBitmapAsJPEG(ABitmap: TBitmap; FileName: STRING): boolean;
+function rand_string: string;
+function Get_File_Version(const FileName: string): string; overload;
+function Get_File_Version(const FileName: string; var FileVersionMS, FileVersionLS: DWORD): Boolean; overload;
+function Application_version: string;
+function Application_Dir: string;
+function Application_File: string;
+function Application_Friendly_Name: string;
+function UploadData_Path(useCSV: Boolean): string;
+function cleanURL(aURL: string): string;
+function cleanFileName(const FileName: string): string;
+procedure ListBoxToClipboard(ListBox: TListBox; CopyAll: Boolean);
+function STO_ShellExecute(const AppName, AppArgs: string; const Wait: Cardinal;
+  const Hide: Boolean; var ExitCode: DWORD): Boolean;
+function STO_ShellExecute_Capture(const AppName, AppArgs: string; const Wait: Cardinal;
+  const Hide: Boolean; var ExitCode: DWORD; AMemo: TMemo): Boolean;
+function CallApplication(AppPath, Command: string; var ErrorString: string): Boolean;
+function secondsToTimeString(t: Double): string;
+function fcc2String(fcc: DWORD): string;
+function SaveBitmapAsJPEG(ABitmap: TBitmap; FileName: string): Boolean;
 
-FUNCTION IsPathRooted(CONST Path: STRING): boolean;
+function IsPathRooted(const Path: string): Boolean;
 
-FUNCTION PathCombine(CONST aPath, otherPath: STRING): STRING;
+function PathCombine(const aPath, otherPath: string): string;
 
-FUNCTION CtrlDown: Boolean;
-FUNCTION ShiftDown: Boolean;
-FUNCTION AltDown: Boolean;
+function CtrlDown: Boolean;
+function ShiftDown: Boolean;
+function AltDown: Boolean;
 
-FUNCTION ValidRect(CONST ARect: TRect): boolean;
+function ValidRect(const ARect: TRect): Boolean;
 
 // Use in Create event of form to fix scaling when screen resolution changes.
-PROCEDURE ScaleForm(CONST F: TForm); overload;
-PROCEDURE ScaleForm(CONST F: TForm; CONST ScreenWidthDev, ScreenHeightDev: Integer); overload;
+procedure ScaleForm(const F: TForm); overload;
+procedure ScaleForm(const F: TForm; const ScreenWidthDev, ScreenHeightDev: Integer); overload;
 
 // Fix Borland QC Report 13832: Constraints don't obey form Scaled property
-PROCEDURE AdjustFormConstraints(form: TForm);
+procedure AdjustFormConstraints(form: TForm);
 
 //ini.ReadString does work only up to 2047 characters due to restrictions in iniFiles.pas
-FUNCTION iniReadLargeString(
-  CONST ini: TCustomIniFile;
-  CONST BufferSize: integer;
-  CONST section, name, default: STRING): STRING;
+function iniReadLargeString(
+  const ini: TCustomIniFile;
+  const BufferSize: Integer;
+  const section, name, default: string): string;
 
-PROCEDURE ReadCutAppSettings(
-  CONST ini: TCustomIniFile;
-  CONST section: STRING;
-  VAR CutAppSettings: RCutAppSettings);
-PROCEDURE WriteCutAppSettings(
-  CONST ini: TCustomIniFile;
-  CONST section: STRING;
-  VAR CutAppSettings: RCutAppSettings);
+procedure ReadCutAppSettings(
+  const ini: TCustomIniFile;
+  const section: string;
+  var CutAppSettings: RCutAppSettings);
+procedure WriteCutAppSettings(
+  const ini: TCustomIniFile;
+  const section: string;
+  var CutAppSettings: RCutAppSettings);
 
-FUNCTION FilterInfoToString(CONST filterInfo: TFilCatNode): STRING;
-FUNCTION StringToFilterGUID(CONST s: STRING): TGUID;
+function FilterInfoToString(const filterInfo: TFilCatNode): string;
+function StringToFilterGUID(const s: string): TGUID;
 
-PROCEDURE ShowExpectedException(CONST Header: STRING);
+procedure ShowExpectedException(E: Exception; const Header: string);
 
-FUNCTION iniReadRect(CONST ini: TCustomIniFile; CONST section, name: STRING; CONST default: TRect): TRect;
-PROCEDURE iniWriteRect(CONST ini: TCustomIniFile; CONST section, name: STRING; CONST value: TRect);
+function iniReadRect(const ini: TCustomIniFile; const section, name: string; const default: TRect): TRect;
+procedure iniWriteRect(const ini: TCustomIniFile; const section, name: string; const value: TRect);
 
-PROCEDURE iniWriteStrings(CONST ini: TCustomIniFile; CONST section, name: STRING; CONST writeCount: boolean; CONST value: STRING); overload;
-PROCEDURE iniReadStrings(CONST ini: TCustomIniFile; CONST section, name: STRING; CONST readCount: boolean; value: TStrings); overload;
-PROCEDURE iniWriteStrings(CONST ini: TCustomIniFile; CONST section, name: STRING; CONST writeCount: boolean; CONST value: TStrings); overload;
+procedure iniWriteStrings(const ini: TCustomIniFile; const section, name: string; const writeCount: Boolean; const value: string); overload;
+procedure iniReadStrings(const ini: TCustomIniFile; const section, name: string; const readCount: Boolean; value: TStrings); overload;
+procedure iniWriteStrings(const ini: TCustomIniFile; const section, name: string; const writeCount: Boolean; const value: TStrings); overload;
 
-FUNCTION MakeFourCC(CONST a, b, c, d: char): DWord;
+function MakeFourCC(const a, b, c, d: Char): DWORD;
 
-FUNCTION Parse_File_Version(CONST VersionStr: STRING): ARFileVersion;
+function Parse_File_Version(const VersionStr: string): ARFileVersion;
 
-FUNCTION FloatToStrInvariant(Value: Extended): STRING;
+function FloatToStrInvariant(Value: Extended): string;
 
-FUNCTION FilterStringFromExtArray(ExtArray: ARRAY OF STRING): STRING;
-FUNCTION MakeFilterString(CONST description: STRING; CONST extensions: STRING): STRING;
-FUNCTION AppendFilterString(CONST filter: STRING; CONST description: STRING; CONST extensions: STRING): STRING;
+function FilterStringFromExtArray(ExtArray: array of string): string;
+function MakeFilterString(const description: string; const extensions: string): string;
+function AppendFilterString(const filter: string; const description: string; const extensions: string): string;
 
-FUNCTION StrToFloatDefInv(CONST s: STRING; CONST d: extended; CONST sep: char = '.'): extended;
+function StrToFloatDefInv(const s: string; const d: extended; const sep: Char = '.'): extended;
 
-PROCEDURE GetInvariantFormatSettings(VAR FormatSettings: TFormatSettings);
-
-TYPE
-  RMediaSample = RECORD
+type
+  RMediaSample = record
     Active: Boolean;
     SampleTime: Double;
     IsKeyFrame: Boolean;
     HasBitmap: Boolean;
     Bitmap: TBitmap;
-  END;
+  end;
 
-FUNCTION IntExt(CONST d: double; CONST fraction: double): double;
+function IntExt(const d: Double; const fraction: Double): Double;
 
 function GetVersionRequestParams: string;
 
-IMPLEMENTATION
+// func/proc from abc874
 
-{$I jedi.inc}
+function ExtractBaseFileNameOTR(const S: string): string;
+function FileNameToFormatName(const S: string): string;
 
-USES
-  Messages,
-  Dialogs,
-  ShellAPI,
-  Variants,
-  Clipbrd,
-  StrUtils,
-  jpeg,
-  Types,
-  DirectShow9,
-  Math,
+function StringToken(var S: string; C: Char): string;
+
+procedure ErrMsg(const S: string);
+procedure ErrMsgFmt(const S: string; const Args: array of const);
+
+procedure InfMsg(const S: string);
+procedure InfMsgFmt(const S: string; const Args: array of const);
+
+procedure WarnMsg(const S: string);
+procedure WarnMsgFmt(const S: string; const Args: array of const);
+
+function YesNoMsg(const S: string): Boolean;
+function YesNoMsgFmt(const S: string; const Args: array of const): Boolean;
+
+function YesNoWarnMsg(const S: string): Boolean;
+function YesNoWarnMsgFmt(const S: string; const Args: array of const): Boolean;
+
+function NoYesMsg(const S: string): Boolean;
+function NoYesMsgFmt(const S: string; const Args: array of const): Boolean;
+
+function NoYesWarnMsg(const S: string): Boolean;
+function NoYesWarnMsgFmt(const S: string; const Args: array of const): Boolean;
+
+function YesNoCancelNamed(const Msg: string; const YesCaption: string = ''; const NoCaption: string = '';
+  const CancelCaption: string = ''; DefaultButton: TMsgDlgBtn = mbCancel): TModalResult;
+
+implementation
+
+uses
+  // Delphi
+  Winapi.Messages, Winapi.ShellAPI, Winapi.DirectShow9, System.Variants, System.StrUtils, System.Types, System.Math,
+  System.UITypes, System.IOUtils, Vcl.Clipbrd, Vcl.Imaging.jpeg,
+
+  // Indy
   IdUri,
+
+  // CA
   CAResources;
 
+const
+  ScreenWidthDev  = 1280;
+  ScreenHeightDev = 1024;
 
-CONST ScreenWidthDev               = 1280;
-  ScreenHeightDev                  = 1024;
-
-VAR
-  invariantFormat                  : TFormatSettings;
+var
+  invariantFormat: TFormatSettings;
 
 function GetVersionRequestParams: string;
 begin
-  Result := 'app=CutAssistant'
-          + '&version=' + TIdURI.ParamsEncode(Application_Version);
+  Result := 'app=CutAssistant&version=' + TIdURI.ParamsEncode(Application_Version);
 end;
 
-FUNCTION IntExt(CONST d: double; CONST fraction: double): double;
-BEGIN
+function IntExt(const d: Double; const fraction: Double): Double;
+begin
   Result := Trunc(d / fraction) * fraction;
-END;
+end;
 
-PROCEDURE GetInvariantFormatSettings(VAR FormatSettings: TFormatSettings);
-BEGIN
-  // init with zero, since GetLocaleFormatSettings does not fill all fields (QC 5880).
-  FillChar(FormatSettings, SizeOf(FormatSettings), 0);
-  // Initialize with english, since invariant culture does not work?
-  //GetLocaleFormatSettings($007F, FormatSettings);
-  GetLocaleFormatSettings(1033, FormatSettings);
-END;
-
-FUNCTION StrToFloatDefInv(CONST s: STRING; CONST d: extended; CONST sep: char): extended;
-VAR
-  Temp_DecimalSeparator            : char;
-BEGIN
-  Temp_DecimalSeparator := DecimalSeparator;
-  DecimalSeparator := sep;
-  TRY
+function StrToFloatDefInv(const s: string; const d: extended; const sep: Char): extended;
+var
+  Temp_DecimalSeparator: Char;
+begin
+  Temp_DecimalSeparator := FormatSettings.DecimalSeparator;
+  FormatSettings.DecimalSeparator := sep;
+  try
     Result := StrToFloatDef(s, d);
-  FINALLY
-    DecimalSeparator := Temp_DecimalSeparator;
-  END;
-END;
+  finally
+    FormatSettings.DecimalSeparator := Temp_DecimalSeparator;
+  end;
+end;
 
-FUNCTION AppendFilterString(CONST filter: STRING; CONST description: STRING; CONST extensions: STRING): STRING;
-BEGIN
+function AppendFilterString(const filter: string; const description: string; const extensions: string): string;
+begin
   Result := filter;
-  IF filter <> '' THEN
+  if filter <> '' then
     Result := Result + '|';
   Result := Result + MakeFilterString(description, extensions);
-END;
+end;
 
-FUNCTION MakeFilterString(CONST description: STRING; CONST extensions: STRING): STRING;
-BEGIN
+function MakeFilterString(const description: string; const extensions: string): string;
+begin
   Result := Format('%s (%s)|%s', [description, extensions, extensions]);
-END;
+end;
 
-FUNCTION FilterStringFromExtArray(ExtArray: ARRAY OF STRING): STRING;
-VAR
-  i                                : Integer;
-BEGIN
-  result := '';
-  FOR i := 0 TO length(ExtArray) - 1 DO BEGIN
-    IF i > 0 THEN result := result + ';';
-    result := result + '*' + ExtArray[i];
-  END;
-END;
+function FilterStringFromExtArray(ExtArray: array of string): string;
+var
+  I: Integer;
+begin
+  Result := '';
+  for I := 0 to Pred(Length(ExtArray)) do
+  begin
+    if I > 0 then
+      Result := Result + ';';
+    Result := Result + '*' + ExtArray[I];
+  end;
+end;
 
-CONSTRUCTOR TMemIniFileEx.Create(CONST FileName: STRING);
-BEGIN
-  INHERITED Create(FileName);
-  FVolatile := false;
-  GetInvariantFormatSettings(self.FFormatSettings);
-END;
+constructor TMemIniFileEx.Create(const FileName: string);
+begin
+  inherited Create(FileName, TEncoding.UTF8);
+  FVolatile := False;
+  FFormatSettings := invariantFormat;
+end;
 
-CONSTRUCTOR TMemIniFileEx.Create(CONST FileName: STRING; CONST formatSettings: TFormatSettings);
-BEGIN
-  INHERITED Create(FileName);
-  FVolatile := false;
+constructor TMemIniFileEx.Create(const FileName: string; const formatSettings: TFormatSettings);
+begin
+  inherited Create(FileName);
+  FVolatile := False;
   FFormatSettings := formatSettings;
-END;
+end;
 
-FUNCTION TMemIniFileEx.GetIsVolatile: boolean;
-BEGIN
-  Result := FVolatile OR (FileName = '');
-END;
+function TMemIniFileEx.GetIsVolatile: Boolean;
+begin
+  Result := FVolatile or (FileName = '');
+end;
 
-PROCEDURE TMemIniFileEx.UpdateFile;
-BEGIN
-  IF (NOT Volatile) AND (FileName <> '') THEN
-    INHERITED UpdateFile;
-END;
+procedure TMemIniFileEx.UpdateFile;
+begin
+  if (not Volatile) and (FileName <> '') then
+    inherited UpdateFile;
+end;
 
-FUNCTION TMemIniFileEx.ReadFloat(CONST Section, Name: STRING; Default: Double): Double;
-VAR
-  FloatStr                         : STRING;
-BEGIN
+function TMemIniFileEx.ReadFloat(const Section, Name: string; Default: Double): Double;
+var
+  FloatStr: string;
+begin
   FloatStr := ReadString(Section, Name, '');
   Result := Default;
-  IF FloatStr <> '' THEN TRY
+  if FloatStr <> '' then try
     Result := StrToFloat(FloatStr, FFormatSettings);
-  EXCEPT
-    ON EConvertError DO
+  except
+    on EConvertError do
       // Ignore EConvertError exceptions
-  ELSE
-    RAISE;
-  END;
-END;
+    else
+      raise;
+  end;
+end;
 
-FUNCTION TMemIniFileEx.ReadDate(CONST Section, Name: STRING; Default: TDateTime): TDateTime;
-VAR
-  DateStr                          : STRING;
-BEGIN
+function TMemIniFileEx.ReadDate(const Section, Name: string; Default: TDateTime): TDateTime;
+var
+  DateStr: string;
+begin
   DateStr := ReadString(Section, Name, '');
   Result := Default;
-  IF DateStr <> '' THEN TRY
+  if DateStr <> '' then
+  try
     Result := StrToDate(DateStr, FFormatSettings);
-  EXCEPT
-    ON EConvertError DO
+  except
+    on EConvertError do
       // Ignore EConvertError exceptions
-  ELSE
-    RAISE;
-  END;
-END;
+    else
+      raise;
+  end;
+end;
 
-FUNCTION TMemIniFileEx.ReadDateTime(CONST Section, Name: STRING; Default: TDateTime): TDateTime;
-VAR
-  DateStr                          : STRING;
-BEGIN
+function TMemIniFileEx.ReadDateTime(const Section, Name: string; Default: TDateTime): TDateTime;
+var
+  DateStr: string;
+begin
   DateStr := ReadString(Section, Name, '');
   Result := Default;
-  IF DateStr <> '' THEN TRY
+  if DateStr <> '' then
+  try
     Result := StrToDateTime(DateStr, FFormatSettings);
-  EXCEPT
-    ON EConvertError DO
+  except
+    on EConvertError do
       // Ignore EConvertError exceptions
-  ELSE
-    RAISE;
-  END;
-END;
+    else
+      raise;
+  end;
+end;
 
-FUNCTION TMemIniFileEx.ReadTime(CONST Section, Name: STRING; Default: TDateTime): TDateTime;
-VAR
-  TimeStr                          : STRING;
-BEGIN
+function TMemIniFileEx.ReadTime(const Section, Name: string; Default: TDateTime): TDateTime;
+var
+  TimeStr: string;
+begin
   TimeStr := ReadString(Section, Name, '');
   Result := Default;
-  IF TimeStr <> '' THEN TRY
+  if TimeStr <> '' then
+  try
     Result := StrToTime(TimeStr, FFormatSettings);
-  EXCEPT
-    ON EConvertError DO
+  except
+    on EConvertError do
       // Ignore EConvertError exceptions
-  ELSE
-    RAISE;
-  END;
-END;
+    else
+      raise;
+  end;
+end;
 
-PROCEDURE TMemIniFileEx.WriteDate(CONST Section, Name: STRING; Value: TDateTime);
-BEGIN
+procedure TMemIniFileEx.WriteDate(const Section, Name: string; Value: TDateTime);
+begin
   WriteString(Section, Name, DateToStr(Value, FFormatSettings));
-END;
+end;
 
-PROCEDURE TMemIniFileEx.WriteDateTime(CONST Section, Name: STRING; Value: TDateTime);
-BEGIN
+procedure TMemIniFileEx.WriteDateTime(const Section, Name: string; Value: TDateTime);
+begin
   WriteString(Section, Name, DateTimeToStr(Value, FFormatSettings));
-END;
+end;
 
-PROCEDURE TMemIniFileEx.WriteFloat(CONST Section, Name: STRING; Value: Double);
-BEGIN
+procedure TMemIniFileEx.WriteFloat(const Section, Name: string; Value: Double);
+begin
   WriteString(Section, Name, FloatToStr(Value, FFormatSettings));
-END;
+end;
 
-PROCEDURE TMemIniFileEx.WriteTime(CONST Section, Name: STRING; Value: TDateTime);
-BEGIN
+procedure TMemIniFileEx.WriteTime(const Section, Name: string; Value: TDateTime);
+begin
   WriteString(Section, Name, TimeToStr(Value, FFormatSettings));
-END;
+end;
 
-FUNCTION TMemIniFileEx.ReadRect(CONST Section, Prefix: STRING; CONST Default: TRect): TRect;
-BEGIN
-  Result.Left := ReadInteger(Section, Prefix + '_Left', Default.Left);
-  Result.Top := ReadInteger(Section, Prefix + '_Top', Default.Top);
-  Result.Right := Result.Left + ReadInteger(Section, Prefix + '_Width', Default.Right - Default.Left);
+function TMemIniFileEx.ReadRect(const Section, Prefix: string; const Default: TRect): TRect;
+begin
+  Result.Left   := ReadInteger(Section, Prefix + '_Left', Default.Left);
+  Result.Top    := ReadInteger(Section, Prefix + '_Top', Default.Top);
+  Result.Right  := Result.Left + ReadInteger(Section, Prefix + '_Width', Default.Right - Default.Left);
   Result.Bottom := Result.Top + ReadInteger(Section, Prefix + '_Height', Default.Bottom - Default.Top);
-END;
+end;
 
-PROCEDURE TMemIniFileEx.WriteRect(CONST Section, Prefix: STRING; CONST Value: TRect);
-BEGIN
+procedure TMemIniFileEx.WriteRect(const Section, Prefix: string; const Value: TRect);
+begin
   WriteInteger(Section, Prefix + '_Left', Value.Left);
   WriteInteger(Section, Prefix + '_Top', Value.Top);
   WriteInteger(Section, Prefix + '_Width', Value.Right - Value.Left);
   WriteInteger(Section, Prefix + '_Height', Value.Bottom - Value.Top);
-END;
+end;
 
-FUNCTION TMemIniFileEx.ReadGuid(CONST Section, Name: STRING; CONST Default: TGUID): TGUID;
-VAR
-  GuidStr                          : STRING;
-BEGIN
+function TMemIniFileEx.ReadGuid(const Section, Name: string; const Default: TGUID): TGUID;
+var
+  GuidStr: string;
+begin
   GuidStr := ReadString(Section, Name, '');
   Result := Default;
-  IF GuidStr <> '' THEN TRY
+  if GuidStr <> '' then
+  try
     Result := StringToGUID(GuidStr);
-  EXCEPT
-    ON EConvertError DO
+  except
+    on EConvertError do
       // ignore EConvertError exceptions
-  ELSE
-    RAISE
-  END;
-END;
+    else
+      raise
+  end;
+end;
 
-PROCEDURE TMemIniFileEx.WriteGuid(CONST Section, Name: STRING; CONST Value: TGUID);
-BEGIN
+procedure TMemIniFileEx.WriteGuid(const Section, Name: string; const Value: TGUID);
+begin
   WriteString(Section, Name, GUIDToString(Value));
-END;
+end;
 
-PROCEDURE TMemIniFileEx.ReadCutAppSettings(CONST Section: STRING; VAR CutAppSettings: RCutAppSettings);
-VAR
-  BufferSize                       : integer;
-BEGIN
+procedure TMemIniFileEx.ReadCutAppSettings(const Section: string; var CutAppSettings: RCutAppSettings);
+var
+  BufferSize: Integer;
+begin
   CutAppSettings.CutAppName := ReadString(Section, 'AppName', '');
   CutAppSettings.PreferredSourceFilter := ReadGuid(Section, 'PreferredSourceFilter', GUID_NULL);
   CutAppSettings.CodecName := ReadString(Section, 'CodecName', '');
@@ -505,18 +523,19 @@ BEGIN
   CutAppSettings.CodecSettingsSize := ReadInteger(Section, 'CodecSettingsSize', 0);
   CutAppSettings.CodecSettings := ReadString(Section, 'CodecSettings', '');
 
-  BufferSize := CutAppSettings.CodecSettingsSize DIV 3;
-  IF (CutAppSettings.CodecSettingsSize MOD 3) > 0 THEN
+  BufferSize := CutAppSettings.CodecSettingsSize div 3;
+  if (CutAppSettings.CodecSettingsSize mod 3) > 0 then
     Inc(BufferSize);
   BufferSize := BufferSize * 4 + 1; //+1 for terminating #0
-  IF Length(CutAppSettings.CodecSettings) <> BufferSize - 1 THEN BEGIN
+  if Length(CutAppSettings.CodecSettings) <> BufferSize - 1 then
+  begin
     CutAppSettings.CodecSettings := '';
     CutAppSettings.CodecSettingsSize := 0;
-  END;
-END;
+  end;
+end;
 
-PROCEDURE TMemIniFileEx.WriteCutAppSettings(CONST Section: STRING; VAR CutAppSettings: RCutAppSettings);
-BEGIN
+procedure TMemIniFileEx.WriteCutAppSettings(const Section: string; var CutAppSettings: RCutAppSettings);
+begin
   EraseSection(Section);
   WriteString(Section, 'AppName', CutAppSettings.CutAppName);
   WriteGuid(Section, 'PreferredSourceFilter', CutAppSettings.PreferredSourceFilter);
@@ -525,236 +544,245 @@ BEGIN
   WriteInteger(Section, 'CodecVersion', CutAppSettings.CodecVersion);
   WriteInteger(Section, 'CodecSettingsSize', CutAppSettings.CodecSettingsSize);
   WriteString(Section, 'CodecSettings', CutAppSettings.CodecSettings);
-END;
+end;
 
-PROCEDURE TMemIniFileEx.WriteStrings(CONST section, name: STRING; CONST writeCount: boolean; CONST value: STRING);
-VAR
-  sl                               : TStringList;
-BEGIN
-  sl := TStringList.Create;
-  TRY
-    sl.Text := value;
-    WriteStrings(section, name, writeCount, sl);
-  FINALLY
-    FreeAndNil(sl);
-  END;
-END;
+procedure TMemIniFileEx.WriteStrings(const section, name: string; const writeCount: Boolean; const value: string);
+var
+  L: TStringList;
+begin
+  L := TStringList.Create;
+  try
+    L.Text := value;
+    WriteStrings(section, name, writeCount, L);
+  finally
+    FreeAndNil(L);
+  end;
+end;
 
-PROCEDURE TMemIniFileEx.WriteStrings(CONST section, name: STRING; CONST writeCount: boolean; CONST value: TStrings);
-VAR
-  idx, cnt                         : integer;
-BEGIN
-  IF NOT Assigned(value) THEN cnt := 0
-  ELSE cnt := value.Count;
-  IF writeCount THEN
+procedure TMemIniFileEx.WriteStrings(const section, name: string; const writeCount: Boolean; const value: TStrings);
+var
+  idx, cnt: Integer;
+begin
+  if Assigned(value) then
+    cnt := value.Count
+  else
+    cnt := 0;
+
+  if writeCount then
     WriteInteger(section, name + 'Count', cnt);
-  FOR idx := 0 TO cnt - 1 DO BEGIN
+
+  for idx := 0 to Pred(cnt) do
     WriteString(section, name + IntToStr(idx + 1), value.Strings[idx]);
-  END;
-END;
+end;
 
-
-FUNCTION TMemIniFileEx.GetDataString: STRING;
-VAR
-  List                             : TStringList;
-BEGIN
+function TMemIniFileEx.GetDataString: string;
+var
+  List: TStringList;
+begin
   List := TStringList.Create;
-  TRY
+  try
     GetStrings(List);
     Result := List.Text;
-  FINALLY
+  finally
     FreeAndNil(List);
-  END;
-END;
+  end;
+end;
 
-PROCEDURE TMemIniFileEx.LoadFromString(CONST data: STRING);
-VAR
-  List                             : TStringList;
-BEGIN
+procedure TMemIniFileEx.LoadFromString(const data: string);
+var
+  List: TStringList;
+begin
   List := TStringList.Create;
-  TRY
+  try
     List.Text := data;
     SetStrings(List);
-  FINALLY
+  finally
     FreeAndNil(List);
-  END;
-END;
+  end;
+end;
 
-PROCEDURE TMemIniFileEx.LoadFromStream(CONST Stream: TStream);
-VAR
-  List                             : TStringList;
-BEGIN
+procedure TMemIniFileEx.LoadFromStream(const Stream: TStream);
+var
+  List: TStringList;
+begin
   List := TStringList.Create;
-  TRY
-    List.LoadFromStream(Stream);
+  try
+    List.LoadFromStream(Stream, TEncoding.UTF8);
     SetStrings(List);
-  FINALLY
+  finally
     FreeAndNil(List);
-  END;
-END;
+  end;
+end;
 
-PROCEDURE TMemIniFileEx.SaveToStream(CONST Stream: TStream);
-VAR
-  List                             : TStringList;
-BEGIN
+procedure TMemIniFileEx.SaveToStream(const Stream: TStream);
+var
+  List: TStringList;
+begin
   List := TStringList.Create;
-  TRY
+  try
     GetStrings(List);
-    List.SaveToStream(Stream);
-  FINALLY
+    List.WriteBOM := False;
+    List.SaveToStream(Stream, TEncoding.UTF8);
+  finally
     FreeAndNil(List);
-  END;
-END;
+  end;
+end;
 
-PROCEDURE TMemIniFileEx.SaveToFile(CONST FileName: STRING);
-VAR
-  fs                               : TFileStream;
-BEGIN
+procedure TMemIniFileEx.SaveToFile(const FileName: string);
+var
+  fs: TFileStream;
+begin
   fs := TFileStream.Create(FileName, fmCreate, fmShareDenyWrite);
-  TRY
+  try
     SaveToStream(fs);
-  FINALLY
+  finally
     FreeAndNil(fs);
-  END;
-END;
+  end;
+end;
 
-FUNCTION FloatToStrInvariant(Value: Extended): STRING;
-BEGIN
+function FloatToStrInvariant(Value: Extended): string;
+begin
   Result := FloatToStr(Value, invariantFormat);
-END;
+end;
 
-FUNCTION Parse_File_Version(CONST VersionStr: STRING): ARFileVersion;
-VAR
-  s                                : STRING;
-  FUNCTION NextWord(VAR s: STRING): integer;
-  VAR
-    delimPos                       : integer;
-  BEGIN
-    delimPos := Pos('.', s);
-    IF delimPos > 0 THEN BEGIN
-      Result := StrToIntDef(Copy(s, 1, delimPos - 1), -1);
-      Delete(s, 1, delimPos);
-    END
-    ELSE BEGIN
+function Parse_File_Version(const VersionStr: string): ARFileVersion;
+var
+  S : string;
+  function NextWord(var S: string): Integer;
+  var
+    delimPos: Integer;
+  begin
+    delimPos := Pos('.', S);
+    if delimPos > 0 then
+    begin
+      Result := StrToIntDef(Copy(S, 1, delimPos - 1), -1);
+      Delete(S, 1, delimPos);
+    end else
       Result := 0;
-    END;
-  END;
-BEGIN
-  s := Copy(VersionStr, 1, MaxInt);
-  Result[0] := NextWord(s);
-  Result[1] := NextWord(s);
-  Result[2] := NextWord(s);
-  Result[3] := NextWord(s);
-END;
+  end;
+begin
+  S := Copy(VersionStr, 1, MaxInt);
+  Result[0] := NextWord(S);
+  Result[1] := NextWord(S);
+  Result[2] := NextWord(S);
+  Result[3] := NextWord(S);
+end;
 
-
-PROCEDURE ShowExpectedException(CONST Header: STRING);
-VAR
-  msg                              : STRING;
-BEGIN
+procedure ShowExpectedException(E: Exception; const Header: string);
+var
+  msg: string;
+begin
   msg := '';
-  WITH NewException(etNormal) DO BEGIN
-    //    SuspendThreads := true;
-    //    ShowCpuRegisters := false;
-    //    ShowStackDump := false;
-    //    CreateScreenShot := false;
-    //    ShowSetting := ssDetailBox;
-    //    SendBtnVisible := false;
-    //    CloseBtnVisible := false;
-    //    FocusedButton := bContinueApplication;
+  with E do
+  begin
+    //    SuspendThreads   := True;
+    //    ShowCpuRegisters := False;
+    //    ShowStackDump    := False;
+    //    CreateScreenShot := False;
+    //    ShowSetting      := ssDetailBox;
+    //    SendBtnVisible   := False;
+    //    CloseBtnVisible  := False;
+    //    FocusedButton    := bContinueApplication;
 
-    IF Header <> '' THEN
-      msg := Format(CAResources.RsExpectedErrorHeader, [Header]);
+    if Header <> '' then
+      msg := Format(RsExpectedErrorHeader, [Header]);
 
-    ShowMessageFmt(CAResources.RsExpectedErrorFormat, [msg, ExceptClass, ExceptMessage]);
-  END;
-END;
+    ErrMsg(Format(RsExpectedErrorFormat, [msg, E.ClassName, E.Message]));
+  end;
+end;
 
-FUNCTION iniReadRect(CONST ini: TCustomIniFile; CONST section, name: STRING; CONST default: TRect): TRect;
-BEGIN
-  Result.Left := ini.ReadInteger(section, name + '_Left', default.Left);
-  Result.Top := ini.ReadInteger(section, name + '_Top', default.Top);
-  Result.Right := Result.Left + ini.ReadInteger(section, name + '_Width', default.Right - default.Left);
+function iniReadRect(const ini: TCustomIniFile; const section, name: string; const default: TRect): TRect;
+begin
+  Result.Left   := ini.ReadInteger(section, name + '_Left', default.Left);
+  Result.Top    := ini.ReadInteger(section, name + '_Top', default.Top);
+  Result.Right  := Result.Left + ini.ReadInteger(section, name + '_Width', default.Right - default.Left);
   Result.Bottom := Result.Top + ini.ReadInteger(section, name + '_Height', default.Bottom - default.Top);
-END;
+end;
 
-PROCEDURE iniWriteRect(CONST ini: TCustomIniFile; CONST section, name: STRING; CONST value: TRect);
-BEGIN
+procedure iniWriteRect(const ini: TCustomIniFile; const section, name: string; const value: TRect);
+begin
   ini.WriteInteger(section, name + '_Left', value.Left);
   ini.WriteInteger(section, name + '_Top', value.Top);
   ini.WriteInteger(section, name + '_Width', value.Right - value.Left);
   ini.WriteInteger(section, name + '_Height', value.Bottom - value.Top);
-END;
+end;
 
-PROCEDURE iniWriteStrings(CONST ini: TCustomIniFile; CONST section, name: STRING; CONST writeCount: boolean; CONST value: STRING);
-VAR
-  sl                               : TStringList;
-BEGIN
-  sl := TStringList.Create;
-  TRY
-    sl.Text := value;
-    iniWriteStrings(ini, section, name, writeCount, sl);
-  FINALLY
-    FreeAndNil(sl);
-  END;
-END;
+procedure iniWriteStrings(const ini: TCustomIniFile; const section, name: string; const writeCount: Boolean; const value: string);
+var
+  L: TStringList;
+begin
+  L := TStringList.Create;
+  try
+    L.Text := value;
+    iniWriteStrings(ini, section, name, writeCount, L);
+  finally
+    FreeAndNil(L);
+  end;
+end;
 
-PROCEDURE iniWriteStrings(CONST ini: TCustomIniFile; CONST section, name: STRING; CONST writeCount: boolean; CONST value: TStrings);
-VAR
-  idx, cnt                         : integer;
-BEGIN
-  IF NOT Assigned(value) THEN cnt := 0
-  ELSE cnt := value.Count;
-  IF writeCount THEN
+procedure iniWriteStrings(const ini: TCustomIniFile; const section, name: string; const writeCount: Boolean; const value: TStrings);
+var
+  idx, cnt: Integer;
+begin
+  if Assigned(value) then
+    cnt := value.Count
+  else
+    cnt := 0;
+
+  if writeCount then
     ini.WriteInteger(section, name + 'Count', cnt);
-  FOR idx := 0 TO cnt - 1 DO BEGIN
+
+  for idx := 0 to Pred(cnt) do
     ini.WriteString(section, name + IntToStr(idx + 1), value.Strings[idx]);
-  END;
-END;
+end;
 
-PROCEDURE iniReadStrings(CONST ini: TCustomIniFile; CONST section, name: STRING; CONST readCount: boolean; value: TStrings); OVERLOAD;
-VAR
-  idx, cnt                         : integer;
-BEGIN
-  IF NOT Assigned(value) THEN exit;
-  value.Clear;
+procedure iniReadStrings(const ini: TCustomIniFile; const section, name: string; const readCount: Boolean; value: TStrings); overload;
+var
+  idx, cnt: Integer;
+begin
+  if Assigned(value) then
+  begin
+    value.Clear;
 
-  IF readCount THEN BEGIN
-    cnt := ini.ReadInteger(section, name + 'Count', 0);
-    FOR idx := 1 TO cnt - 1 DO
-      value.Add(ini.ReadString(section, name + IntToStr(idx), ''));
-  END ELSE BEGIN
-    idx := 1;
-    WHILE ini.ValueExists(section, name + IntToStr(idx)) DO BEGIN
-      value.Add(ini.ReadString(section, name + IntToStr(idx), ''));
-      Inc(idx);
-    END;
-  END;
-END;
+    if readCount then
+    begin
+      cnt := ini.ReadInteger(section, name + 'Count', 0);
+      for idx := 1 to cnt - 1 do
+        value.Add(ini.ReadString(section, name + IntToStr(idx), ''));
+    end else
+    begin
+      idx := 1;
+      while ini.ValueExists(section, name + IntToStr(idx)) do
+      begin
+        value.Add(ini.ReadString(section, name + IntToStr(idx), ''));
+        Inc(idx);
+      end;
+    end;
+  end;
+end;
 
-FUNCTION FilterInfoToString(CONST filterInfo: TFilCatNode): STRING;
-BEGIN
+function FilterInfoToString(const filterInfo: TFilCatNode): string;
+begin
   Result := filterInfo.FriendlyName + '  (' + GUIDToString(filterInfo.CLSID) + ')';
-END;
+end;
 
-FUNCTION StringToFilterGUID(CONST s: STRING): TGUID;
-VAR
-  idx, len                         : integer;
-BEGIN
+function StringToFilterGUID(const s: string): TGUID;
+var
+  idx, len: Integer;
+begin
   idx := LastDelimiter('(', s) + 1;
   len := LastDelimiter(')', s);
-  IF idx < 0 THEN Result := GUID_NULL
-  ELSE BEGIN
-    IF len <= idx THEN len := MaxInt;
+  if idx >= 0 then
+  begin
+    if len <= idx then
+      len := MaxInt;
     Result := StringToGUID(Copy(s, idx, len - idx))
-  END;
-END;
+  end else
+    Result := GUID_NULL
+end;
 
-PROCEDURE WriteCutAppSettings(
-  CONST ini: TCustomIniFile;
-  CONST section: STRING;
-  VAR CutAppSettings: RCutAppSettings);
-BEGIN
+procedure WriteCutAppSettings(const ini: TCustomIniFile; const section: string; var CutAppSettings: RCutAppSettings);
+begin
   ini.WriteString(section, 'AppName', CutAppSettings.CutAppName);
   ini.WriteString(section, 'PreferredSourceFilter', GUIDToString(CutAppSettings.PreferredSourceFilter));
   ini.WriteString(section, 'CodecName', CutAppSettings.CodecName);
@@ -762,372 +790,298 @@ BEGIN
   ini.WriteInteger(section, 'CodecVersion', CutAppSettings.CodecVersion);
   ini.WriteInteger(section, 'CodecSettingsSize', CutAppSettings.CodecSettingsSize);
   ini.WriteString(section, 'CodecSettings', CutAppSettings.CodecSettings);
-END;
+end;
 
-PROCEDURE ReadCutAppSettings(
-  CONST ini: TCustomIniFile;
-  CONST section: STRING;
-  VAR CutAppSettings: RCutAppSettings);
-VAR
-  StrValue                         : STRING;
-  BufferSize                       : integer;
-BEGIN
-  IF NOT Assigned(ini) THEN exit;
-
-  CutAppSettings.CutAppName := ini.ReadString(section, 'AppName', '');
-  StrValue := ini.ReadString(section, 'PreferredSourceFilter', GUIDToString(GUID_NULL));
-  TRY
-    CutAppSettings.PreferredSourceFilter := StringToGUID(StrValue);
-  EXCEPT
-    ON EConvertError DO
-      CutAppSettings.PreferredSourceFilter := GUID_NULL;
-  END;
-  CutAppSettings.CodecName := ini.ReadString(section, 'CodecName', '');
-  CutAppSettings.CodecFourCC := ini.ReadInteger(section, 'CodecFourCC', 0);
-  CutAppSettings.CodecVersion := ini.ReadInteger(section, 'CodecVersion', 0);
-  CutAppSettings.CodecSettingsSize := ini.ReadInteger(section, 'CodecSettingsSize', 0);
-  BufferSize := CutAppSettings.CodecSettingsSize DIV 3;
-  IF (CutAppSettings.CodecSettingsSize MOD 3) > 0 THEN
-    Inc(BufferSize);
-  BufferSize := BufferSize * 4 + 1; //+1 for terminating #0
-  CutAppSettings.CodecSettings := iniReadLargeString(ini, BufferSize, section, 'CodecSettings', '');
-  IF Length(CutAppSettings.CodecSettings) <> BufferSize - 1 THEN BEGIN
-    CutAppSettings.CodecSettings := '';
-    CutAppSettings.CodecSettingsSize := 0;
-  END;
-END;
+procedure ReadCutAppSettings(const ini: TCustomIniFile; const section: string; var CutAppSettings: RCutAppSettings);
+var
+  StrValue: string;
+  BufferSize: Integer;
+begin
+  if Assigned(ini) then
+  begin
+    CutAppSettings.CutAppName := ini.ReadString(section, 'AppName', '');
+    StrValue := ini.ReadString(section, 'PreferredSourceFilter', GUIDToString(GUID_NULL));
+    try
+      CutAppSettings.PreferredSourceFilter := StringToGUID(StrValue);
+    except
+      on EConvertError do
+        CutAppSettings.PreferredSourceFilter := GUID_NULL;
+    end;
+    CutAppSettings.CodecName := ini.ReadString(section, 'CodecName', '');
+    CutAppSettings.CodecFourCC := ini.ReadInteger(section, 'CodecFourCC', 0);
+    CutAppSettings.CodecVersion := ini.ReadInteger(section, 'CodecVersion', 0);
+    CutAppSettings.CodecSettingsSize := ini.ReadInteger(section, 'CodecSettingsSize', 0);
+    BufferSize := CutAppSettings.CodecSettingsSize div 3;
+    if (CutAppSettings.CodecSettingsSize mod 3) > 0 then
+      Inc(BufferSize);
+    BufferSize := BufferSize * 4 + 1; //+1 for terminating #0
+    CutAppSettings.CodecSettings := iniReadLargeString(ini, BufferSize, section, 'CodecSettings', '');
+    if Length(CutAppSettings.CodecSettings) <> BufferSize - 1 then
+    begin
+      CutAppSettings.CodecSettings := '';
+      CutAppSettings.CodecSettingsSize := 0;
+    end;
+  end;
+end;
 
 //ini.ReadString does work only up to 2047 characters due to restrictions in iniFiles.pas
 
-FUNCTION iniReadLargeString(
-  CONST ini: TCustomIniFile;
-  CONST BufferSize: integer;
-  CONST section, name, default: STRING): STRING;
-VAR
-  SizeRead                         : Integer;
-  Buffer                           : PChar;
-BEGIN
+function iniReadLargeString(const ini: TCustomIniFile; const BufferSize: Integer; const section, name, default: string): string;
+var
+  SizeRead: Integer;
+  Buffer: PChar;
+begin
   GetMem(Buffer, BufferSize * SizeOf(Char));
-  TRY
+  try
     SizeRead := GetPrivateProfileString(PChar(Section), PChar(name), PChar(default), Buffer, BufferSize, PChar(ini.FileName));
-    IF (SizeRead >= 0) AND (SizeRead <= BufferSize - 1) THEN
+    if (SizeRead >= 0) and (SizeRead <= BufferSize - 1) then
       SetString(Result, Buffer, SizeRead)
-    ELSE Result := default;
-  FINALLY
+    else
+      Result := default;
+  finally
     freemem(Buffer, BufferSize * SizeOf(Char));
-  END;
-END;
+  end;
+end;
 
-PROCEDURE ScaleForm(CONST F: TForm); OVERLOAD;
-BEGIN
+procedure ScaleForm(const F: TForm); overload;
+begin
   ScaleForm(F, ScreenWidthDev, ScreenHeightDev);
-END;
+end;
 
-PROCEDURE AdjustFormConstraints(form: TForm);
-{IFNDEF RTL180_UP}
-VAR
-  FormDPI, ScreenDPI               : integer;
-  {IFEND}
-BEGIN
-  IF NOT Assigned(form) THEN
-    exit;
-  {IFNDEF RTL180_UP}
-  IF NOT form.Scaled THEN
-    exit;
-  FormDPI := form.PixelsPerInch;
-  ScreenDPI := Screen.PixelsPerInch;
-  IF FormDPI <> ScreenDPI THEN
-    WITH form.Constraints DO BEGIN
-      MinHeight := (MinHeight * ScreenDPI) DIV FormDPI;
-      MinWidth := (MinWidth * ScreenDPI) DIV FormDPI;
-      MaxHeight := (MinHeight * ScreenDPI) DIV FormDPI;
-      MaxWidth := (MinWidth * ScreenDPI) DIV FormDPI;
-    END;
-  {IFEND}
-END;
+procedure AdjustFormConstraints(form: TForm);
+{$if compilerversion < 18}
+var
+  FormDPI, ScreenDPI: Integer;
+{$IFEND}
+begin
+  if Assigned(form) then
+  begin
+    {$if compilerversion < 18}
+    if form.Scaled then
+    begin
+      FormDPI := form.PixelsPerInch;
+      ScreenDPI := Screen.PixelsPerInch;
+      if FormDPI <> ScreenDPI then
+        with form.Constraints do
+        begin
+          MinHeight := (MinHeight * ScreenDPI) div FormDPI;
+          MinWidth := (MinWidth * ScreenDPI) div FormDPI;
+          MaxHeight := (MinHeight * ScreenDPI) div FormDPI;
+          MaxWidth := (MinWidth * ScreenDPI) div FormDPI;
+        end;
+    end;
+    {$IFEND}
+  end;
+end;
 
-PROCEDURE ScaleForm(CONST F: TForm; CONST ScreenWidthDev, ScreenHeightDev: Integer);
-VAR
-  x, y                             : Integer;
-BEGIN
-  IF NOT Assigned(F) THEN
-    exit;
-  F.Scaled := true;
-  x := Screen.Width;
-  y := Screen.Height;
-  IF (x <> ScreenWidthDev) OR (y <> ScreenHeightDev) THEN BEGIN
-    F.Height := (F.ClientHeight * y DIV ScreenHeightDev) + F.Height - F.ClientHeight;
-    F.Width := (F.ClientWidth * y DIV ScreenWidthDev) + F.Width - F.ClientWidth;
-    F.ScaleBy(x, ScreenWidthDev);
-  END;
-END;
+procedure ScaleForm(const F: TForm; const ScreenWidthDev, ScreenHeightDev: Integer);
+var
+  x, y: Integer;
+begin
+  if Assigned(F) then
+  begin
+    F.Scaled := True;
+    x := Screen.Width;
+    y := Screen.Height;
+    if (x <> ScreenWidthDev) or (y <> ScreenHeightDev) then
+    begin
+      F.Height := (F.ClientHeight * y div ScreenHeightDev) + F.Height - F.ClientHeight;
+      F.Width  := (F.ClientWidth * y div ScreenWidthDev) + F.Width - F.ClientWidth;
+      F.ScaleBy(x, ScreenWidthDev);
+    end;
+  end;
+end;
 
-CONSTRUCTOR THttpRequest.Create(CONST Url: STRING; CONST handleRedirects: boolean; CONST Error_message: STRING);
-BEGIN
-  self.FUrl := Url;
-  self.FHandleRedirects := handleRedirects;
-  self.FErrorMessage := Error_message;
-  self.FPostData := PostData;
-  self.FResponse := '';
-  self.IsPostRequest := false;
-END;
+constructor THttpRequest.Create(const Url: string; const handleRedirects: Boolean; const Error_message: string);
+begin
+  FUrl             := Url;
+  FHandleRedirects := handleRedirects;
+  FErrorMessage    := Error_message;
+  FPostData        := PostData;
+  FResponse        := '';
+  IsPostRequest    := False;
+end;
 
-DESTRUCTOR THttpRequest.Destroy;
-BEGIN
-  IsPostRequest := false;
-END;
+destructor THttpRequest.Destroy;
+begin
+  IsPostRequest := False;
+end;
 
-PROCEDURE THttpRequest.SetIsPost(CONST value: boolean);
-BEGIN
-  self.FIsPost := value;
-  IF NOT value AND Assigned(FPostData) THEN
+procedure THttpRequest.SetIsPost(const Value: Boolean);
+begin
+  FIsPost := Value;
+  if not Value and Assigned(FPostData) then
     FreeAndNil(FPostData);
-  IF value AND NOT Assigned(FPostData) THEN
+  if Value and not Assigned(FPostData) then
     FPostData := TIdMultiPartFormDataStream.Create;
-END;
+end;
 
-FUNCTION ValidRect(CONST ARect: TRect): boolean;
-BEGIN
-  Result := (ARect.Left > -1)
-    AND (ARect.Right > -1) AND (ARect.Right > ARect.Left)
-    AND (ARect.Top > -1)
-    AND (ARect.Bottom > -1) AND (ARect.Bottom > ARect.Top);
-END;
+function ValidRect(const ARect: TRect): Boolean;
+begin
+  Result := (ARect.Left > -1) and (ARect.Right > ARect.Left) and (ARect.Top > -1) and (ARect.Bottom > ARect.Top);
+end;
 
-FUNCTION PathCombine(CONST aPath, otherPath: STRING): STRING;
-BEGIN
+function PathCombine(const aPath, otherPath: string): string;
+begin
   Result := otherPath;
-  IF IsPathDelimiter(Result, 1) THEN
+  if IsPathDelimiter(Result, 1) then
     Delete(Result, 1, 1);
   Result := IncludeTrailingPathDelimiter(aPath) + Result;
-END;
+end;
 
-FUNCTION CtrlDown: Boolean;
-VAR
-  State                            : TKeyboardState;
-BEGIN
+function CtrlDown: Boolean;
+var
+  State: TKeyboardState;
+begin
   GetKeyboardState(State);
-  Result := ((State[vk_Control] AND 128) <> 0);
-END;
+  Result := ((State[vk_Control] and 128) <> 0);
+end;
 
-FUNCTION ShiftDown: Boolean;
-VAR
-  State                            : TKeyboardState;
-BEGIN
+function ShiftDown: Boolean;
+var
+  State: TKeyboardState;
+begin
   GetKeyboardState(State);
-  Result := ((State[vk_Shift] AND 128) <> 0);
-END;
+  Result := ((State[vk_Shift] and 128) <> 0);
+end;
 
-FUNCTION AltDown: Boolean;
-VAR
-  State                            : TKeyboardState;
-BEGIN
+function AltDown: Boolean;
+var
+  State: TKeyboardState;
+begin
   GetKeyboardState(State);
-  Result := ((State[vk_Menu] AND 128) <> 0);
-END;
+  Result := ((State[vk_Menu] and 128) <> 0);
+end;
 
-PROCEDURE PatchINT3;
-{http://www.delphipraxis.net/topic24054.html
-Es kann vorkommen, dass sich ein Programm einwandfrei kompillieren lässt,
-jedoch beim Start aus Delphi nach einiger Zeit das CPU-Fenster geöffnet wird.
-Dort steht dann häufig:
-
-ntdll.DbgBreakPoint
-
-Dies liegt daran, da Microsoft in manchen Dlls die Funktion ntdll.DbgBreakPoint
-vergessen hat. Microsoft hat ein paar Dlls versehentlich mit Debug-Informationen
-ausgeliefert, die noch Breakpoints enthalten, was der Debugger natürlich meldet.
-Man muss in so einem Falle zur Laufzeit den Code patchen.
-
-Aufruf in der initialization-section.
-}
-VAR
-  NOP                              : Byte;
-  NTDLL                            : THandle;
-  BytesWritten                     : DWORD;
-  Address                          : Pointer;
-BEGIN
-  IF Win32Platform <> VER_PLATFORM_WIN32_NT THEN Exit;
-  NTDLL := GetModuleHandle('NTDLL.DLL');
-  IF NTDLL = 0 THEN Exit;
-  Address := GetProcAddress(NTDLL, 'DbgBreakPoint');
-  IF Address = NIL THEN Exit;
-  TRY
-    IF Char(Address^) <> #$CC THEN Exit;
-
-    NOP := $90;
-    IF WriteProcessMemory(GetCurrentProcess, Address, @NOP, 1, BytesWritten) AND
-      (BytesWritten = 1) THEN
-      FlushInstructionCache(GetCurrentProcess, Address, 1);
-  EXCEPT
-    //Do not panic if you see an EAccessViolation here, it is perfectly harmless!
-    ON EAccessViolation DO ;
-  ELSE RAISE;
-  END;
-END;
-
-
-FUNCTION rand_string: STRING;
-VAR
-  i                                : integer;
-BEGIN
-  result := '';
-  FOR i := 0 TO 19 DO BEGIN
-    result := result + inttohex(round(random(16)), 1);
-  END;
-END;
-
-FUNCTION Get_File_Version(CONST FileName: STRING): STRING;
-VAR
-  dwFileVersionMS, dwFileVersionLS : DWORD;
-BEGIN
-  { If filename is not valid, return a string saying so and exit}
-  IF NOT FileExists(FileName) THEN BEGIN
-    result := Format(CAResources.RsErrorFileVersionFileNotFound, [FileName]);
-    exit;
-  END;
-
+function rand_string: string;
+var
+  I: Integer;
+begin
   Result := '';
-  IF Get_File_Version(FileName, dwFileVersionMS, dwFileVersionLS) THEN BEGIN
-    Result := IntToStr(HiWord(dwFileVersionMS));
-    Result := Result + '.' + IntToStr(LoWord(dwFileVersionMS));
-    Result := Result + '.' + IntToStr(HiWord(dwFileVersionLS));
-    Result := Result + '.' + IntToStr(LoWord(dwFileVersionLS));
-  END ELSE BEGIN
-    Result := Format(CAResources.RsErrorFileVersionGetFileVersion, [FileName]);
-  END;
-END;
+  for I := 0 to 19 do begin
+    Result := Result + IntToHex(Round(random(16)), 1);
+  end;
+end;
 
-FUNCTION Get_File_Version(CONST FileName: STRING; VAR FileVersionMS, FileVersionLS: DWORD): boolean;
-//True if successful
-VAR
-  VersionInfoSize, VersionInfoValueSize, Zero: DWord;
-  VersionInfo, VersionInfoValue    : Pointer;
-BEGIN
-  result := false;
-  IF NOT fileExists(filename) THEN BEGIN
-    exit;
-  END;
-  {otherwise, let's go!}
-   { Obtain size of version info structure }
-  VersionInfoSize := GetFileVersionInfoSize(PChar(FileName), Zero);
-  IF VersionInfoSize = 0 THEN exit;
-  { Allocate memory for the version info structure }
-  { This could raise an EOutOfMemory exception }
-  GetMem(VersionInfo, VersionInfoSize);
-  TRY
-    IF GetFileVersionInfo(PChar(FileName), 0, VersionInfoSize, VersionInfo) AND VerQueryValue(VersionInfo, '\' { root block }, VersionInfoValue,
-      VersionInfoValueSize) AND (0 <> LongInt(VersionInfoValueSize)) THEN BEGIN
-      FileVersionMS := TVSFixedFileInfo(VersionInfoValue^).dwFileVersionMS;
-      FileVersionLS := TVSFixedFileInfo(VersionInfoValue^).dwFileVersionLS;
-      result := true;
-    END; { then }
-  FINALLY
-    FreeMem(VersionInfo);
-  END; { try }
-END;
+function Get_File_Version(const FileName: string): string;
+var
+  dwFileVersionMS, dwFileVersionLS : DWORD;
+begin
+  { if FileName is not valid, return a string saying so and Exit}
+  if FileExists(FileName) then
+  begin
+    Result := '';
+    if Get_File_Version(FileName, dwFileVersionMS, dwFileVersionLS) then
+      Result := Format('%d.%d.%d.%d', [HiWord(dwFileVersionMS), LoWord(dwFileVersionMS), HiWord(dwFileVersionLS), LoWord(dwFileVersionLS)])
+    else
+      Result := Format(RsErrorFileVersionGetFileVersion, [FileName]);
+  end else
+    Result := Format(RsErrorFileVersionFileNotFound, [FileName]);
+end;
 
-FUNCTION Application_version: STRING;
-BEGIN
+function Get_File_Version(const FileName: string; var FileVersionMS, FileVersionLS: DWORD): Boolean; //True if successful
+var
+  VersionInfoSize, VersionInfoValueSize, Zero: DWORD;
+  VersionInfo, VersionInfoValue: Pointer;
+begin
+  Result := False;
+  if FileExists(FileName) then
+  begin
+    { Obtain size of version info structure }
+    VersionInfoSize := GetFileVersionInfoSize(PChar(FileName), Zero);
+    if VersionInfoSize > 0 then
+    begin
+      { Allocate memory for the version info structure }
+      { This could raise an EOutOfMemory exception }
+      GetMem(VersionInfo, VersionInfoSize);
+      try
+        if GetFileVersionInfo(PChar(FileName), 0, VersionInfoSize, VersionInfo) and VerQueryValue(VersionInfo, '\' { root block }, VersionInfoValue,
+          VersionInfoValueSize) and (0 <> LongInt(VersionInfoValueSize)) then begin
+          FileVersionMS := TVSFixedFileInfo(VersionInfoValue^).dwFileVersionMS;
+          FileVersionLS := TVSFixedFileInfo(VersionInfoValue^).dwFileVersionLS;
+          Result := True;
+        end; { then }
+      finally
+        FreeMem(VersionInfo);
+      end; { try }
+    end;
+  end;
+end;
+
+function Application_version: string;
+begin
   Result := Get_File_Version(Application.ExeName);
-END;
+end;
 
-FUNCTION Application_Dir: STRING;
-BEGIN
-  result := includeTrailingPathDelimiter(extractFileDir(Application.ExeName));
-END;
+function Application_Dir: string;
+begin
+  Result := includeTrailingPathDelimiter(extractFileDir(Application.ExeName));
+end;
 
-FUNCTION Application_File: STRING;
-BEGIN
-  result := ExtractFileName(Application.ExeName);
-END;
+function Application_File: string;
+begin
+  Result := ExtractFileName(Application.ExeName);
+end;
 
-FUNCTION Application_Friendly_Name: STRING;
-BEGIN
-  result := 'Cut Assistant V.' + Application_version;
-END;
+function Application_Friendly_Name: string;
+begin
+  Result := 'Cut Assistant V.' + Application_version;
+end;
 
-FUNCTION UploadData_Path(useCSV: boolean): STRING;
-BEGIN
-  result := Application_Dir + 'Upload' + IfThen(useCSV, '.CSV', '.XML');
-END;
+function UploadData_Path(useCSV: Boolean): string;
+begin
+  Result := Application_Dir + 'Upload' + IfThen(useCSV, '.CSV', '.XML');
+end;
 
-FUNCTION cleanURL(aURL: STRING): STRING;
-VAR
-  iChar                            : Integer;
-  aChar                            : Char;
-BEGIN
-  result := '';
-  FOR iChar := 1 TO length(aURL) DO BEGIN
-    aChar := aURL[iChar];
-    CASE aChar OF
-      '0'..'9', 'A'..'Z', 'a'..'z', '$', '-', '+', '.': result := result + aChar;
-    ELSE
-      result := result + '%' + inttohex(ord(aChar), 2);
-    END;
-  END;
-END;
+function cleanURL(aURL: string): string;
+var
+  I: Integer;
+  C: Char;
+begin
+  Result := '';
+  for I := 1 to Length(aURL) do
+  begin
+    C := aURL[I];
+    if CharInSet(C, ['0'..'9', 'A'..'Z', 'a'..'z', '$', '-', '+', '.']) then
+      Result := Result + C
+    else
+      Result := Result + '%' + IntToHex(Ord(C), 2);
+  end;
+end;
 
-FUNCTION cleanFileName(CONST filename: STRING): STRING;
-CONST
-  InvalidChars                     = '\/:*?<>|';
-VAR
-  i                                : integer;
-  f, ch                            : STRING;
-BEGIN
-  f := filename;
-  FOR i := 1 TO length(InvalidChars) DO BEGIN
-    ch := midstr(InvalidChars, i, 1);
-    f := AnsiReplaceText(f, ch, '_');
-  END;
-  result := f;
-END;
+function cleanFileName(const FileName: string): string;
+var
+  I: Integer;
+begin
+  Result := FileName;
 
-FUNCTION IsPathRooted(CONST Path: STRING): boolean;
-BEGIN
-  IF ExtractFileDrive(Path) <> '' THEN
-    Result := true
-  ELSE
+  for I := 1 to Length(Result) do
+    if not TPath.IsValidFileNameChar(Result[I]) then
+      Result[I] := '_';
+end;
+
+function IsPathRooted(const Path: string): Boolean;
+begin
+  if ExtractFileDrive(Path) <> '' then
+    Result := True
+  else
     Result := IsPathDelimiter(Path, 1);
-END;
+end;
 
+procedure ListBoxToClipboard(ListBox: TListBox; CopyAll: Boolean);
+var
+  S: string;
+  I: Integer;
+begin
+  if Assigned(ListBox) then
+  begin
+    for I := 0 to Pred(ListBox.Items.Count) do
+      if CopyAll or ListBox.Selected[I] then
+        S := S + ListBox.Items[I] + sLineBreak;
 
-PROCEDURE ListBoxToClipboard(ListBox: TListBox;
-  BufferSizePerLine: Integer;
-  CopyAll: Boolean);
-VAR
-  Buffer                           : PChar;
-  BufferSize                       : Integer;
-  Ptr                              : PChar;
-  I                                : Integer;
-  Line                             : STRING[255];
-  Count                            : Integer;
-BEGIN
-  IF NOT Assigned(ListBox) THEN
-    Exit;
-  BufferSize := BufferSizePerLine * ListBox.Items.Count;
-  GetMem(Buffer, BufferSize);
-  Ptr := Buffer;
-  Count := 0;
-  FOR I := 0 TO ListBox.Items.Count - 1 DO BEGIN
-    Line := ListBox.Items.strings[I];
-    IF NOT CopyAll AND ListBox.MultiSelect AND (NOT ListBox.Selected[I]) THEN
-      Continue;
-    { Check buffer overflow }
-    Count := Count + Length(Line) + 3;
-    IF Count >= BufferSize THEN
-      Break;
-    { Append to buffer }
-    Move(Line[1], Ptr^, Length(Line));
-    Ptr := Ptr + Length(Line);
-    Ptr[0] := #13;
-    Ptr[1] := #10;
-    Ptr := Ptr + 2;
-  END;
-  Ptr[0] := #0;
-  ClipBoard.SetTextBuf(Buffer);
-  FreeMem(Buffer, BufferSize);
-END;
+    ClipBoard.AsText := S;
+  end;
+end;
 
 ////////////////////////////////////////////////////////////////
 // AppName:  name (including path) of the application
@@ -1139,106 +1093,108 @@ END;
 // ExitCode: exitcode of the application (only avaiable if Wait <> 0)
 //
 
-FUNCTION STO_ShellExecute(CONST AppName, AppArgs: STRING; CONST Wait: Cardinal;
-  CONST Hide: Boolean; VAR ExitCode: DWORD): Boolean;
-BEGIN
-  result := STO_ShellExecute_Capture(AppName, AppArgs, Wait, Hide, ExitCode, NIL)
-END;
+function STO_ShellExecute(const AppName, AppArgs: string; const Wait: Cardinal; const Hide: Boolean; var ExitCode: DWORD): Boolean;
+begin
+  Result := STO_ShellExecute_Capture(AppName, AppArgs, Wait, Hide, ExitCode, nil);
+end;
 
-FUNCTION STO_ShellExecute_Capture(CONST AppName, AppArgs: STRING; CONST Wait: Cardinal;
-  CONST Hide: Boolean; VAR ExitCode: DWORD; AMemo: TMemo): Boolean;
-CONST
-  ReadBuffer                       = 2400;
-VAR
-  myStartupInfo                    : TStartupInfo;
-  myProcessInfo                    : TProcessInformation;
-  sAppName, sCommandline           : STRING;
-  iWaitRes                         : Integer;
-
-  Security                         : TSecurityAttributes;
-  ReadPipe, WritePipe              : THandle;
-  Buffer                           : Pchar;
-  BytesRead                        : DWord;
-BEGIN
-  result := false;
-  Buffer := NIL;
-  IF Assigned(AMemo) THEN BEGIN
-    WITH Security DO BEGIN
+function STO_ShellExecute_Capture(const AppName, AppArgs: string; const Wait: Cardinal; const Hide: Boolean; var ExitCode: DWORD; AMemo: TMemo): Boolean;
+const
+  ReadBuffer = 2400;
+var
+  myStartupInfo: TStartupInfo;
+  myProcessInfo: TProcessInformation;
+  sAppName, sCommandline: string;
+  iWaitRes: Integer;
+  Security: TSecurityAttributes;
+  ReadPipe, WritePipe: THandle;
+  Buffer: PChar;
+  BytesRead: DWORD;
+begin
+  Result := False;
+  Buffer := nil;
+  if Assigned(AMemo) then
+  begin
+    with Security do
+    begin
       nlength := SizeOf(TSecurityAttributes);
-      binherithandle := true;
-      lpsecuritydescriptor := NIL;
-    END;
-    IF NOT Createpipe(ReadPipe, WritePipe, @Security, 0) THEN exit;
+      binherithandle := True;
+      lpsecuritydescriptor := nil;
+    end;
+    if not Createpipe(ReadPipe, WritePipe, @Security, 0) then Exit;
     Buffer := AllocMem(ReadBuffer + 1);
-  END;
-  TRY
+  end;
+  try
     // initialize the startupinfo
     FillChar(myStartupInfo, SizeOf(TStartupInfo), 0);
-    myStartupInfo.cb := Sizeof(TStartupInfo);
+    myStartupInfo.cb := SizeOf(TStartupInfo);
     myStartupInfo.dwFlags := STARTF_USESTDHANDLES + STARTF_USESHOWWINDOW;
-    IF Hide THEN // hide application
+    if Hide then // hide application
       myStartupInfo.wShowWindow := SW_HIDE
-    ELSE // show application
+    else // show application
       myStartupInfo.wShowWindow := SW_SHOWNORMAL;
 
     // prepare applicationname
     sAppName := AppName;
-    IF (Length(sAppName) > 0) AND (sAppName[1] <> '"') THEN
+    if (Length(sAppName) > 0) and (sAppName[1] <> '"') then
       sAppName := '"' + sAppName + '"';
 
     // start process
     ExitCode := 0;
     sCommandline := sAppName + ' ' + AppArgs;
 
-    Result := CreateProcess(NIL, PAnsiChar(sCommandline), NIL, NIL, False,
-      CREATE_NEW_CONSOLE OR NORMAL_PRIORITY_CLASS, NIL, NIL,
-      myStartupInfo, myProcessInfo);
+    Result := CreateProcess(nil, PChar(sCommandline), nil, nil, False,
+      CREATE_NEW_CONSOLE or NORMAL_PRIORITY_CLASS, nil, nil, myStartupInfo, myProcessInfo);
 
     // could process be started ?
-    IF Result THEN BEGIN
+    if Result then
+    begin
       // wait on process ?
-      IF (Wait <> 0) THEN BEGIN
-        IF (Wait > 0) THEN // wait until process terminates
+      if (Wait <> 0) then
+      begin
+        if (Wait > 0) then // wait until process terminates
           iWaitRes := WaitForSingleObject(myProcessInfo.hProcess, Wait)
-        ELSE // wait until process has been started
+        else // wait until process has been started
           iWaitRes := WaitForInputIdle(myProcessInfo.hProcess, Abs(Wait));
         // timeout reached ?
-        IF iWaitRes = WAIT_TIMEOUT THEN BEGIN
+        if iWaitRes = WAIT_TIMEOUT then begin
           Result := False;
           TerminateProcess(myProcessInfo.hProcess, 1);
-        END;
+        end;
         // getexitcode
         GetExitCodeProcess(myProcessInfo.hProcess, ExitCode);
-      END;
-      IF Assigned(AMemo) THEN BEGIN
-        REPEAT
+      end;
+      if Assigned(AMemo) then
+      begin
+        repeat
           BytesRead := 0;
-          ReadFile(ReadPipe, Buffer[0], ReadBuffer, BytesRead, NIL);
+          ReadFile(ReadPipe, Buffer[0], ReadBuffer, BytesRead, nil);
           Buffer[BytesRead] := #0;
-          OemToAnsi(Buffer, Buffer);
-          AMemo.Text := AMemo.text + STRING(Buffer);
-        UNTIL (BytesRead < ReadBuffer);
+          // OemToAnsi(Buffer, Buffer);    no more needed?
+
+          AMemo.Text := AMemo.text + string(Buffer);
+        until (BytesRead < ReadBuffer);
         CloseHandle(ReadPipe);
         CloseHandle(WritePipe);
-      END;
+      end;
       CloseHandle(myProcessInfo.hProcess);
-    END ELSE BEGIN
+    end else begin
       RaiseLastOSError;
-    END;
-  FINALLY
-    IF Assigned(AMemo) THEN FreeMem(Buffer);
-  END;
-END;
+    end;
+  finally
+    if Assigned(AMemo) then FreeMem(Buffer);
+  end;
+end;
 
-FUNCTION CallApplication(AppPath, Command: STRING; VAR ErrorString: STRING): boolean;
-VAR
-  return_value                     : cardinal;
-  //m: string;
-BEGIN
-  return_value := shellexecute(Application.MainForm.Handle, 'open', pointer(AppPath), pointer(command), '', sw_shownormal);
+function CallApplication(AppPath, Command: string; var ErrorString: string): Boolean;
+var
+  return_value: Cardinal;
+begin
+  return_value := shellexecute(Application.MainForm.Handle, 'open', Pointer(AppPath), Pointer(command), '', sw_shownormal);
 
-  IF return_value <= 32 THEN BEGIN
-    result := false;
+  if return_value <= 32 then
+  begin
+    Result := False;
     return_value := GetLastError;
     ErrorString := SysErrorMessage(return_value);
     {
@@ -1262,176 +1218,300 @@ BEGIN
         end;
         ErrorString := m;
     }
-  END ELSE BEGIN
+  end else
+  begin
     ErrorString := '';
-    result := true;
-  END;
-END;
+    Result := True;
+  end;
+end;
 
-FUNCTION secondsToTimeString(t: double): STRING;
-VAR
-  h, m, s, ms                      : integer;
-  sh, sm, ss, sms                  : STRING;
-BEGIN
-  t := RoundTo(t, -3);
-  ms := Trunc(1000 * frac(t));
-  s := trunc(t);
-  m := trunc(s / 60);
-  s := s MOD 60;
-  h := trunc(m / 60);
-  m := m MOD 60;
+function secondsToTimeString(t: Double): string;
+begin
+  Result := FormatDateTime('hh:nn:ss,zzz', (t * 1000) / MSecsPerDay);
+end;
 
-  sh := inttostr(h);
-  sm := inttostr(m);
-  ss := inttostr(s);
-  sms := inttostr(ms);
-
-  IF m < 10 THEN sm := '0' + sm;
-  IF s < 10 THEN ss := '0' + ss;
-  IF ms < 10 THEN
-    sms := '00' + sms
-  ELSE
-    IF ms < 100 THEN sms := '0' + sms;
-
-  result := sh + ':' + sm + ':' + ss + '.' + sms;
-END;
-
-FUNCTION fcc2String(fcc: DWord): STRING;
-VAR
-  Buffer                           : ARRAY[0..3] OF Char;
-BEGIN
+function fcc2String(fcc: DWORD): string;
+var
+  Buffer: array[0 .. 3] of Byte;
+begin
   Move(fcc, Buffer, SizeOf(Buffer));
-  Result := Buffer;
-END;
+  Result := Chr(Buffer[0]) + Chr(Buffer[1]) + Chr(Buffer[2]) + Chr(Buffer[3]);
+end;
 
-FUNCTION MakeFourCC(CONST a, b, c, d: char): DWord;
-BEGIN
-  Result := Cardinal(a)
-    OR (Cardinal(b) SHL 8)
-    OR (Cardinal(c) SHL 16)
-    OR (Cardinal(d) SHL 24);
-END;
+function MakeFourCC(const a, b, c, d: Char): DWORD;
+begin
+  Result := Cardinal(a) or (Cardinal(b) shl 8) or (Cardinal(c) shl 16) or (Cardinal(d) shl 24);
+end;
 
-FUNCTION SaveBitmapAsJPEG(ABitmap: TBitmap; FileName: STRING): boolean;
-VAR
-  tempJPEG                         : TJPEGImage;
-BEGIN
+function SaveBitmapAsJPEG(ABitmap: TBitmap; FileName: string): Boolean;
+var
+  tempJPEG: TJPEGImage;
+begin
   TempJPEG := TJPEGImage.Create;
-  TRY
+  try
     TempJPEG.Assign(ABitmap);
     TempJPEG.SaveToFile(FileName);
-    Result := true;
-  FINALLY
-    FreeAndNIL(TempJPEG);
-  END;
-END;
+    Result := True;
+  finally
+    FreeAndNil(TempJPEG);
+  end;
+end;
 
 { TGUIDList }
 
-FUNCTION TGUIDList.Add(aGUID: TGUID): Integer;
-BEGIN
-  inc(FCount);
-  setlength(FGUIDList, FCount);
-  FGUIDList[FCount - 1] := aGUID;
-  result := FCount - 1;
-END;
+function TGUIDList.Add(aGUID: TGUID): Integer;
+begin
+  Inc(FCount);
+  SetLength(FGUIDList, FCount);
+  FGUIDList[Pred(FCount)] := aGUID;
+  Result := Pred(FCount);
+end;
 
-FUNCTION TGUIDList.AddFromString(aGUIDString: STRING): Integer;
-BEGIN
-  result := Add(StringToGUID(aGUIDString));
-END;
+function TGUIDList.AddFromString(aGUIDString: string): Integer;
+begin
+  Result := Add(StringToGUID(aGUIDString));
+end;
 
-PROCEDURE TGUIDList.Clear;
-BEGIN
+procedure TGUIDList.Clear;
+begin
   FCount := 0;
-  setlength(FGUIDList, FCount);
-END;
+  SetLength(FGUIDList, FCount);
+end;
 
-CONSTRUCTOR TGUIDList.Create;
-BEGIN
-  INHERITED;
+constructor TGUIDList.Create;
+begin
+  inherited;
   Clear;
-END;
+end;
 
-PROCEDURE TGUIDList.Delete(Item: TGUID);
-VAR
-  idx                              : integer;
-BEGIN
-  idx := IndexOf(Item);
-  IF idx > -1 THEN
-    Delete(idx);
-END;
+procedure TGUIDList.Delete(Item: TGUID);
+var
+  I: Integer;
+begin
+  I := IndexOf(Item);
+  if I > -1 then
+    Delete(I);
+end;
 
-PROCEDURE TGUIDList.Delete(Index: Integer);
-VAR
-  i                                : Integer;
-BEGIN
-  FOR i := Index TO FCount - 2 DO BEGIN
-    FGUIDList[i] := FGUIDList[i + 1];
-  END;
-  dec(FCount);
-  setlength(FGUIDList, FCount);
-END;
+procedure TGUIDList.Delete(Index: Integer);
+var
+  I: Integer;
+begin
+  for I := Index to FCount - 2 do
+    FGUIDList[I] := FGUIDList[I + 1];
 
-DESTRUCTOR TGUIDList.Destroy;
-BEGIN
+  Dec(FCount);
+  SetLength(FGUIDList, FCount);
+end;
+
+destructor TGUIDList.Destroy;
+begin
   Clear;
-  INHERITED;
-END;
+  inherited;
+end;
 
-FUNCTION TGUIDList.GetItem(Index: Integer): TGUID;
-BEGIN
-  result := FGUIDList[Index];
-END;
+function TGUIDList.GetItem(Index: Integer): TGUID;
+begin
+  Result := FGUIDList[Index];
+end;
 
-FUNCTION TGUIDList.GetItemString(Index: Integer): STRING;
-BEGIN
-  result := GUIDToString(FGuidList[Index]);
-END;
+function TGUIDList.GetItemString(Index: Integer): string;
+begin
+  Result := GUIDToString(FGuidList[Index]);
+end;
 
-FUNCTION TGUIDList.IndexOf(aGUID: TGUID): Integer;
-VAR
-  i                                : integer;
-BEGIN
-  result := -1;
-  FOR i := 0 TO FCount - 1 DO BEGIN
-    IF IsEqualGUID(aGUID, FGUIDList[i]) THEN BEGIN
-      result := i;
-      break;
-    END;
-  END;
-END;
+function TGUIDList.IndexOf(aGUID: TGUID): Integer;
+var
+  I: Integer;
+begin
+  Result := -1;
+  for I := 0 to Pred(FCount) do
+  begin
+    if IsEqualGUID(aGUID, FGUIDList[I]) then
+    begin
+      Result := I;
+      Break;
+    end;
+  end;
+end;
 
-FUNCTION TGUIDList.IndexOf(aGUIDString: STRING): Integer;
-BEGIN
-  result := IndexOf(StringToGUID(aGUIDString));
-END;
+function TGUIDList.IndexOf(aGUIDString: string): Integer;
+begin
+  Result := IndexOf(StringToGUID(aGUIDString));
+end;
 
-FUNCTION TGUIDList.IsInList(aGUID: TGUID): boolean;
-BEGIN
-  result := IndexOf(aGUID) >= 0;
-END;
+function TGUIDList.IsInList(aGUID: TGUID): Boolean;
+begin
+  Result := IndexOf(aGUID) >= 0;
+end;
 
-FUNCTION TGUIDList.IsInList(aGUIDString: STRING): boolean;
-BEGIN
-  result := IsInList(StringToGUID(aGUIDString));
-END;
+function TGUIDList.IsInList(aGUIDString: string): Boolean;
+begin
+  Result := IsInList(StringToGUID(aGUIDString));
+end;
 
-PROCEDURE TGUIDList.SetItem(Index: Integer; CONST Value: TGUID);
-BEGIN
+procedure TGUIDList.SetItem(Index: Integer; const Value: TGUID);
+begin
   FGUIDList[Index] := Value;
-END;
+end;
 
-PROCEDURE TGUIDList.SetItemString(Index: Integer; CONST Value: STRING);
-BEGIN
+procedure TGUIDList.SetItemString(Index: Integer; const Value: string);
+begin
   FGUIDList[Index] := StringToGUID(Value);
-END;
+end;
 
-INITIALIZATION
-  GetInvariantFormatSettings(invariantFormat);
+// func/proc from abc874
 
-  // nur wenn ein Debugger vorhanden, den Patch ausführen
-  //if DebugHook<>0 then PatchINT3;
+function ExtractBaseFileNameOTR(const S: string): string;
+var
+  I: Integer;
+begin
+  Result := ExtractFileName(S);
 
-END.
+  I := Pos('.MPG.', AnsiUpperCase(Result));
+
+  if I > 0 then
+    SetLength(Result, Pred(I));
+end;
+
+function FileNameToFormatName(const S: string): string;
+const
+  C = '.cutlist';
+var
+  I: Integer;
+  E: string;
+begin
+  Result := '?';
+
+  I := Pos('.MPG.', AnsiUpperCase(S));
+
+  if I > 0 then
+  begin
+    E := S;
+    Delete(E, 1, I);
+
+    if E.EndsWith(C, True) then
+      SetLength(E, Length(E) - Length(C));
+
+    case IndexText(E, ['mpg.avi', 'mpg.HD.avi', 'mpg.HQ.avi', 'mpg.mp4']) of
+      0 : Result := 'DivX';
+      1 : Result := 'HD';
+      2 : Result := 'HQ';
+      3 : Result := 'MP4';
+    end;
+  end;
+end;
+
+function StringToken(var S: string; C: Char): string;
+var
+  I: Integer;
+begin
+  I := Pos(C, S);
+  if I > 0 then
+  begin
+    Result := Copy(S, 1, Pred(I));
+    Delete(S, 1, I);
+  end else
+  begin
+    Result := S;
+    S := '';
+  end;
+end;
+
+procedure ErrMsg(const S: string);
+begin
+  MessageDlg(S, mtError, [mbOK], 0);
+end;
+
+procedure ErrMsgFmt(const S: string; const Args: array of const);
+begin
+  ErrMsg(Format(S, Args));
+end;
+
+procedure InfMsg(const S: string);
+begin
+  MessageDlg(S, mtInformation, [mbOK], 0);
+end;
+
+procedure InfMsgFmt(const S: string; const Args: array of const);
+begin
+  InfMsg(Format(S, Args));
+end;
+
+procedure WarnMsg(const S: string);
+begin
+  MessageDlg(S, mtWarning, [mbOK], 0);
+end;
+
+procedure WarnMsgFmt(const S: string; const Args: array of const);
+begin
+  WarnMsg(Format(S, Args));
+end;
+
+function YesNoMsg(const S: string): Boolean;
+begin
+  Result := MessageDlg(S, mtConfirmation, mbYesNo, 0) = mrYes;
+end;
+
+function YesNoMsgFmt(const S: string; const Args: array of const): Boolean;
+begin
+  Result := YesNoMsg(Format(S, Args));
+end;
+
+function NoYesMsg(const S: string): Boolean;
+begin
+  Result := MessageDlg(S, mtConfirmation, mbYesNo, 0, mbNo) = mrYes;
+end;
+
+function NoYesMsgFmt(const S: string; const Args: array of const): Boolean;
+begin
+  Result := NoYesMsg(Format(S, Args));
+end;
+
+function YesNoWarnMsg(const S: string): Boolean;
+begin
+  Result := MessageDlg(S, mtWarning, mbYesNo, 0) = mrYes;
+end;
+
+function YesNoWarnMsgFmt(const S: string; const Args: array of const): Boolean;
+begin
+  Result := YesNoWarnMsg(Format(S, Args));
+end;
+
+function NoYesWarnMsg(const S: string): Boolean;
+begin
+  Result := MessageDlg(S, mtWarning, mbYesNo, 0, mbNo) = mrYes;
+end;
+
+function NoYesWarnMsgFmt(const S: string; const Args: array of const): Boolean;
+begin
+  Result := NoYesWarnMsg(Format(S, Args));
+end;
+
+function YesNoCancelNamed(const Msg: string; const YesCaption: string = ''; const NoCaption: string = '';
+  const CancelCaption: string = ''; DefaultButton: TMsgDlgBtn = mbCancel): TModalResult;
+var
+  F: TForm;
+begin
+  F := CreateMessageDialog(Msg, mtConfirmation, mbYesNoCancel, DefaultButton);
+  try
+    if YesCaption <> '' then
+      TButton(F.FindComponent('Yes')).Caption := YesCaption;
+
+    if NoCaption <> '' then
+      TButton(F.FindComponent('No')).Caption := NoCaption;
+
+    if CancelCaption <> '' then
+      TButton(F.FindComponent('Cancel')).Caption := CancelCaption;
+
+    Result := F.ShowModal;
+  finally
+    F.Free;
+  end;
+end;
+
+initialization
+  invariantFormat := TFormatSettings.Create('en-US');
+  UseLatestCommonDialogs := False; // TTaskDialog (VIsta and later cuts long lines (ellipses will be injected).
+end.
 
