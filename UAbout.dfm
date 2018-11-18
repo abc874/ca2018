@@ -697,9 +697,9 @@ object AboutBox: TAboutBox
     object lblCopyright_nl: TLabel
       Left = 61
       Top = 80
-      Width = 69
+      Width = 119
       Height = 16
-      Caption = '1248, a_s_z'
+      Caption = '1248, a_s_z, abc874'
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -13

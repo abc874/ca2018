@@ -1,23 +1,20 @@
-UNIT UAbout;
+unit UAbout;
 
-INTERFACE
+{$I Information.inc}
 
-USES Windows,
-  SysUtils,
-  Classes,
-  Graphics,
-  Forms,
-  Controls,
-  StdCtrls,
-  Buttons,
-  ExtCtrls,
-  JvGIF,
-  JvPoweredBy,
-  JvExControls,
-  JvLinkLabel;
+// basic review and reformatting: done
 
-TYPE
-  TAboutBox = CLASS(TForm)
+interface
+
+uses
+  // Delphi
+  System.Classes, Vcl.Forms, Vcl.StdCtrls, Vcl.Graphics, Vcl.Controls, Vcl.ExtCtrls,
+
+  // Jedi
+  JvGIF, JvPoweredBy, JvExControls;
+
+type
+  TAboutBox = class(TForm)
     pnlAbout: TPanel;
     iProgram_nl: TImage;
     lblProductName_nl: TLabel;
@@ -29,25 +26,28 @@ TYPE
     iIndy_nl: TImage;
     lblDSPack_nl: TLabel;
     lblCopyright_nl: TLabel;
-    PROCEDURE FormCreate(Sender: TObject);
-  PRIVATE
-    { Private-Deklarationen }
-  PUBLIC
-    { Public-Deklarationen }
-  END;
+    procedure FormCreate(Sender: TObject);
+  private
+    { private-Deklarationen }
+  public
+    { public-Deklarationen }
+  end;
 
-VAR
-  AboutBox                         : TAboutBox;
+var
+  AboutBox: TAboutBox;
 
-IMPLEMENTATION
+implementation
 
-USES Utils;
+uses
+  // CA
+  Utils;
 
 {$R *.dfm}
 
-PROCEDURE TAboutBox.FormCreate(Sender: TObject);
-BEGIN
+procedure TAboutBox.FormCreate(Sender: TObject);
+begin
   lblVersion_nl.Caption := 'Version ' + Get_File_Version(Application.ExeName);
-END;
+end;
 
-END.
+end.
+
