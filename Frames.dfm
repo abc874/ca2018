@@ -1,9 +1,9 @@
 object FFrames: TFFrames
   Left = 436
   Top = 79
-  Width = 815
-  Height = 761
   Caption = 'Frames'
+  ClientHeight = 727
+  ClientWidth = 799
   Color = clBtnFace
   Font.Charset = ANSI_CHARSET
   Font.Color = clWindowText
