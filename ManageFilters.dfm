@@ -1,10 +1,9 @@
 object FManageFilters: TFManageFilters
   Left = 372
   Top = 359
-  AutoScroll = False
   Caption = 'Filters'
-  ClientHeight = 359
-  ClientWidth = 800
+  ClientHeight = 506
+  ClientWidth = 784
   Color = clBtnFace
   Constraints.MinHeight = 200
   Constraints.MinWidth = 250
@@ -21,24 +20,24 @@ object FManageFilters: TFManageFilters
   OnDestroy = FormDestroy
   OnShow = FormShow
   DesignSize = (
-    800
-    359)
+    784
+    506)
   PixelsPerInch = 96
   TextHeight = 13
   object lblClickOnFilter: TLabel
-    Left = 148
-    Top = 326
-    Width = 103
-    Height = 26
+    Left = 180
+    Top = 482
+    Width = 189
+    Height = 13
     Anchors = [akLeft, akBottom]
     Caption = 'Double Click on Filter to show properties'
     WordWrap = True
   end
   object cmdRemove: TButton
     Left = 4
-    Top = 330
-    Width = 131
-    Height = 25
+    Top = 477
+    Width = 165
+    Height = 23
     Anchors = [akLeft, akBottom]
     Caption = 'Remove from FilterGraph'
     Enabled = False
@@ -47,10 +46,10 @@ object FManageFilters: TFManageFilters
     OnClick = cmdRemoveClick
   end
   object cmdClose: TButton
-    Left = 735
-    Top = 330
-    Width = 61
-    Height = 25
+    Left = 688
+    Top = 477
+    Width = 92
+    Height = 23
     Anchors = [akRight, akBottom]
     Cancel = True
     Caption = 'Close'
@@ -62,8 +61,8 @@ object FManageFilters: TFManageFilters
   object lvFilters: TListBox
     Left = 0
     Top = 0
-    Width = 800
-    Height = 317
+    Width = 784
+    Height = 464
     Align = alTop
     Anchors = [akLeft, akTop, akRight, akBottom]
     Font.Charset = DEFAULT_CHARSET
@@ -72,7 +71,6 @@ object FManageFilters: TFManageFilters
     Font.Name = 'Courier New'
     Font.Pitch = fpVariable
     Font.Style = []
-    ItemHeight = 16
     MultiSelect = True
     ParentFont = False
     TabOrder = 2
@@ -80,20 +78,19 @@ object FManageFilters: TFManageFilters
     OnDblClick = lvFiltersDblClick
   end
   object cmdCopy: TButton
-    Left = 627
-    Top = 330
+    Left = 579
+    Top = 477
     Width = 102
-    Height = 25
+    Height = 23
     Anchors = [akRight, akBottom]
     Cancel = True
     Caption = 'Copy to clipboard'
-    Default = True
     TabOrder = 3
     OnClick = cmdCopyClick
   end
   object chkShowPinInfo: TJvCheckBox
-    Left = 496
-    Top = 334
+    Left = 456
+    Top = 480
     Width = 87
     Height = 17
     Anchors = [akRight, akBottom]
@@ -103,11 +100,5 @@ object FManageFilters: TFManageFilters
     TabOrder = 4
     OnClick = chkShowPinInfoClick
     LinkedControls = <>
-    HotTrackFont.Charset = ANSI_CHARSET
-    HotTrackFont.Color = clWindowText
-    HotTrackFont.Height = -11
-    HotTrackFont.Name = 'Microsoft Sans Serif'
-    HotTrackFont.Pitch = fpVariable
-    HotTrackFont.Style = []
   end
 end

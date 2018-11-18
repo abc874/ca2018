@@ -1,193 +1,209 @@
-UNIT ManageFilters;
+unit ManageFilters;
 
-INTERFACE
+{$I Information.inc}
 
-USES
-  Windows,
-  Messages,
-  SysUtils,
-  Variants,
-  Classes,
-  Graphics,
-  Controls,
-  Forms,
-  Dialogs,
-  StdCtrls,
-  ComCtrls,
-  DSPack,
-  DSUtil,
-  DirectShow9,
-  Utils,
-  JvExStdCtrls,
-  JvCheckBox;
+// basic review and reformatting: done
 
-TYPE
-  TFManageFilters = CLASS(TForm)
+interface
+
+uses
+  // Delphi
+  System.Classes, Vcl.StdCtrls, Vcl.Controls, Vcl.Forms,
+
+  // Jedi
+  JvExStdCtrls, JvCheckBox,
+
+  // DSPack
+  DSPack, DXSUtils;
+
+type
+  TFManageFilters = class(TForm)
     cmdRemove: TButton;
     cmdClose: TButton;
     lvFilters: TListBox;
     cmdCopy: TButton;
     lblClickOnFilter: TLabel;
     chkShowPinInfo: TJvCheckBox;
-    PROCEDURE cmdCloseClick(Sender: TObject);
-    PROCEDURE FormShow(Sender: TObject);
-    PROCEDURE lvFiltersClick(Sender: TObject);
-    PROCEDURE FormCreate(Sender: TObject);
-    PROCEDURE cmdRemoveClick(Sender: TObject);
-    PROCEDURE FormDestroy(Sender: TObject);
-    PROCEDURE cmdCopyClick(Sender: TObject);
-    PROCEDURE lvFiltersDblClick(Sender: TObject);
-    PROCEDURE FormClose(Sender: TObject; VAR Action: TCloseAction);
+    procedure cmdCloseClick(Sender: TObject);
+    procedure FormShow(Sender: TObject);
+    procedure lvFiltersClick(Sender: TObject);
+    procedure FormCreate(Sender: TObject);
+    procedure cmdRemoveClick(Sender: TObject);
+    procedure FormDestroy(Sender: TObject);
+    procedure cmdCopyClick(Sender: TObject);
+    procedure lvFiltersDblClick(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure chkShowPinInfoClick(Sender: TObject);
-  PRIVATE
+  private
+    { private declarations }
     FilterList: TFIlterList;
     PinList: TPinList;
-    { Private declarations }
-    PROCEDURE refresh_FilterList(Graph: TFilterGraph);
-  PUBLIC
-    { Public declarations }
+    procedure refresh_FilterList(Graph: TFilterGraph);
+  public
+    { public declarations }
     SourceGraph: TFilterGraph;
-  END;
+  end;
 
-VAR
-  FManageFilters                   : TFManageFilters;
+var
+  FManageFilters: TFManageFilters;
 
-IMPLEMENTATION
+implementation
 
 {$R *.dfm}
 
-USES Main,
-  ComObj;
+uses
+  // Delphi
+  Winapi.DirectShow9, Winapi.ActiveX, System.SysUtils,
 
-PROCEDURE TFManageFilters.cmdCloseClick(Sender: TObject);
-BEGIN
-  self.Hide;
-END;
+  // CA
+  Main, Utils;
 
-PROCEDURE TFManageFilters.FormShow(Sender: TObject);
-BEGIN
-  // Show taskbar button for this form ...
-  // SetWindowLong(Handle, GWL_ExStyle, WS_Ex_AppWindow);
-  Refresh_Filterlist(self.SourceGraph);
-END;
+procedure TFManageFilters.cmdCloseClick(Sender: TObject);
+begin
+  Hide;
+end;
 
-PROCEDURE TFManageFilters.refresh_FilterList(Graph: TFilterGraph);
-VAR
-  BaseFilter, cFilter              : IBaseFilter;
-  cPin                             : IPin;
-  iFilter, iPin                    : Integer;
-  pinInfo                          : _PinInfo;
-  FUNCTION FormatBaseFilter(CONST bf: IBaseFilter): STRING;
-  VAR
-    guid                           : TGUID;
-    fi                             : _FilterInfo;
-  BEGIN
-    Result := '';
-    IF NOT Assigned(bf) THEN Exit;
-    bf.GetClassID(guid);
-    bf.QueryFilterInfo(fi);
-    Result := fi.achName + ' (' + GUIDToString(guid) + ')';
-  END;
-BEGIN
-  IF NOT graph.Active THEN exit;
+procedure TFManageFilters.FormShow(Sender: TObject);
+begin
+  Refresh_Filterlist(SourceGraph);
+end;
+
+procedure TFManageFilters.refresh_FilterList(Graph: TFilterGraph);
+  function FormatBaseFilter(const bf: IBaseFilter): string;
+  var
+    guid: TGUID;
+    fi: _FilterInfo;
+  begin
+    if Assigned(bf) then
+    begin
+      bf.GetClassID(guid);
+      bf.QueryFilterInfo(fi);
+      Result := fi.achName + ' (' + GUIDToString(guid) + ')';
+    end else
+      Result := '';
+  end;
+var
+  BaseFilter, cFilter: IBaseFilter;
+  cPin: IPin;
+  iFilter, iPin: Integer;
+  pinInfo: _PinInfo;
+begin
+  if not graph.Active then Exit;
   graph.Stop;
-  FilterList.Assign(Graph AS IFIlterGRaph);
+  FilterList.Assign(Graph as IFIlterGRaph);
 
   lvFilters.Clear;
-  FOR iFilter := 0 TO FilterList.Count - 1 DO BEGIN
+  for iFilter := 0 to Pred(FilterList.Count) do
+  begin
     BaseFilter := FilterLIst.Items[iFilter];
-    lvFilters.Items.Add('|-' + FormatBaseFilter(BaseFilter));
-    IF chkShowPinInfo.Checked THEN BEGIN
+    lvFilters.Items.AddObject('|-' + FormatBaseFilter(BaseFilter), Pointer(100 + iFilter));
+    if chkShowPinInfo.Checked then
+    begin
       PinList.Assign(BaseFilter);
-      FOR iPin := 0 TO PinList.Count - 1 DO BEGIN
-        cFilter := NIL;
-        IF Succeeded(PinList.Items[iPin].ConnectedTo(cPin)) THEN
-          IF Succeeded(cpin.QueryPinInfo(pinInfo)) THEN
-            cFilter := pinInfo.pFilter;
+      for iPin := 0 to Pred(PinList.Count) do
+      begin
+        cFilter := nil;
+        if Succeeded(PinList.Items[iPin].ConnectedTo(cPin)) and Succeeded(cpin.QueryPinInfo(pinInfo)) then
+          cFilter := pinInfo.pFilter;
+
         lvFilters.Items.Add('|--- ' + PinList.PinInfo[iPin].achName + ' => ' + FormatBaseFilter(cFilter));
-      END;
-    END;
-  END;
-END;
+      end;
+    end;
+  end;
+end;
 
-PROCEDURE TFManageFilters.lvFiltersClick(Sender: TObject);
-VAR
-  iItem                            : Integer;
-  sel                              : boolean;
-BEGIN
-  sel := false;
-  FOR iItem := 0 TO lvFilters.Items.count - 1 DO BEGIN
-    IF lvFilters.Selected[iItem] THEN sel := true;
-  END;
-  self.cmdRemove.Enabled := sel;
-END;
+procedure TFManageFilters.lvFiltersClick(Sender: TObject);
+var
+  iItem: Integer;
+  sel: Boolean;
+begin
+  sel := False;
+  for iItem := 0 to Pred(lvFilters.Items.Count) do
+    if lvFilters.Selected[iItem] then
+    begin
+      sel := True;
+      Break;
+    end;
 
+  cmdRemove.Enabled := sel;
+end;
 
-PROCEDURE TFManageFilters.cmdRemoveClick(Sender: TObject);
-VAR
-  iItem, iFIlter                   : Integer;
-BEGIN
-  exit; //*********************** funktioniert noch nicht richtig
+procedure TFManageFilters.cmdRemoveClick(Sender: TObject);
+var
+  iItem, iFIlter: Integer;
+begin
+  Exit; // *********************** funktioniert noch nicht richtig
 
-  lvFiltersClick(self);
-  IF cmdRemove.Enabled = false THEN exit;
+  lvFiltersClick(lvFilters);
 
-  FOR iItem := 0 TO lvFilters.Items.count - 1 DO BEGIN
-    IF lvFilters.Selected[iItem] THEN break;
-  END;
+  if cmdRemove.Enabled then
+  begin
+    for iItem := 0 to Pred(lvFilters.Items.Count) do
+      if lvFilters.Selected[iItem] then
+        Break;
 
-  CASE (SourceGraph AS IFIlterGRaph).RemoveFilter(filterlist.Items[iItem]) OF
-    S_OK: showmessage('Removed.');
-  ELSE showmessage('Failed.');
-  END;
-  FilterList.Update;
+    if (SourceGraph as IFIlterGRaph).RemoveFilter(filterlist.Items[iItem]) = S_OK then
+      InfMsg('Removed.')
+    else
+      InfMsg('Failed.');
 
-  lvFilters.Clear;
-  FOR iFilter := 0 TO FilterList.Count - 1 DO BEGIN
-    lvFilters.Items.Add(FilterList.FilterInfo[iFIlter].achName);
-  END;
+    FilterList.Update;
 
-END;
+    lvFilters.Clear;
+    for iFilter := 0 to Pred(FilterList.Count) do
+      lvFilters.Items.Add(FilterList.FilterInfo[iFIlter].achName);
+  end;
+end;
 
-PROCEDURE TFManageFilters.FormCreate(Sender: TObject);
-BEGIN
+procedure TFManageFilters.FormCreate(Sender: TObject);
+begin
   FIlterLIst := TFilterLIst.Create;
-  PinList := TPinList.Create;
-END;
+  PinList    := TPinList.Create;
 
-PROCEDURE TFManageFilters.FormDestroy(Sender: TObject);
-BEGIN
-  FreeAndNIL(FilterList);
+  if not cmdRemove.Visible then
+    lblClickOnFilter.Left := cmdRemove.Left;
+end;
+
+procedure TFManageFilters.FormDestroy(Sender: TObject);
+begin
+  FreeAndNil(FilterList);
   FreeAndNil(PinList);
-END;
+end;
 
-PROCEDURE TFManageFilters.cmdCopyClick(Sender: TObject);
-BEGIN
-  ListBoxToClipboard(self.lvFilters, 255, true);
-END;
+procedure TFManageFilters.cmdCopyClick(Sender: TObject);
+begin
+  ListBoxToClipboard(lvFilters, True);
+end;
 
-PROCEDURE TFManageFilters.lvFiltersDblClick(Sender: TObject);
-VAR
-  Index                            : INteger;
-BEGIN
-  //Index := self.lvFilters.ItemAtPos(Mouse.CursorPos, true);
-  Index := self.lvFilters.ItemIndex;
-  IF Index >= 0 THEN BEGIN
-    ShowFilterPropertyPage(self.Handle, FilterList.Items[Index]);
-  END;
-END;
+procedure TFManageFilters.lvFiltersDblClick(Sender: TObject);
+var
+  Index: Integer;
+begin
+  Index := lvFilters.ItemIndex;
+  if Index >= 0 then
+  begin
+    if chkShowPinInfo.Checked then  // find real index
+    begin
+      while (Index >= 0) and lvFilters.Items[Index].StartsWith('|---') do
+        Dec(Index);
 
-PROCEDURE TFManageFilters.FormClose(Sender: TObject;
-  VAR Action: TCloseAction);
-BEGIN
+      Index := Integer(lvFilters.Items.Objects[Index]) - 100;
+    end;
+
+    ShowFilterPropertyPage(Handle, FilterList.Items[Index]);
+  end;
+end;
+
+procedure TFManageFilters.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
   Action := caHide;
   ModalResult := mrOk;
-END;
+end;
 
 procedure TFManageFilters.chkShowPinInfoClick(Sender: TObject);
 begin
-  self.refresh_FilterList(self.SourceGraph);
+  refresh_FilterList(SourceGraph);
 end;
 
-END.
+end.
 
