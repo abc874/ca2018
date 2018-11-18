@@ -2,7 +2,7 @@
 From progdigy.com Forum posted by XXX on Mon 2004-11-08 07.50 pm
 
 I created object 'TFilterBank' providing connecting/disconnecting desired filters.
-What is this good for? For situations like this:
+What is this good for? for situations like this:
 - I would like to add 'Dedynamic' filter to filtergraph every time I watch video.
 - I would like to remove 'DC-DSP filter' from filtergraph (but not from system to get rid of it).
 
@@ -40,11 +40,11 @@ type
    procedure btnPlayClick(Sender: TObject);
    procedure btnStopClick(Sender: TObject);
  private
-   { Private declarations }
+   { private declarations }
    FilterBank : TFilterBank;
    procedure LoadAVI(const aviname : TFileName);
  public
-   { Public declarations }
+   { public declarations }
  end;
 
 var
@@ -58,7 +58,7 @@ procedure TMainForm.FormCreate(Sender: TObject);
 begin
 begin
   FilterBank := TFilterBank.Create;
-  FilterBank.Enabled := true;
+  FilterBank.Enabled := True;
   // 'DeDynamic' will be inserted
   FilterBank.Insert('DirectShow Filters', 'DeDynamic', NilGUID, faInsert);
   // 'DC-DSP Filter' will be removed
@@ -71,8 +71,8 @@ procedure TMainForm.FormDestroy(Sender: TObject);
 begin
      FilterGraph.Stop;
      FilterGraph.ClearGraph;
-     FilterGraph.Active := false;
-     FreeAndNIL(FilterBank);
+     FilterGraph.Active := False;
+     FreeAndNil(FilterBank);
 end;
 
 procedure TMainForm.LoadAVI(const aviname : TFileName);
@@ -87,7 +87,7 @@ procedure TMainForm.LoadAVI(const aviname : TFileName);
  end;
 begin
        // usual init sequence
-       if not FilterGraph.Active then FilterGraph.Active := true;
+       if not FilterGraph.Active then FilterGraph.Active := True;
        FilterGraph.Stop;
        FilterGraph.ClearGraph;
 
@@ -125,268 +125,280 @@ end;
 *)
 
 
-UNIT UFilterBank;
+unit UFilterBank;
 
-INTERFACE
+{$I Information.inc}
 
-USES SysUtils,
-  DirectShow9,
-  DSUtil,
-  DSPack,
-  ActiveX,
-  INIFiles;
+// basic review and reformatting: done
 
-CONST
-  NilGUID                          : TGUID = '{00000000-0000-0000-0000-000000000000}';
+interface
 
-TYPE
+uses
+  // Delphi
+  Winapi.DirectShow9, System.SysUtils, System.IniFiles,
+
+  // DSPack
+  DSPack, DXSUtils;
+
+type
   TFilterAction = (faNone, faInsert, faRemove);
 
-  TFilterItem = RECORD
+  TFilterItem = record
     FilterAction: TFilterAction;
-    Category, Name: STRING;
+    Category, Name: string;
     CLSID: TGUID;
-  END;
+  end;
 
-  TFilterBank = CLASS
-  PRIVATE
-    FEnabled: boolean;
-    FTemp: boolean; // temporary flag (rewrite 'TempFilters' to 'Filters' during next 'Init')
-    FFilters: ARRAY OF TFilterItem; // main filter list
-    FTempFilters: ARRAY OF TFilterItem; // temporary filter list
-    FBaseFilters: ARRAY OF IBaseFilter; // pointers to filters
-    FUNCTION GetCount: integer;
-    FUNCTION GetItem(CONST index: integer): TFilterItem;
-    FUNCTION CreateFilter(CONST CategoryName, FilterName: STRING; CONST aFilterCLSID: TGUID): IBaseFilter;
-  PUBLIC
-    { Constructor method. }
-    CONSTRUCTOR Create;
-    { Destructor method. }
-    DESTRUCTOR Destroy; OVERRIDE;
+  TFilterBank = class
+  private
+    FEnabled: Boolean;
+    FTemp: Boolean; // temporary flag (rewrite 'TempFilters' to 'Filters' during next 'Init')
+    FFilters: array of TFilterItem; // main filter list
+    FTempFilters: array of TFilterItem; // temporary filter list
+    FBaseFilters: array of IBaseFilter; // pointers to filters
+    function GetCount: Integer;
+    function GetItem(const index: Integer): TFilterItem;
+    function CreateFilter(const CategoryName, FilterName: string; const aFilterCLSID: TGUID): IBaseFilter;
+  public
+    { constructor method. }
+    constructor Create;
+    { destructor method. }
+    destructor Destroy; override;
     { Insert filter (category, name or CLSID) to filter list (temporary). }
-    PROCEDURE Insert(CONST aCategory, aName: STRING; CONST aCLSID: TGUID; CONST aFilterAction: TFilterAction);
+    procedure Insert(const aCategory, aName: string; const aCLSID: TGUID; const aFilterAction: TFilterAction);
     { Remove filter from filter list (temporary). }
-    PROCEDURE Remove(CONST index: integer);
+    procedure Remove(const index: Integer);
     { Remove all filters from filter list (temporary). }
-    PROCEDURE RemoveAll;
+    procedure RemoveAll;
     { Initialize/create filters in filter list. Method rewrites all changes in <br>
       temporary filter list to main filter list first.}
-    PROCEDURE FiltersInit;
+    procedure FiltersInit;
     { Free all filters from filter list. }
-    PROCEDURE FiltersDestroy;
+    procedure FiltersDestroy;
     { Connect filters to filtergraph. }
-    PROCEDURE FiltersConnectToGraph(VAR FilterGraph: TFilterGraph);
+    procedure FiltersConnectToGraph(var FilterGraph: TFilterGraph);
     { Disconnect filters from filtergraph. }
-    PROCEDURE FiltersDisconnectFromGraph(VAR FilterGraph: TFilterGraph);
-    { Save filter list to INI.}
-    PROCEDURE SaveToINI(VAR IniFile: TMemIniFile; CONST INISection, INIEnabled,
-      ININame, INICategory, INICLSID, INIState: STRING);
-    { Load filter list from INI. }
-    PROCEDURE LoadFromINI(VAR IniFile: TMemIniFile; CONST INISection, INIEnabled,
-      ININame, INICategory, INICLSID, INIState: STRING);
-  PUBLIC
+    procedure FiltersDisconnectFromGraph(var FilterGraph: TFilterGraph);
+    { Save filter list to Ini.}
+    procedure SaveToIni(var IniFile: TMemIniFile; const IniSection, IniEnabled, IniName, IniCategory, IniCLSID, IniState: string);
+    { Load filter list from Ini. }
+    procedure LoadFromIni(var IniFile: TMemIniFile; const IniSection, IniEnabled, IniName, IniCategory, IniCLSID, IniState: string);
+  public
     { Get filters count. }
-    PROPERTY Count: integer READ GetCount;
+    property Count: Integer read GetCount;
     { Enable property. }
-    PROPERTY Enabled: boolean READ FEnabled WRITE FEnabled;
+    property Enabled: Boolean read FEnabled write FEnabled;
     { Filter list. }
-    PROPERTY Filters[CONST index: integer]: TFilterItem READ GetItem;
-  END;
+    property Filters[const index: Integer]: TFilterItem read GetItem;
+  end;
 
-IMPLEMENTATION
+implementation
 
-CONSTRUCTOR TFilterBank.Create;
-// Constructor.
-BEGIN
-  FEnabled := true;
-  FTemp := false; // temporary flag
+uses
+  // Delphi
+  Winapi.ActiveX;
+
+const
+  NilGUID : TGUID = '{00000000-0000-0000-0000-000000000000}';
+
+constructor TFilterBank.Create;
+begin
+  FEnabled := True;
+  FTemp := False; // temporary flag
   SetLength(FFilters, 0);
   SetLength(FTempFilters, 0);
   SetLength(FBaseFilters, 0);
-END;
+end;
 
-DESTRUCTOR TFilterBank.Destroy;
-// Destructor.
-BEGIN
+destructor TFilterBank.Destroy;
+begin
   FiltersDestroy;
   SetLength(FTempFilters, 0);
   SetLength(FFilters, 0);
   SetLength(FBaseFilters, 0);
-  INHERITED Destroy;
-END;
+  inherited Destroy;
+end;
 
-FUNCTION TFilterBank.GetCount: integer;
-BEGIN
-  IF FTemp THEN // are there changes in temporary list? => read from it
-    result := Length(FTempFilters)
-  ELSE
-    result := Length(FFilters);
-END;
+function TFilterBank.GetCount: Integer;
+begin
+  if FTemp then // are there changes in temporary list? => read from it
+    Result := Length(FTempFilters)
+  else
+    Result := Length(FFilters);
+end;
 
-FUNCTION TFilterBank.GetItem(CONST index: integer): TFilterItem;
-// Get filter information.
-BEGIN
-  result.FilterAction := faNone;
-  result.Category := '';
-  result.Name := '';
-  result.CLSID := NilGUID;
+function TFilterBank.GetItem(const index: Integer): TFilterItem; // Get filter information.
+begin
+  Result.FilterAction := faNone;
+  Result.Category     := '';
+  Result.Name         := '';
+  Result.CLSID        := NilGUID;
 
-  IF FTemp THEN {// are there changes in temporary list? => read from it} BEGIN
-    IF (index >= 0) AND (index < Length(FTempFilters)) THEN
-      result := FTempFilters[index];
-  END
-  ELSE BEGIN // there are no changes in temporary list => read from main list
-    IF (index >= 0) AND (index < Length(FFilters)) THEN
-      result := FFilters[index];
-  END;
-END;
+  if FTemp then // are there changes in temporary list? => read from it
+  begin
+    if (index >= 0) and (index < Length(FTempFilters)) then
+      Result := FTempFilters[index];
+  end else
+  begin // there are no changes in temporary list => read from main list
+    if (index >= 0) and (index < Length(FFilters)) then
+      Result := FFilters[index];
+  end;
+end;
 
-FUNCTION TFilterBank.CreateFilter(CONST CategoryName, FilterName: STRING; CONST aFilterCLSID: TGUID): IBaseFilter;
+function TFilterBank.CreateFilter(const CategoryName, FilterName: string; const aFilterCLSID: TGUID): IBaseFilter;
 // Create filter by category and name or by its CLSID.
-VAR
-  SysDev                           : TSysdevEnum;
-  i                                : integer;
-BEGIN
+var
+  SysDev: TSysdevEnum;
+  i: Integer;
+begin
   // non nil CLSID? => create filter by its CLSID
-  IF NOT IsEqualGUID(aFilterCLSID, NilGUID) THEN
-    IF CoCreateInstance(aFilterCLSID, NIL, CLSCTX_INPROC_SERVER, IID_IBaseFilter, result) = S_OK THEN exit;
+  if not IsEqualGUID(aFilterCLSID, NilGUID) then
+    if CoCreateInstance(aFilterCLSID, nil, CLSCTX_INPROC_SERVER, IID_IBaseFilter, Result) = S_OK then
+      Exit;
 
-  result := NIL;
+  Result := nil;
 
   SysDev := TSysDevEnum.Create;
 
-  TRY
+  try
     i := sysdev.CountCategories - 1; // searching in categories
-    WHILE i >= 0 DO BEGIN
-      IF AnsiCompareText(SysDev.Categories[i].FriendlyName, CategoryName) = 0 THEN break;
+    while i >= 0 do
+    begin
+      if AnsiCompareText(SysDev.Categories[i].FriendlyName, CategoryName) = 0 then
+        Break;
       Dec(i);
-    END;
+    end;
 
-    IF i < 0 THEN exit; // find anything?
+    if i < 0 then
+      Exit; // find anything?
 
     SysDev.SelectIndexCategory(i);
     i := SysDev.CountFilters - 1; // searching in filter names
-    WHILE i >= 0 DO BEGIN
-      IF AnsiCompareText(SysDev.Filters[i].FriendlyName, FilterName) = 0 THEN break;
+    while i >= 0 do begin
+      if AnsiCompareText(SysDev.Filters[i].FriendlyName, FilterName) = 0 then
+        Break;
       Dec(i);
-    END;
+    end;
 
-    IF i < 0 THEN exit; // find anything?
+    if i < 0 then
+      Exit; // find anything?
 
-    result := sysdev.GetBaseFilter(i); // return 'IBaseFilter' interface
-  FINALLY
-    FreeAndNIL(sysdev);
-  END; //try finally
-END;
+    Result := sysdev.GetBaseFilter(i); // return 'IBaseFilter' interface
+  finally
+    FreeAndNil(sysdev);
+  end; // try finally
+end;
 
-PROCEDURE TFilterBank.Insert(CONST aCategory, aName: STRING; CONST aCLSID: TGUID; CONST aFilterAction: TFilterAction);
+procedure TFilterBank.Insert(const aCategory, aName: string; const aCLSID: TGUID; const aFilterAction: TFilterAction);
 // Insert filter to temporary list, sets temporary flag.
-BEGIN
+begin
   SetLength(FTempFilters, Length(FTempFilters) + 1); // add item
 
-  WITH FTempFilters[Length(FTempFilters) - 1] DO BEGIN
+  with FTempFilters[Length(FTempFilters) - 1] do
+  begin
     FilterAction := aFilterAction;
-    Category := aCategory;
-    Name := aName;
-    CLSID := aCLSID;
-  END;
+    Category     := aCategory;
+    Name         := aName;
+    CLSID        := aCLSID;
+  end;
 
-  FTemp := true; // set temporary flag
-END;
+  FTemp := True; // set temporary flag
+end;
 
-PROCEDURE TFilterBank.Remove(CONST index: integer);
-// Remove filter from temporary list.
-VAR
-  i                                : integer;
-BEGIN
-  IF (index >= 0) AND (index < Length(FTempFilters)) THEN BEGIN
-
-    IF index < (Length(FFilters) - 1) THEN
-      FOR i := index TO Length(FFilters) - 1 DO
+procedure TFilterBank.Remove(const index: Integer); // Remove filter from temporary list.
+var
+  i: Integer;
+begin
+  if (index >= 0) and (index < Length(FTempFilters)) then
+  begin
+    if index < (Length(FFilters) - 1) then
+      for i := index to Length(FFilters) - 1 do
         FTempFilters[i] := FTempFilters[i + 1];
 
     SetLength(FFilters, Length(FTempFilters) - 1);
-  END;
+  end;
+  FTemp := True;
+end;
 
-  FTemp := true;
-END;
-
-PROCEDURE TFilterBank.RemoveAll;
-// Remove all items from temporary list.
-BEGIN
+procedure TFilterBank.RemoveAll; // Remove all items from temporary list.
+begin
   SetLength(FTempFilters, 0);
-  FTemp := true;
-END;
+  FTemp := True;
+end;
 
-PROCEDURE TFilterBank.FiltersInit;
-// Create filters.
-VAR
-  i                                : integer;
-BEGIN
-  IF NOT FEnabled THEN exit;
+procedure TFilterBank.FiltersInit; // Create filters.
+var
+  i: Integer;
+begin
+  if FEnabled then
+  begin
+    if FTemp then // changes in temporary list? => rewrite them to main list
+    begin
+      FiltersDestroy;
+      SetLength(FFilters, Length(FTempFilters));     // allocate space for list
+      SetLength(FBaseFilters, Length(FTempFilters)); // allocate space for interfaces
 
-  IF FTemp THEN {// changes in temporary list? => rewrite them to main list} BEGIN
-    FiltersDestroy;
-    SetLength(FFilters, Length(FTempFilters)); // allocate space for list
-    SetLength(FBaseFilters, Length(FTempFilters)); // allocate space for interfaces
+      for i := 0 to Pred(Length(FTempFilters)) do    // zkopiruju}
+      begin
+        FFilters[i] := FTempFilters[i];
+        FBaseFilters[i] := nil;
+      end;
 
-    FOR i := 0 TO Length(FTempFilters) - 1 DO {// zkopiruju} BEGIN
-      FFilters[i] := FTempFilters[i];
-      FBaseFilters[i] := NIL;
-    END;
+      SetLength(FTempFilters, 0); // clear temporary list
+      FTemp := False;
+    end;
 
-    SetLength(FTempFilters, 0); // clear temporary list
-    FTemp := false;
-  END;
+    for i := 0 to Pred(Length(FFilters)) do
+    begin
+      // insert this filter? => then must be created first
+      if FFilters[i].FilterAction = faInsert then
+        FBaseFilters[i] := CreateFilter(FFilters[i].Category, FFilters[i].Name, FFilters[i].CLSID);
+    end;
+  end;
+end;
 
-  FOR i := 0 TO Length(FFilters) - 1 DO BEGIN
-    // insert this filter? => then must be created first
-    IF FFilters[i].FilterAction = faInsert THEN
-      FBaseFilters[i] := CreateFilter(FFilters[i].Category, FFilters[i].Name, FFilters[i].CLSID);
-  END;
-END;
+procedure TFilterBank.FiltersDestroy; // Destroy filters.
+var
+  i: Integer;
+begin
+  for i := 0 to Pred(Length(FBaseFilters)) do
+    FBaseFilters[i] := nil;
+end;
 
-PROCEDURE TFilterBank.FiltersDestroy;
-// Destroy filters.
-VAR
-  i                                : integer;
-BEGIN
-  FOR i := 0 TO Length(FBaseFilters) - 1 DO
-    FBaseFilters[i] := NIL;
-END;
+procedure TFilterBank.FiltersConnectToGraph(var FilterGraph: TFilterGraph); // Connect filters to 'FilterGraph'.
+var
+  i: Integer;
+  BaseFilter: IBaseFilter;
+  s: WideString;
+  FilterGraph2: IFilterGraph2;
+begin
+  if FEnabled then
+  begin
+    try
+      if FilterGraph.QueryInterface(IID_IFilterGraph2, FilterGraph2) = S_OK then
+      begin
+        for i := 0 to Pred(Length(FFilters)) do
+        begin
+          // insert this filter?
+          if (FFilters[i].FilterAction = faInsert) and Assigned(FBaseFilters[i]) then
+          begin
+            s := FFilters[i].Name; // widestring conversion
+            // isn't filter in filtergraph? => insert it
+            if FilterGraph2.FindFilterByName(PWideChar(s), BaseFilter) <> S_OK then
+            begin
+              FilterGraph2.AddFilter(FBaseFilters[i], PWideChar(s));
+              BaseFilter := nil;
+            end;
+          end;
+        end;
+      end;
+    finally
+      FilterGraph2 := nil;
+    end;
+  end;
+end;
 
-PROCEDURE TFilterBank.FiltersConnectToGraph(VAR FilterGraph: TFilterGraph);
-// Connect filters to 'FilterGraph'.
-VAR
-  i                                : integer;
-  BaseFilter                       : IBaseFilter;
-  s                                : WideString;
-  FilterGraph2                     : IFilterGraph2;
-BEGIN
-  IF NOT FEnabled THEN exit;
-
-  TRY
-    IF FilterGraph.QueryInterface(IID_IFilterGraph2, FilterGraph2) <> S_OK THEN exit;
-
-    FOR i := 0 TO Length(FFilters) - 1 DO BEGIN
-      // insert this filter?
-      IF (FFilters[i].FilterAction = faInsert) AND assigned(FBaseFilters[i]) THEN BEGIN
-        s := FFilters[i].Name; // widestring conversion
-        // isn't filter in filtergraph? => insert it
-        IF FilterGraph2.FindFilterByName(PWideChar(s), BaseFilter) <> S_OK THEN BEGIN
-          FilterGraph2.AddFilter(FBaseFilters[i], PWideChar(s));
-          BaseFilter := NIL;
-        END;
-      END;
-    END;
-  FINALLY
-    FilterGraph2 := NIL;
-  END;
-
-END;
-
-PROCEDURE TFilterBank.FiltersDisconnectFromGraph(VAR FilterGraph: TFilterGraph);
-// Remove filter from 'FilterGraph'.
+procedure TFilterBank.FiltersDisconnectFromGraph(var FilterGraph: TFilterGraph); // Remove filter from 'FilterGraph'.
 (*
   Picture describing variable names.
 
@@ -397,134 +409,141 @@ PROCEDURE TFilterBank.FiltersDisconnectFromGraph(VAR FilterGraph: TFilterGraph);
                 |    |      OutPin|-----|InNextPin
              ---      ------------       ---
 *)
-VAR
-  BaseFilter                       : IBaseFilter;
-  OutPin, InPin, tmp               : IPin;
-  OutPrevPin, InNextPin            : IPin;
-  PinList, OutPinList, InPinList   : TPinList;
-  i, j                             : integer;
-  FilterGraph2                     : IFilterGraph2;
-  GraphBuilder                     : IGraphBuilder;
-BEGIN
-  IF NOT FEnabled THEN exit;
+var
+  BaseFilter: IBaseFilter;
+  OutPin, InPin, tmp: IPin;
+  OutPrevPin, InNextPin: IPin;
+  PinList, OutPinList, InPinList: TPinList;
+  i, j: Integer;
+  FilterGraph2: IFilterGraph2;
+  GraphBuilder: IGraphBuilder;
+begin
+  if FEnabled then
+  begin
+    try
+      if (FilterGraph.QueryInterface(IID_IFilterGraph2, FilterGraph2) = S_OK) and
+         (FilterGraph.QueryInterface(IID_IGraphBuilder, GraphBuilder) = S_OK) then
+      begin
+        for j := 0 to Pred(Length(FFilters)) do
+        begin
+          if FFilters[j].FilterAction = faRemove then // remove this filter?
+          begin
+            // is filter in filtergraph? => Exit if not
+            if FilterGraph2.FindFilterByName(StringToOleStr(FFilters[j].Name), BaseFilter) = S_OK then
+            begin
+              PinList    := TPinList.Create(BaseFilter); // get all pins
+              InPinList  := TPinList.Create; // create list for input pins
+              OutPinList := TPinList.Create; // create list for output pins
 
-  TRY
-    IF FilterGraph.QueryInterface(IID_IFilterGraph2, FilterGraph2) <> S_OK THEN exit;
-    IF FilterGraph.QueryInterface(IID_IGraphBuilder, GraphBuilder) <> S_OK THEN exit;
+              try
+                for i := 0 to Pred(PinList.Count) do // pass through all pins
+                begin
+                  // is pin connected? => save it to the list
+                  if PinList.Items[i].ConnectedTo(tmp) = S_OK then
+                  begin
+                    tmp := nil;
+                    case PinList.PinInfo[i].dir of
+                      PINDIR_INPUT  : InPinList.Add(PinList.Items[i]);
+                      PINDIR_OUTPUT : OutPinList.Add(PinList.Items[i]);
+                    end;
+                  end;
+                end;
 
-    FOR j := 0 TO Length(FFilters) - 1 DO BEGIN
-      IF FFilters[j].FilterAction = faRemove THEN {// remove this filter?} BEGIN
-        // is filter in filtergraph? => exit if not
-        IF FilterGraph2.FindFilterByName(StringToOleStr(FFilters[j].Name), BaseFilter) <> S_OK THEN Exit;
+                // check - input and output pins count must agree
+                if OutPinList.Count = InPinList.Count then
+                begin
+                  for i := 0 to Pred(InPinList.Count) do // reconnect all pins
+                  begin
+                    InPin  := InPinList.First;  // get next pin
+                    OutPin := OutPinList.First; // get next pin
+                    InPinList.Delete(0);
+                    OutPinList.Delete(0);
 
-        PinList := TPinList.Create(BaseFilter); // get all pins
-        InPinList := TPinList.Create; // create list for input pins
-        OutPinList := TPinList.Create; // create list for output pins
+                    // get previous and following filter pin
+                    InPin.ConnectedTo(OutPrevPin);
+                    OutPin.ConnectedTo(InNextPin);
 
-        TRY
-          FOR i := 0 TO PinList.Count - 1 DO {// pass through all pins} BEGIN
-            // is pin connected? => save it to the list
-            IF PinList.Items[i].ConnectedTo(tmp) = S_OK THEN BEGIN
-              tmp := NIL;
-              CASE PinList.PinInfo[i].dir OF
-                PINDIR_INPUT: InPinList.Add(PinList.Items[i]);
-                PINDIR_OUTPUT: OutPinList.Add(PinList.Items[i]);
-              END;
-            END;
-          END;
+                    // disconnect pins
+                    GraphBuilder.Disconnect(OutPrevPin);
+                    GraphBuilder.Disconnect(InPin);
+                    GraphBuilder.Disconnect(OutPin);
+                    GraphBuilder.Disconnect(InNextPin);
 
-          // check - input and output pins count must agree
-          IF OutPinList.Count = InPinList.Count THEN BEGIN
-            FOR i := 0 TO InPinList.Count - 1 DO {// reconnect all pins} BEGIN
-              InPin := InPinList.First; // get next pin
-              OutPin := OutPinList.First; // get next pin
-              InPinList.Delete(0);
-              OutPinList.Delete(0);
+                    // connect previous filter pin to following filter pin
+                    GraphBuilder.Connect(OutPrevPin, InNextPin);
+                  end;
 
-              // get previous and following filter pin
-              InPin.ConnectedTo(OutPrevPin);
-              OutPin.ConnectedTo(InNextPin);
+                  // remove filter
+                  (FilterGraph as IGraphBuilder).RemoveFilter(BaseFilter);
 
-              // disconnect pins
-              GraphBuilder.Disconnect(OutPrevPin);
-              GraphBuilder.Disconnect(InPin);
-              GraphBuilder.Disconnect(OutPin);
-              GraphBuilder.Disconnect(InNextPin);
+                  InPin      := nil;
+                  OutPin     := nil;
+                  InNextPin  := nil;
+                  OutPrevPin := nil;
+                  BaseFilter := nil;
+                end;
+              finally
+                FreeAndNil(PinList);
+                FreeAndNil(OutPinList);
+                FreeAndNil(InPinList);
+              end;
+            end;
+          end; // if FFilters[j].FilterAction = faRemove
+        end;   // for j := 0 ...
+      end;
+    finally
+      FilterGraph2 := nil;
+      GraphBuilder := nil;
+    end;
+  end;
+end;
 
-              // connect previous filter pin to following filter pin
-              GraphBuilder.Connect(OutPrevPin, InNextPin);
-            END;
+procedure TFilterBank.SaveToIni(var IniFile: TMemIniFile; const IniSection, IniEnabled, IniName, IniCategory, IniCLSID, IniState: string);
+// Save filter info to Ini.
+var
+  i: Integer;
+begin
+  IniFile.WriteBool(IniSection, IniEnabled, FEnabled);
 
-            // remove filter
-            (FilterGraph AS IGraphBuilder).RemoveFilter(BaseFilter);
+  for i := 0 to Pred(Count) do
+  begin
+    IniFile.WriteString(IniSection, IntToStr(i + 1) + IniName, Filters[i].Name);
+    IniFile.WriteString(IniSection, IntToStr(i + 1) + IniCategory, Filters[i].Category);
+    IniFile.WriteString(IniSection, IntToStr(i + 1) + IniCLSID, GUIDToString(Filters[i].CLSID));
+    IniFile.WriteInteger(IniSection, IntToStr(i + 1) + IniState, Integer(Filters[i].FilterAction));
+  end;
+end;
 
-            InPin := NIL;
-            OutPin := NIL;
-            InNextPin := NIL;
-            OutPrevPin := NIL;
-            BaseFilter := NIL;
-          END;
-
-        FINALLY
-          FreeAndNIL(PinList);
-          FreeAndNIL(OutPinList);
-          FreeAndNIL(InPinList);
-        END;
-
-      END; // if FFilters[j].FilterAction = faRemove
-    END; // for j := 0 ...
-
-  FINALLY
-    FilterGraph2 := NIL;
-    GraphBuilder := NIL;
-  END;
-
-END;
-
-PROCEDURE TFilterBank.SaveToINI(VAR IniFile: TMemIniFile; CONST INISection,
-  INIEnabled, ININame, INICategory, INICLSID, INIState: STRING);
-// Save filter info to INI.
-VAR
-  i                                : integer;
-BEGIN
-  IniFile.WriteBool(INISection, INIEnabled, FEnabled);
-
-  FOR i := 0 TO Count - 1 DO BEGIN
-    IniFile.WriteString(INISection, IntToStr(i + 1) + ININame, Filters[i].Name);
-    IniFile.WriteString(INISection, IntToStr(i + 1) + INICategory, Filters[i].Category);
-    IniFile.WriteString(INISection, IntToStr(i + 1) + INICLSID, GUIDToString(Filters[i].CLSID));
-    IniFile.WriteInteger(INISection, IntToStr(i + 1) + INIState, integer(Filters[i].FilterAction));
-  END;
-END;
-
-PROCEDURE TFilterBank.LoadFromINI(VAR IniFile: TMemIniFile; CONST INISection,
-  INIEnabled, ININame, INICategory, INICLSID, INIState: STRING);
-// Load filter information from INI.
-VAR
-  i, filtact                       : integer;
-  filtname, filtcat, filtclsid     : STRING;
+procedure TFilterBank.LoadFromIni(var IniFile: TMemIniFile; const IniSection,
+  IniEnabled, IniName, IniCategory, IniCLSID, IniState: string);
+// Load filter information from Ini.
+var
+  i, filtact                       : Integer;
+  filtname, filtcat, filtclsid     : string;
   filtguid                         : TGUID;
-BEGIN
+begin
   RemoveAll;
-  FEnabled := IniFile.ReadBool(INISection, INIEnabled, false);
+  FEnabled := IniFile.ReadBool(IniSection, IniEnabled, False);
 
   i := 1;
-  REPEAT
-    filtname := IniFile.ReadString(INISection, IntToStr(i) + ININame, '??');
-    filtcat := IniFile.ReadString(INISection, IntToStr(i) + INICategory, '??');
-    filtclsid := IniFile.ReadString(INISection, IntToStr(i) + INICLSID, '??');
-    filtact := IniFile.ReadInteger(INISection, IntToStr(i) + INIState, ord(faNone));
+  repeat
+    filtname := IniFile.ReadString(IniSection, IntToStr(i) + IniName, '??');
+    filtcat := IniFile.ReadString(IniSection, IntToStr(i) + IniCategory, '??');
+    filtclsid := IniFile.ReadString(IniSection, IntToStr(i) + IniCLSID, '??');
+    filtact := IniFile.ReadInteger(IniSection, IntToStr(i) + IniState, Ord(faNone));
 
-    IF (filtname <> '??') AND (filtcat <> '??') THEN BEGIN
-      TRY
+    if (filtname <> '??') and (filtcat <> '??') then
+    begin
+      try
         filtguid := StringToGUID(filtclsid); // trying to convert
-      EXCEPT
+      except
         filtguid := NilGUID; // use nil if conversion failed
-      END;
+      end;
       Insert(filtcat, filtname, filtguid, TFilterAction(filtact));
-    END;
+    end;
     Inc(i);
-  UNTIL (filtname = '??') OR (filtcat = '??');
-END;
+  until (filtname = '??') or (filtcat = '??');
+end;
 
-END.
+end.
+
