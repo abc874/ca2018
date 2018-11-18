@@ -1,482 +1,493 @@
-UNIT CodecSettings;
+unit CodecSettings;
 
-INTERFACE
+{$I Information.inc}
 
-USES
-  Classes,
-  ExtCtrls,
-  DSUtil,
-  MMSystem,
-  vfw,
+// basic review and reformatting: done
+
+interface
+
+uses
+  // Delphi
+  Winapi.MMSystem, System.Classes, Vcl.ExtCtrls,
+
+  // Jedi
+  Vfw,
+
+  // DSPack
+  DXSUtils,
+
+  // CA
   Utils;
 
-TYPE
-  TICInfoArray = ARRAY OF TICInfo;
+type
+  TICInfoArray = array of TICInfo;
   PICInfoArray = ^TICInfoArray;
 
-  TICInfoObject = CLASS
-  PRIVATE
-    FIsDummy: boolean;
+  TICInfoObject = class
+  private
+    FIsDummy: Boolean;
     FICInfo: TICInfo;
-    FHasAboutBox,
-      FHasConfigureBox: boolean;
-    FUNCTION GetInfos: boolean;
-  PROTECTED
-    CONSTRUCTOR Create;
-    FUNCTION ConfigCodec(ParentWindow: THandle; ICInfo: TICInfo; VAR State: STRING; VAR SizeDecoded: Integer): boolean;
-  PUBLIC
-    CONSTRUCTOR CreateDummy;
-    CONSTRUCTOR CreateFromICInfo(FromICInfo: TICInfo);
-    FUNCTION HandlerFourCCString: STRING;
-    FUNCTION Name: STRING;
-    FUNCTION Description: STRING;
-    FUNCTION Driver: STRING;
-    FUNCTION Config(ParentWindow: THandle; VAR State: STRING; VAR SizeDecoded: Integer): boolean;
-    FUNCTION About(ParentWindow: THandle): boolean;
-    PROPERTY IsDummy: boolean READ FIsDummy;
-    PROPERTY ICInfo: TICInfo READ FICInfo;
-    PROPERTY HasAboutBox: boolean READ FHasAboutBox;
-    PROPERTY HasConfigureBox: boolean READ FHasConfigureBox;
-  END;
+    FHasAboutBox: Boolean;
+    FHasConfigureBox: Boolean;
+    function GetInfos: Boolean;
+  protected
+    constructor Create(dummy: Integer = 0);
+    function ConfigCodec(ParentWindow: THandle; ICInfo: TICInfo; var State: string; var SizeDecoded: Integer): Boolean;
+  public
+    constructor CreateDummy;
+    constructor CreateFromICInfo(FromICInfo: TICInfo);
+    function HandlerFourCCString: string;
+    function Name: string;
+    function Description: string;
+    function Driver: string;
+    function Config(ParentWindow: THandle; var State: string; var SizeDecoded: Integer): Boolean;
+    function About(ParentWindow: THandle): Boolean;
+    property IsDummy: Boolean read FIsDummy;
+    property ICInfo: TICInfo read FICInfo;
+    property HasAboutBox: Boolean read FHasAboutBox;
+    property HasConfigureBox: Boolean read FHasConfigureBox;
+  end;
 
-  TCodecList = CLASS(TStringList)
-  PRIVATE
-    FUNCTION EnumCodecs(fccType: FOURCC; VAR ICInfoArray: TICInfoArray): boolean;
-    FUNCTION GetCodecInfo(i: Integer): TICInfo;
-    FUNCTION GetCodecInfoObject(i: Integer): TICInfoObject;
-  PUBLIC
-    CONSTRUCTOR create;
-    DESTRUCTOR Destroy; OVERRIDE;
-    PROCEDURE ClearAndFreeObjects;
-    PROCEDURE InsertDummy;
-    FUNCTION Fill: Integer;
-    FUNCTION IndexOfCodec(fccHandler: FOURCC): Integer;
-    PROPERTY CodecInfo[i: Integer]: TICInfo READ GetCodecInfo;
-    PROPERTY CodecInfoObject[i: Integer]: TICInfoObject READ GetCodecInfoObject;
-  END;
+  TCodecList = class(TStringList)
+  private
+    function EnumCodecs(fccType: FOURCC; var ICInfoArray: TICInfoArray): Boolean;
+    function GetCodecInfo(i: Integer): TICInfo;
+    function GetCodecInfoObject(i: Integer): TICInfoObject;
+  public
+    constructor Create;
+    procedure InsertDummy;
+    function Fill: Integer;
+    function IndexOfCodec(fccHandler: FOURCC): Integer;
+    property CodecInfo[i: Integer]: TICInfo read GetCodecInfo;
+    property CodecInfoObject[i: Integer]: TICInfoObject read GetCodecInfoObject;
+  end;
 
-  TSourceFilterList = CLASS
-  PRIVATE
+  TSourceFilterList = class
+  private
     FFilters: TList;
-    PROCEDURE ClearFilterList;
-    FUNCTION Add: PFilCatNode;
-    FUNCTION GetFilter(Index: Integer): TFilCatNode;
-    FUNCTION CheckFilter(EnumFilters: TSysDevEnum; index: integer; FilterBlackList: TGUIDList): Boolean;
-  PUBLIC
-    CONSTRUCTOR Create;
-    DESTRUCTOR Destroy; OVERRIDE;
-    FUNCTION Fill(progressLabel: TPanel; FilterBlackList: TGUIDList): Integer;
-    FUNCTION count: Integer;
-    PROPERTY GetFilterInfo[Index: Integer]: TFilCatNode READ GetFilter;
-    FUNCTION GetFilterIndexByCLSID(CLSID: TGUID): Integer;
-  END;
+    procedure ClearFilterList;
+    function Add: PFilCatNode;
+    function GetFilter(Index: Integer): TFilCatNode;
+    function CheckFilter(EnumFilters: TSysDevEnum; index: Integer; FilterBlackList: TGUIDList): Boolean;
+  public
+    constructor Create;
+    destructor Destroy; override;
+    function Fill(progressLabel: TPanel; FilterBlackList: TGUIDList): Integer;
+    function Count: Integer;
+    property GetFilterInfo[Index: Integer]: TFilCatNode read GetFilter;
+    function GetFilterIndexByCLSID(CLSID: TGUID): Integer;
+  end;
 
+implementation
 
-IMPLEMENTATION
+uses
+  // Delphi
+  Winapi.Windows, Winapi.DirectShow9, System.SysUtils, Vcl.Controls, Vcl.StdCtrls, Vcl.Forms,
 
-USES
-  Forms,
-  Controls,
-  StdCtrls,
-  Dialogs,
-  Windows,
-  Types,
-  SysUtils,
-  IdException,
+  // Indy
   IdCoderMime,
-  DirectShow9,
+
+  // CA
   CAResources;
 
 { TSourceFilterList }
 
-PROCEDURE TSourceFilterList.ClearFilterList;
-VAR
-  i                                : Integer;
-BEGIN
-  FOR i := 0 TO (FFilters.Count - 1) DO
-    IF assigned(FFilters.Items[i]) THEN Dispose(FFilters.Items[i]);
+procedure TSourceFilterList.ClearFilterList;
+var
+  I: Integer;
+begin
+  for I := 0 to Pred(FFilters.Count) do
+    if Assigned(FFilters.Items[I]) then
+      Dispose(FFilters.Items[I]);
+
   FFilters.Clear;
-END;
+end;
 
-FUNCTION TSourceFilterList.GetFilter(Index: Integer): TFilCatNode;
-VAR
-  FilterInfo                       : PFilCatNode;
-BEGIN
+function TSourceFilterList.GetFilter(Index: Integer): TFilCatNode;
+var
+  FilterInfo: PFilCatNode;
+begin
   FilterINfo := FFilters.Items[Index];
-  result := FilterInfo^;
-END;
+  Result     := FilterInfo^;
+end;
 
-FUNCTION TSourceFilterList.Add: PFilCatNode;
-VAR
-  newFilterINfo                    : PFilCatNode;
-BEGIN
-  new(newFilterINfo);
-  self.FFilters.Add(newFilterINfo);
-  result := newFilterInfo;
-END;
+function TSourceFilterList.Add: PFilCatNode;
+var
+  newFilterINfo: PFilCatNode;
+begin
+  New(newFilterINfo);
+  FFilters.Add(newFilterINfo);
+  Result := newFilterInfo;
+end;
 
-FUNCTION TSourceFilterList.GetFilterIndexByCLSID(CLSID: TGUID): Integer;
-VAR
-  i                                : integer;
-BEGIN
-  result := -1;
-  FOR i := 0 TO self.count - 1 DO BEGIN
-    IF isEqualGUID(CLSID, self.GetFilterInfo[i].CLSID) THEN BEGIN
-      result := i;
-      break;
-    END;
-  END;
-END;
+function TSourceFilterList.GetFilterIndexByCLSID(CLSID: TGUID): Integer;
+var
+  I: Integer;
+begin
+  Result := -1;
+  for I := 0 to Pred(Count) do
+  begin
+    if isEqualGUID(CLSID, GetFilterInfo[I].CLSID) then
+    begin
+      Result := I;
+      Break;
+    end;
+  end;
+end;
 
-PROCEDURE UpdateControlCaption(cntrl: TControl; s: STRING);
-BEGIN
-  IF cntrl = NIL THEN exit;
-
-  IF cntrl IS TPanel THEN BEGIN
-    WITH cntrl AS TPanel DO BEGIN
+procedure UpdateControlCaption(cntrl: TControl; s: string);
+begin
+  if cntrl is TPanel then with cntrl as TPanel do
+  begin
+    Caption := s;
+    Refresh;
+  end else
+    if cntrl is TLabel then with cntrl as TLabel do
+    begin
       Caption := s;
       Refresh;
-    END;
-  END
-  ELSE IF cntrl IS TLabel THEN BEGIN
-    WITH cntrl AS TLabel DO BEGIN
-      Caption := s;
-      Refresh;
-    END;
-  END
-END;
+    end;
+end;
 
-FUNCTION TSourceFilterList.count: Integer;
-BEGIN
-  result := FFilters.Count;
-END;
+function TSourceFilterList.Count: Integer;
+begin
+  Result := FFilters.Count;
+end;
 
-CONSTRUCTOR TSourceFilterList.create;
-BEGIN
+constructor TSourceFilterList.Create;
+begin
   FFilters := TList.Create;
-END;
+end;
 
-DESTRUCTOR TSourceFilterList.destroy;
-BEGIN
+destructor TSourceFilterList.Destroy;
+begin
   ClearFilterList;
   FreeAndNil(FFilters);
-  INHERITED;
-END;
+  inherited;
+end;
 
-FUNCTION TSourceFilterList.CheckFilter(EnumFilters: TSysDevEnum; index: integer; FilterBlackList: TGUIDList): Boolean;
-CONST
-  CLS_ID_WMT_LOG_FILTER            : TGUID = '{92883667-E95C-443D-AC96-4CACA27BEB6E}';
-VAR
-  Filter                           : IBaseFilter;
-  newFilterInfo                    : PFilCatNode;
-  filterInfo                       : TFilCatNode;
-BEGIN
-  Result := false;
+function TSourceFilterList.CheckFilter(EnumFilters: TSysDevEnum; index: Integer; FilterBlackList: TGUIDList): Boolean;
+const
+  CLS_ID_WMT_LOG_FILTER: TGUID = '{92883667-E95C-443D-AC96-4CACA27BEB6E}';
+var
+  Filter: IBaseFilter;
+  newFilterInfo: PFilCatNode;
+  filterInfo: TFilCatNode;
+begin
+  Result := False;
   filterInfo := EnumFilters.Filters[index];
   //Skip Wmt Log Filter -> causing strange exception
-  IF NOT (IsEqualGUID(filterInfo.CLSID, CLS_ID_WMT_LOG_FILTER)
-    OR FilterBlackList.IsInList(filterInfo.CLSID)) THEN BEGIN
+  if not (IsEqualGUID(filterInfo.CLSID, CLS_ID_WMT_LOG_FILTER) or FilterBlackList.IsInList(filterInfo.CLSID)) then
+  begin
     Filter := EnumFilters.GetBaseFilter(index);
-    IF supports(Filter, IFileSourceFilter) THEN BEGIN
-      newFilterInfo := self.Add;
-      newFilterINfo^ := filterInfo;
-      Result := true;
-    END;
-    Filter := NIL;
-  END;
-END;
+    if supports(Filter, IFileSourceFilter) then
+    begin
+      newFilterInfo  := Add;
+      newFilterInfo^ := filterInfo;
+      Result         := True;
+    end;
+    Filter := nil;
+  end;
+end;
 
-FUNCTION TSourceFilterList.Fill(progressLabel: TPanel; FilterBlackList: TGUIDList): Integer;
-VAR
-  EnumFilters                      : TSysDevEnum;
-  i, filterCount                   : Integer;
-  newFilterInfo                    : PFilCatNode;
-  ParentForm                       : TWinControl;
-BEGIN
-  self.ClearFilterList;
-  newFilterInfo := self.Add;
-  newFilterINfo^.FriendlyName := '(' + CAResources.RsSourceFilterNone + ')';
+function TSourceFilterList.Fill(progressLabel: TPanel; FilterBlackList: TGUIDList): Integer;
+var
+  EnumFilters: TSysDevEnum;
+  i, filterCount: Integer;
+  newFilterInfo: PFilCatNode;
+  ParentForm: TWinControl;
+begin
+  ClearFilterList;
+  newFilterInfo := Add;
+  newFilterINfo^.FriendlyName := '(' + RsSourceFilterNone + ')';
   newFilterInfo^.CLSID := GUID_NULL;
-  result := 1;
+  Result := 1;
 
   EnumFilters := TSysDevEnum.Create(CLSID_LegacyAmFilterCategory); //DirectShow Filters
-  IF NOT assigned(EnumFilters) THEN exit;
+  if Assigned(EnumFilters) then
+  begin
+    ParentForm := progressLabel;
+    while (ParentForm <> nil) and not (ParentForm is TCustomForm) do
+      ParentForm := ParentForm.Parent;
 
-  ParentForm := progressLabel;
-  WHILE (ParentForm <> NIL) AND NOT (ParentForm IS TCustomForm) DO
-    ParentForm := ParentForm.Parent;
-
-  UpdateControlCaption(progressLabel, CAResources.RsCheckingSourceFilterStart);
-  filterCount := EnumFilters.CountFilters;
-  TRY
-    FOR i := 0 TO filterCount - 1 DO BEGIN
-      TRY
-        UpdateControlCaption(progressLabel, SysUtils.Format(CAResources.RsCheckingSourceFilter, [i + 1, filterCount]));
-        CheckFilter(EnumFilters, i, FilterBlackList);
-      EXCEPT
-        ON E: exception DO BEGIN
-          ShowMessageFmt(CAResources.RsErrorCheckingSourceFilter, [
-            EnumFilters.Filters[i].FriendlyName,
-              GUIDTOString(EnumFilters.Filters[i].CLSID),
-              E.Message]);
-          IF ParentForm <> NIL THEN
-            ParentForm.Refresh;
-          //raise;
-        END;
-      END;
-    END;
-  FINALLY
-    UpdateControlCaption(progressLabel, CAResources.RsCheckingSourceFilterEnd);
-    FreeAndNIL(EnumFilters);
-    result := self.FFilters.Count;
-  END;
-END;
+    UpdateControlCaption(progressLabel, RsCheckingSourceFilterStart);
+    filterCount := EnumFilters.CountFilters;
+    try
+      for i := 0 to Pred(filterCount) do
+      begin
+        try
+          UpdateControlCaption(progressLabel, Format(RsCheckingSourceFilter, [i + 1, filterCount]));
+          CheckFilter(EnumFilters, i, FilterBlackList);
+        except
+          on E: exception do
+          begin
+            ErrMsgFmt(RsErrorCheckingSourceFilter, [EnumFilters.Filters[i].FriendlyName, GUIDTOString(EnumFilters.Filters[i].CLSID), E.Message]);
+            if ParentForm <> nil then
+              ParentForm.Refresh;
+            // raise;
+          end;
+        end;
+      end;
+    finally
+      UpdateControlCaption(progressLabel, RsCheckingSourceFilterEnd);
+      FreeAndNil(EnumFilters);
+      Result := FFilters.Count;
+    end;
+  end;
+end;
 
 { TCodecList }
 
-PROCEDURE TCodecList.ClearAndFreeObjects;
-VAR
-  i                                : Integer;
-BEGIN
-  FOR i := 0 TO self.Count - 1 DO BEGIN
-    IF assigned(self.Objects[i]) THEN BEGIN
-      self.Objects[i].Free;
-      self.Objects[i] := NIL;
-    END;
-  END;
-  self.Clear;
-END;
+constructor TCodecList.Create;
+begin
+  inherited Create(True);
+  InsertDummy;
+end;
 
-CONSTRUCTOR TCodecList.create;
-BEGIN
-  self.InsertDummy;
-END;
-
-DESTRUCTOR TCodecList.destroy;
-BEGIN
-  self.ClearAndFreeObjects;
-  INHERITED;
-END;
-
-FUNCTION CompareByInfoName(List: TStringList; Index1, Index2: Integer): Integer;
-VAR
-  CodecList                        : TCodecList;
-  InfoObject1                      : TICInfoObject;
-  InfoObject2                      : TICInfoObject;
-BEGIN
-  IF List IS TCodecList THEN BEGIN
-    CodecList := List AS TCodecList;
+function CompareByInfoName(List: TStringList; Index1, Index2: Integer): Integer;
+var
+  CodecList: TCodecList;
+  InfoObject1, InfoObject2: TICInfoObject;
+begin
+  if List is TCodecList then
+  begin
+    CodecList   := List as TCodecList;
     InfoObject1 := CodecList.CodecInfoObject[Index1];
     InfoObject2 := CodecList.CodecInfoObject[Index2];
-    IF Assigned(InfoObject1) AND Assigned(InfoObject2) THEN BEGIN
-      IF InfoObject1.IsDummy THEN BEGIN
-        IF InfoObject2.IsDummy THEN Result := 0
-        ELSE Result := -1;
-      END
-      ELSE IF InfoObject2.IsDummy THEN Result := 1
-      ELSE Result := AnsiCompareText(InfoObject1.Name, InfoObject2.Name);
-      Exit;
-    END;
-  END;
-  IF List.CaseSensitive THEN
-    Result := AnsiCompareStr(List[Index1], List[Index2])
-  ELSE
-    Result := AnsiCompareText(List[Index1], List[Index2]);
-END;
 
-FUNCTION TCodecList.EnumCodecs(fccType: FOURCC; VAR ICInfoArray: TICInfoArray): boolean;
-VAR
-  i                                : integer;
-BEGIN
-  result := false;
-  i := 0;
-  WHILE true DO BEGIN
-    setlength(ICInfoArray, i + 1);
-    IF NOT ICInfo(fccType, DWord(i), @ICInfoArray[i]) THEN break;
-    inc(i)
-  END;
-  setlength(ICInfoArray, i);
-  IF i > 0 THEN result := true;
-END;
+    if Assigned(InfoObject1) and Assigned(InfoObject2) then
+    begin
+      if InfoObject1.IsDummy then
+      begin
+        if InfoObject2.IsDummy then
+          Result := 0
+        else
+          Result := -1;
+      end else
+        if InfoObject2.IsDummy then
+          Result := 1
+        else
+          Result := AnsiCompareText(InfoObject1.Name, InfoObject2.Name);
+    end else
+    begin
+      if List.CaseSensitive then
+        Result := AnsiCompareStr(List[Index1], List[Index2])
+      else
+        Result := AnsiCompareText(List[Index1], List[Index2]);
+    end;
+  end else
+    Result := 0;
+end;
 
-FUNCTION TCodecList.Fill: Integer;
-VAR
-  Infos                            : TICInfoArray;
-  InfoObject                       : TICInfoObject;
-  i                                : integer;
-BEGIN
-  result := 0;
-  self.ClearAndFreeObjects;
-  self.InsertDummy;
+function TCodecList.EnumCodecs(fccType: FOURCC; var ICInfoArray: TICInfoArray): Boolean;
+var
+  I: Integer;
+begin
+  I := 0;
+  while True do
+  begin
+    SetLength(ICInfoArray, I + 1);
+    if not ICInfo(fccType, DWORD(I), @ICInfoArray[I]) then
+      Break;
+    Inc(I)
+  end;
+  SetLength(ICInfoArray, I);
 
-  IF NOT EnumCodecs(ICTYPE_VIDEO, Infos) THEN
-    exit;
-  FOR i := 0 TO length(Infos) - 1 DO BEGIN
-    InfoObject := TICInfoObject.createFromICInfo(Infos[i]);
-    self.AddObject(Format('[%s] %s', [InfoObject.HandlerFourCCString, InfoObject.Name]), InfoObject);
-  END;
-  self.CustomSort(CompareByInfoName);
-END;
+  Result := I > 0;
+end;
 
-PROCEDURE TCodecList.InsertDummy;
-VAR
-  InfoObject                       : TICInfoObject;
-BEGIN
+function TCodecList.Fill: Integer;
+var
+  Infos: TICInfoArray;
+  InfoObject: TICInfoObject;
+  I: Integer;
+begin
+  Result := 0;
+  Clear;
+  InsertDummy;
+
+  if EnumCodecs(ICTYPE_VIDEO, Infos) then
+  begin
+    for I := 0 to Pred(Length(Infos)) do
+    begin
+      InfoObject := TICInfoObject.createFromICInfo(Infos[I]);
+      AddObject(Format('[%s] %s', [InfoObject.HandlerFourCCString, InfoObject.Name]), InfoObject);
+    end;
+    CustomSort(CompareByInfoName);
+  end;
+end;
+
+procedure TCodecList.InsertDummy;
+var
+  InfoObject: TICInfoObject;
+begin
   InfoObject := TICInfoObject.CreateDummy;
-  self.AddObject(Format('(%s) %s', [InfoObject.Name, CAResources.RsCodecUseDefault]), InfoObject);
-END;
+  AddObject(Format('(%s) %s', [InfoObject.Name, RsCodecUseDefault]), InfoObject);
+end;
 
-FUNCTION TCodecList.GetCodecInfo(i: Integer): TICInfo;
-BEGIN
-  result := (self.Objects[i] AS TICInfoObject).ICInfo
-END;
+function TCodecList.GetCodecInfo(i: Integer): TICInfo;
+begin
+  Result := GetCodecInfoObject(i).ICInfo
+end;
 
-FUNCTION TCodecList.GetCodecInfoObject(i: Integer): TICInfoObject;
-BEGIN
-  result := (self.Objects[i] AS TICInfoObject);
-END;
+function TCodecList.GetCodecInfoObject(i: Integer): TICInfoObject;
+begin
+  Result := TICInfoObject(Objects[i]);
+end;
 
-FUNCTION TCodecList.IndexOfCodec(fccHandler: FOURCC): Integer;
-VAR
-  i                                : integer;
-BEGIN
-  result := -1;
-  FOR i := 0 TO self.Count - 1 DO BEGIN
-    IF self.CodecInfo[i].fccHandler = fccHandler THEN BEGIN
-      result := i;
-      break;
-    END;
-  END;
-END;
+function TCodecList.IndexOfCodec(fccHandler: FOURCC): Integer;
+var
+  I: Integer;
+begin
+  Result := -1;
+  for I := 0 to Pred(Count) do
+    if CodecInfo[I].fccHandler = fccHandler then
+    begin
+      Result := I;
+      Break;
+    end;
+end;
 
 { TICInfoObject }
 
-CONSTRUCTOR TICInfoObject.create;
-BEGIN
-  INHERITED create;
-  FHasAboutBox := false;
-  FHasConfigureBox := false;
-  FIsDummy := true;
-END;
+constructor TICInfoObject.Create;
+begin
+  inherited Create;
+  FHasAboutBox     := False;
+  FHasConfigureBox := False;
+  FIsDummy         := True;
+end;
 
-CONSTRUCTOR TICInfoObject.CreateDummy;
-BEGIN
+constructor TICInfoObject.CreateDummy;
+begin
   Create;
-  self.FICInfo.fccType := ICTYPE_VIDEO;
-  self.FICInfo.fccHandler := 0;
-  self.FICInfo.dwVersion := 0;
-  StringToWideChar(CAResources.RsCodecDummyName, self.FICInfo.szName, 16);
-  StringToWideChar(CAResources.RsCodecDummyDesc, self.FICInfo.szDescription, 128);
-END;
+  FICInfo.fccType    := ICTYPE_VIDEO;
+  FICInfo.fccHandler := 0;
+  FICInfo.dwVersion  := 0;
+  StringToWideChar(RsCodecDummyName, FICInfo.szName, 16);
+  StringToWideChar(RsCodecDummyDesc, FICInfo.szDescription, 128);
+end;
 
-CONSTRUCTOR TICInfoObject.createFromICInfo(FromICInfo: TICInfo);
-BEGIN
-  create;
-  FIsDummy := false;
-  self.FICInfo := FromICInfo;
-  self.GetInfos;
-END;
+constructor TICInfoObject.createFromICInfo(FromICInfo: TICInfo);
+begin
+  Create;
+  FIsDummy := False;
+  FICInfo  := FromICInfo;
+  GetInfos;
+end;
 
-FUNCTION TICInfoObject.GetInfos: boolean;
-VAR
-  Codec                            : HIC;
-  returnedInfoSize                 : Cardinal;
-BEGIN
-  result := false;
+function TICInfoObject.GetInfos: Boolean;
+var
+  Codec: HIC;
+  returnedInfoSize: Cardinal;
+begin
   Codec := ICOpen(FICInfo.fccType, FICInfo.fccHandler, ICMODE_QUERY);
-  IF codec = 0 THEN exit;
-  TRY
-    FHasAboutBox := ICQueryAbout(Codec);
-    FHasConfigureBox := ICQueryConfigure(Codec);
-    returnedInfoSize := ICGetInfo(Codec, @FICInfo, sizeof(FICInfo));
-    result := (returnedInfoSize = sizeof(FICInfo));
-  FINALLY
-    assert(ICClose(Codec) = ICERR_OK, CAResources.RsErrorCloseCodec);
-  END;
-END;
 
-FUNCTION TICInfoObject.Name: STRING;
-BEGIN
-  result := WideCharToString(FICInfo.szName)
-END;
+  if codec <> 0 then
+  begin
+    try
+      FHasAboutBox := ICQueryAbout(Codec);
+      FHasConfigureBox := ICQueryConfigure(Codec);
+      returnedInfoSize := ICGetInfo(Codec, @FICInfo, SizeOf(FICInfo));
+      Result := (returnedInfoSize = SizeOf(FICInfo));
+    finally
+      Assert(ICClose(Codec) = ICERR_OK, RsErrorCloseCodec);
+    end;
+  end else
+    Result := False;
+end;
 
-FUNCTION TICInfoObject.Description: STRING;
-BEGIN
-  result := WideCharToString(FICInfo.szDescription)
-END;
+function TICInfoObject.Name: string;
+begin
+  Result := WideCharToString(FICInfo.szName)
+end;
 
-FUNCTION TICInfoObject.Driver: STRING;
-BEGIN
-  result := WideCharToString(FICInfo.szDriver)
-END;
+function TICInfoObject.Description: string;
+begin
+  Result := WideCharToString(FICInfo.szDescription)
+end;
 
-FUNCTION TICInfoObject.HandlerFourCCString: STRING;
-BEGIN
-  result := fcc2String(FICInfo.fccHandler)
-END;
+function TICInfoObject.Driver: string;
+begin
+  Result := WideCharToString(FICInfo.szDriver)
+end;
 
-FUNCTION TICInfoObject.Config(ParentWindow: THandle; VAR State: STRING;
-  VAR SizeDecoded: Integer): boolean;
-BEGIN
-  result := false;
-  IF NOT self.HasConfigureBox THEN exit;
-  result := ConfigCodec(ParentWindow, FICInfo, State, SizeDecoded);
-END;
+function TICInfoObject.HandlerFourCCString: string;
+begin
+  Result := fcc2String(FICInfo.fccHandler)
+end;
 
-FUNCTION TICInfoObject.ConfigCodec(ParentWindow: THandle; ICInfo: TICInfo; VAR State: STRING; VAR SizeDecoded: Integer): boolean;
-VAR
-  Codec                            : HIC;
-  BufferSize                       : DWORD;
-  StateData                        : STRING;
-BEGIN
-  result := false;
+function TICInfoObject.Config(ParentWindow: THandle; var State: string; var SizeDecoded: Integer): Boolean;
+begin
+  if HasConfigureBox then
+    Result := ConfigCodec(ParentWindow, FICInfo, State, SizeDecoded)
+  else
+    Result := False;
+end;
+
+function TICInfoObject.ConfigCodec(ParentWindow: THandle; ICInfo: TICInfo; var State: string; var SizeDecoded: Integer): Boolean;
+var
+  Codec: HIC;
+  BufferSize: DWORD;
+  StateData: string;
+begin
   Codec := ICOpen(ICInfo.fccType, ICInfo.fccHandler, ICMODE_COMPRESS);
-  IF Codec = 0 THEN
-    exit;
 
-  TRY
-    IF (Length(State) > 0) THEN BEGIN
-      StateData := TIdDecoderMime.DecodeString(State);
-      // set old state
-      ICSetState(Codec, @StateData[1], Length(StateData));
-    END;
-  EXCEPT
-    ON E: EIdException DO BEGIN
+  if Codec <> 0 then
+  begin
+    try
+      if Length(State) > 0 then
+      begin
+        StateData := TIdDecoderMime.DecodeString(State);
+        // set old state
+        ICSetState(Codec, @StateData[1], Length(StateData));
+      end;
+    except
       // Swallow exception in this case
-    END;
-  END;
+    end;
 
-  IF (ICConfigure(Codec, ParentWindow) = ICERR_OK) THEN BEGIN
-    BufferSize := ICGetStateSize(Codec);
-    SetLength(StateData, BufferSize);
+    if (ICConfigure(Codec, ParentWindow) = ICERR_OK) then
+    begin
+      BufferSize := ICGetStateSize(Codec);
+      SetLength(StateData, BufferSize);
 
-    IF (ICGetState(Codec, @StateData[1], BufferSize) = ICERR_OK) THEN BEGIN
-      State := TIdEncoderMime.EncodeString(StateData);
-      SizeDecoded := Length(StateData);
-    END ELSE BEGIN
-      State := '';
-      SizeDecoded := 0;
-    END;
-  END;
-  IF ICClose(Codec) <> ICERR_OK THEN
-    Assert(false, CAResources.RsErrorCloseCodec);
-  result := true;
-END;
+      if (ICGetState(Codec, @StateData[1], BufferSize) = ICERR_OK) then
+      begin
+        State       := TIdEncoderMime.EncodeString(StateData);
+        SizeDecoded := Length(StateData);
+      end else
+      begin
+        State       := '';
+        SizeDecoded := 0;
+      end;
+    end;
+    if ICClose(Codec) <> ICERR_OK then
+      Assert(False, RsErrorCloseCodec);
 
-FUNCTION TICInfoObject.About(ParentWindow: THandle): boolean;
-VAR
-  Codec                            : HIC;
-BEGIN
-  result := false;
-  IF NOT self.HasAboutBox THEN exit;
-  Codec := ICOpen(FICInfo.fccType, FICInfo.fccHandler, ICMODE_QUERY);
-  IF codec = 0 THEN exit;
-  TRY
-    IF (ICAbout(Codec, ParentWindow) = ICERR_OK) THEN result := true;
-  FINALLY
-    assert(ICClose(Codec) = ICERR_OK, CAResources.RsErrorCloseCodec);
-  END;
-END;
+    Result := True;
+  end else
+    Result := False;
+end;
 
-END.
+function TICInfoObject.About(ParentWindow: THandle): Boolean;
+var
+  Codec: HIC;
+begin
+  Result := False;
+
+  if HasAboutBox then
+  begin
+    Codec := ICOpen(FICInfo.fccType, FICInfo.fccHandler, ICMODE_QUERY);
+    if codec <> 0 then
+    begin
+      try
+        Result := ICAbout(Codec, ParentWindow) = ICERR_OK;
+      finally
+        Assert(ICClose(Codec) = ICERR_OK, RsErrorCloseCodec);
+      end;
+    end;
+  end;
+end;
+
+end.
 
