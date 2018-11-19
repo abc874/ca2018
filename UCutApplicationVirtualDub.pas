@@ -1,206 +1,195 @@
-UNIT UCutApplicationVirtualDub;
+unit UCutApplicationVirtualDub;
 
-INTERFACE
+{$I Information.inc}
 
-USES
-  Windows,
-  Messages,
-  SysUtils,
-  Variants,
-  Classes,
-  Graphics,
-  Controls,
-  Forms,
-  Dialogs,
-  UCutApplicationBase,
-  CodecSettings,
-  StdCtrls,
-  IniFiles,
-  Contnrs,
-  MMSystem,
-  ExtCtrls,
-  JvExStdCtrls,
-  JvCheckBox;
+// basic review and reformatting: done
 
-CONST
-  VIRTUALDUB_DEFAULT_EXENAME       = 'virtualdub.exe';
+interface
 
-TYPE
-  TCutApplicationVirtualDub = CLASS;
+uses
+  // Delphi
+  System.Classes, System.IniFiles, System.Contnrs, Vcl.Dialogs, Vcl.StdCtrls, Vcl.Controls, Vcl.ExtCtrls, Vcl.Forms,
 
-  TfrmCutApplicationVirtualDub = CLASS(TfrmCutApplicationBase)
+  // Jedi
+  JvExStdCtrls, JvCheckBox,
+
+  // CA
+  UCutApplicationBase;
+
+type
+  TCutApplicationVirtualDub = class;
+
+  TfrmCutApplicationVirtualDub = class(TfrmCutApplicationBase)
     cbNotClose: TJvCheckBox;
     cbUseSmartRendering: TJvCheckBox;
     cbShowProgressWindow: TJvCheckBox;
-  PRIVATE
-    { Private declarations }
-    PROCEDURE SetCutApplication(CONST Value: TCutApplicationVirtualDub);
-    FUNCTION GetCutApplication: TCutApplicationVirtualDub;
-  PUBLIC
-    { Public declarations }
-    PROPERTY CutApplication: TCutApplicationVirtualDub READ GetCutApplication WRITE SetCutApplication;
-    PROCEDURE Init; OVERRIDE;
-    PROCEDURE Apply; OVERRIDE;
-  END;
+  private
+    { private declarations }
+    procedure SetCutApplication(const Value: TCutApplicationVirtualDub);
+    function GetCutApplication: TCutApplicationVirtualDub;
+  public
+    { public declarations }
+    property CutApplication: TCutApplicationVirtualDub read GetCutApplication write SetCutApplication;
+    procedure Init; override;
+    procedure Apply; override;
+  end;
 
-  TCutApplicationVirtualDub = CLASS(TCutApplicationBase)
-  PRIVATE
+  TCutApplicationVirtualDub = class(TCutApplicationBase)
+  private
     FFindProgressWindowTimer: TTimer;
-    PROCEDURE SetShowProgressWindow(CONST Value: boolean);
-    PROCEDURE FindProgressWindow(Sender: TObject);
-  PROTECTED
-    FNotClose: boolean;
-    FUseSmartRendering: boolean;
-    FScriptFileName: STRING;
-    FShowProgressWindow: boolean;
+    procedure SetShowProgressWindow(const Value: Boolean);
+    procedure FindProgressWindow(Sender: TObject);
+  protected
+    FNotClose: Boolean;
+    FUseSmartRendering: Boolean;
+    FScriptFileName: string;
+    FShowProgressWindow: Boolean;
 
-    FUNCTION CreateScript(aCutlist: TObjectList; Inputfile, Outputfile: STRING; VAR scriptfile: STRING): boolean;
-  PUBLIC
-    CONSTRUCTOR Create; OVERRIDE;
-    DESTRUCTOR Destroy; OVERRIDE;
-    PROPERTY ShowProgressWindow: boolean READ FShowProgressWindow WRITE SetShowProgressWindow;
-    FUNCTION CanDoSmartRendering: boolean;
-    FUNCTION UseSmartRendering: boolean;
+    function CreateScript(aCutlist: TObjectList; Inputfile, Outputfile: string; var scriptfile: string): Boolean;
+  public
+    constructor Create; override;
+    property ShowProgressWindow: Boolean read FShowProgressWindow write SetShowProgressWindow;
+    function CanDoSmartRendering: Boolean;
+    function UseSmartRendering: Boolean;
 
-    FUNCTION LoadSettings(IniFile: TCustomIniFile): boolean; OVERRIDE;
-    FUNCTION SaveSettings(IniFile: TCustomIniFile): boolean; OVERRIDE;
-    FUNCTION InfoString: STRING; OVERRIDE;
-    FUNCTION WriteCutlistInfo(CutlistFile: TCustomIniFile; section: STRING): boolean; OVERRIDE;
-    FUNCTION PrepareCutting(SourceFileName: STRING; VAR DestFileName: STRING; Cutlist: TObjectList): boolean; OVERRIDE;
-    FUNCTION StartCutting: boolean; OVERRIDE;
-    FUNCTION CleanUpAfterCutting: boolean; OVERRIDE;
-    FUNCTION CheckOutputForErrors: boolean; OVERRIDE;
-  END;
+    function LoadSettings(IniFile: TCustomIniFile): Boolean; override;
+    function SaveSettings(IniFile: TCustomIniFile): Boolean; override;
+    function InfoString: string; override;
+    function WriteCutlistInfo(CutlistFile: TCustomIniFile; section: string): Boolean; override;
+    function PrepareCutting(SourceFileName: string; var DestFileName: string; Cutlist: TObjectList): Boolean; override;
+    function StartCutting: Boolean; override;
+    function CleanUpAfterCutting: Boolean; override;
+    function CheckOutputForErrors: Boolean; override;
+  end;
 
-VAR
-  frmCutApplicationVirtualDub      : TfrmCutApplicationVirtualDub;
+var
+  frmCutApplicationVirtualDub: TfrmCutApplicationVirtualDub;
 
-IMPLEMENTATION
+implementation
 
 {$R *.dfm}
 
-{$WARN UNIT_PLATFORM OFF}
+{..$WARN UNIT_PLATFORM OFF}
 
-USES
-  FileCtrl,
-  StrUtils,
+uses
+  // Delphi
+  Winapi.Windows, System.SysUtils, System.StrUtils, Winapi.ActiveX,
+
+  // Jedi
   JvCreateProcess,
-  DirectShow9,
-  CAResources,
-  Utils,
-  UCutlist,
-  UfrmCutting,
-  Main;
 
-TYPE
+  // CA
+  CAResources, Main, Utils, UCutlist;
+
+const
+  VIRTUALDUB_DEFAULT_EXENAME = 'virtualdub.exe';
+
+type
   PFindWindowStruct = ^TFindWindowStruct;
-  TFindWindowStruct = RECORD
-    Caption: STRING;
-    ClassName: STRING;
+  TFindWindowStruct = record
+    Caption: string;
+    ClassName: string;
     ProcessID: Cardinal;
     WindowHandle: THandle;
-  END;
+  end;
 
-  { TCutApplicationVirtualDub }
+{ TCutApplicationVirtualDub }
 
-CONSTRUCTOR TCutApplicationVirtualDub.create;
-BEGIN
-  INHERITED;
+constructor TCutApplicationVirtualDub.Create;
+begin
+  inherited;
   FrameClass := TfrmCutApplicationVirtualDub;
   DefaultExeNames.Add(VIRTUALDUB_DEFAULT_EXENAME);
-  Name := 'VirtualDub';
-  RedirectOutput := true;
-  ShowAppWindow := true;
-  FNotClose := false;
-  FUseSmartRendering := true;
-  FShowProgressWindow := true;
-  FFindProgressWindowTimer := TTimer.Create(Application);
-  FFindProgressWindowTimer.OnTimer := FindProgressWindow;
-  FFindProgressWindowTimer.Enabled := false;
+  Name                              := 'VirtualDub';
+  RedirectOutput                    := True;
+  ShowAppWindow                     := True;
+  FNotClose                         := False;
+  FUseSmartRendering                := True;
+  FShowProgressWindow               := True;
+  FFindProgressWindowTimer          := TTimer.Create(Application);
+  FFindProgressWindowTimer.OnTimer  := FindProgressWindow;
+  FFindProgressWindowTimer.Enabled  := False;
   FFindProgressWindowTimer.Interval := 1000;
-  FHasSmartRendering := true;
-END;
+  FHasSmartRendering                := True;
+end;
 
-DESTRUCTOR TCutApplicationVirtualDub.Destroy;
-BEGIN
-  //FreeAndNIL(FFindProgressWindowTimer);
-  INHERITED;
-END;
+function TCutApplicationVirtualDub.CheckOutputForErrors: Boolean;
+var
+  outputText: TStrings;
+  outputLine: string;
+  idx: Integer;
+begin
+  Result := inherited CheckOutputForErrors;
 
-FUNCTION TCutApplicationVirtualDub.CheckOutputForErrors: boolean;
-VAR
-  outputText                       : TStrings;
-  outputLine                       : STRING;
-  idx                              : integer;
-BEGIN
-  Result := INHERITED CheckOutputForErrors;
-  IF NOT Assigned(OutputMemo) THEN
-    Exit;
-  outputText := OutputMemo.Lines;
-  FOR idx := 0 TO outputText.Count - 1 DO BEGIN
-    outputLine := Trim(outputText.Strings[idx]);
-    IF AnsiStartsText(CAResources.RsCutAppVDPattSmartRender, outputLine) THEN BEGIN
-      IF AnsiContainsText(outputLine, CAResources.RsCutAppVDPattSmartRenderNoCodec) THEN BEGIN
-        outputText.Append(CAResources.RsCutAppVDErrorSmartRenderNoCodec);
-        Result := true;
-        IF NOT batchmode THEN
-          ShowMessageFmt(CAResources.RsCutAppVDErrorSmartRenderNoCodec, []);
-      END;
-      IF AnsiContainsText(outputLine, CAResources.RsCutAppVDPattSmartRenderWrongCodec) THEN BEGIN
-        outputText.Append(CAResources.RsCutAppVDErrorSmartRenderWrongCodec);
-        Result := true;
-        IF NOT batchmode THEN
-          ShowMessageFmt(CAResources.RsCutAppVDErrorSmartRenderWrongCodec, []);
-      END;
-    END;
-  END;
-END;
+  if Assigned(OutputMemo) then
+  begin
+    outputText := OutputMemo.Lines;
+    for idx := 0 to Pred(outputText.Count) do
+    begin
+      outputLine := Trim(outputText.Strings[idx]);
+      if AnsiStartsText(RsCutAppVDPattSmartRender, outputLine) then
+      begin
+        if AnsiContainsText(outputLine, RsCutAppVDPattSmartRenderNoCodec) then
+        begin
+          outputText.Append(RsCutAppVDErrorSmartRenderNoCodec);
+          Result := True;
+          if not batchmode then
+            ErrMsgFmt(RsCutAppVDErrorSmartRenderNoCodec, []);
+        end;
+        if AnsiContainsText(outputLine, RsCutAppVDPattSmartRenderWrongCodec) then
+        begin
+          outputText.Append(RsCutAppVDErrorSmartRenderWrongCodec);
+          Result := True;
+          if not batchmode then
+            ErrMsgFmt(RsCutAppVDErrorSmartRenderWrongCodec, []);
+        end;
+      end;
+    end;
+  end;
+end;
 
-PROCEDURE TCutApplicationVirtualDub.SetShowProgressWindow(CONST Value: boolean);
-BEGIN
+procedure TCutApplicationVirtualDub.SetShowProgressWindow(const Value: Boolean);
+begin
   FShowProgressWindow := Value;
-END;
+end;
 
-
-FUNCTION TCutApplicationVirtualDub.LoadSettings(IniFile: TCustomIniFile): boolean;
-  PROCEDURE SetCodecSettings(VAR s1, s2: RCutAppSettings);
-  BEGIN
-    IF s1.CutAppName <> s2.CutAppName THEN
-      Exit;
-    // do not overwrite existing settings ...
-    IF s1.CodecFourCC <> 0 THEN
-      Exit;
-    s1.CodecName := s2.CodecName;
-    s1.CodecFourCC := s2.CodecFourCC;
-    s1.CodecVersion := s2.CodecVersion;
-    s1.CodecSettingsSize := s2.CodecSettingsSize;
-    s1.CodecSettings := s2.CodecSettings;
-  END;
-VAR
-  section                          : STRING;
-  success                          : boolean;
-  StrValue                         : STRING;
-  BufferSize                       : Integer;
-  cas                              : RCutAppSettings;
-BEGIN
+function TCutApplicationVirtualDub.LoadSettings(IniFile: TCustomIniFile): Boolean;
+  procedure SetCodecSettings(var s1, s2: RCutAppSettings);
+  begin
+    if (s1.CutAppName = s2.CutAppName) and (s1.CodecFourCC = 0) then // do not overwrite existing settings ...
+    begin
+      s1.CodecName         := s2.CodecName;
+      s1.CodecFourCC       := s2.CodecFourCC;
+      s1.CodecVersion      := s2.CodecVersion;
+      s1.CodecSettingsSize := s2.CodecSettingsSize;
+      s1.CodecSettings     := s2.CodecSettings;
+    end;
+  end;
+var
+  section: string;
+  success: Boolean;
+  StrValue: string;
+  BufferSize: Integer;
+  cas: RCutAppSettings;
+begin
   cas.PreferredSourceFilter := GUID_NULL;
 
-  //This part only for compatibility issues for versions below 0.9.9
-  //This Setting may be overwritten below
+  // This part only for compatibility issues for versions below 0.9.9
+  // This Setting may be overwritten below
   section := 'External Cut Application';
   TempDir := IniFile.ReadString(section, 'VirtualDubScriptsPath', '');
   Path := IniFile.ReadString(section, 'VirtualDubPath', '');
-  self.FNotClose := IniFile.ReadBool(section, 'VirtualDubNotClose', FNotClose);
-  self.FUseSmartRendering := IniFile.ReadBool(section, 'VirtualDubUseSmartRendering', FUseSmartRendering);
+  FNotClose := IniFile.ReadBool(section, 'VirtualDubNotClose', FNotClose);
+  FUseSmartRendering := IniFile.ReadBool(section, 'VirtualDubUseSmartRendering', FUseSmartRendering);
 
-  success := INHERITED LoadSettings(IniFile);
+  success := inherited LoadSettings(IniFile);
   section := GetIniSectionName;
-  self.FNotClose := IniFile.ReadBool(section, 'NotClose', FNotClose);
-  self.FUseSmartRendering := IniFile.ReadBool(section, 'UseSmartRendering', FUseSmartRendering);
-  self.FShowProgressWindow := IniFile.ReadBool(section, 'ShowProgressWindow', FShowProgressWindow);
+  FNotClose := IniFile.ReadBool(section, 'NotClose', FNotClose);
+  FUseSmartRendering := IniFile.ReadBool(section, 'UseSmartRendering', FUseSmartRendering);
+  FShowProgressWindow := IniFile.ReadBool(section, 'ShowProgressWindow', FShowProgressWindow);
 
   //
-  // Read old settings ...
+  // read old settings ...
   //
   StrValue := IniFile.ReadString(section, 'CodecFourCC', '0x0');
   cas.CodecFourCC := StrToInt64Def(StrValue, $00000000);
@@ -208,314 +197,317 @@ BEGIN
   cas.CodecVersion := StrToInt64Def(StrValue, $00000000);
   cas.CodecSettingsSize := IniFile.ReadInteger(section, 'CodecSettingsSize', 0);
 
-  //ini.ReadString does work only up to 2047 characters due to restrictions in iniFiles.pas
-  //CodecSettings := ini.ReadString(section, 'CodecSettings', '');
-  BufferSize := cas.CodecSettingsSize DIV 3;
-  IF (cas.CodecSettingsSize MOD 3) > 0 THEN inc(BufferSize);
+  // ini.ReadString does work only up to 2047 characters due to restrictions in iniFiles.pas
+  // CodecSettings := ini.ReadString(section, 'CodecSettings', '');
+  BufferSize := cas.CodecSettingsSize div 3;
+  if (cas.CodecSettingsSize mod 3) > 0 then
+    Inc(BufferSize);
+
   BufferSize := BufferSize * 4 + 1; //+1 for terminating #0
+
   cas.CodecSettings := iniReadLargeString(IniFile, BufferSize, section, 'CodecSettings', '');
-  IF Length(cas.CodecSettings) <> BufferSize - 1 THEN BEGIN
-    cas.CodecSettings := '';
+  if Length(cas.CodecSettings) <> BufferSize - 1 then
+  begin
+    cas.CodecSettings     := '';
     cas.CodecSettingsSize := 0;
-  END;
+  end;
 
   // Convert old settings if necessary ...
-  IF (cas.CodecFourCC <> 0) THEN BEGIN
-    cas.CutAppName := self.Name;
-    cas.CodecName := Settings.GetCodecNameByFourCC(cas.CodecFourCC);
+  if (cas.CodecFourCC <> 0) then
+  begin
+    cas.CutAppName := Name;
+    cas.CodecName  := Settings.GetCodecNameByFourCC(cas.CodecFourCC);
     SetCodecSettings(Settings.CutAppSettingsWmv, cas);
     SetCodecSettings(Settings.CutAppSettingsAvi, cas);
     SetCodecSettings(Settings.CutAppSettingsHQAVI, cas);
     SetCodecSettings(Settings.CutAppSettingsMP4, cas);
     SetCodecSettings(Settings.CutAppSettingsOther, cas);
-  END;
+  end;
 
-  result := success;
-END;
+  Result := success;
+end;
 
-FUNCTION TCutApplicationVirtualDub.SaveSettings(IniFile: TCustomIniFile): boolean;
-VAR
-  section                          : STRING;
-  success                          : boolean;
-BEGIN
-  success := INHERITED SaveSettings(IniFile);
+function TCutApplicationVirtualDub.SaveSettings(IniFile: TCustomIniFile): Boolean;
+var
+  section: string;
+  success: Boolean;
+begin
+  success := inherited SaveSettings(IniFile);
 
   section := GetIniSectionName;
-  IniFile.WriteBool(section, 'NotClose', self.FNotClose);
-  IniFile.WriteBool(section, 'UseSmartRendering', self.FUseSmartRendering);
-  IniFile.WriteBool(section, 'ShowProgressWindow', self.FShowProgressWindow);
+  IniFile.WriteBool(section, 'NotClose', FNotClose);
+  IniFile.WriteBool(section, 'UseSmartRendering', FUseSmartRendering);
+  IniFile.WriteBool(section, 'ShowProgressWindow', FShowProgressWindow);
+
   // Remove old settings ...
   IniFile.DeleteKey(section, 'CodecFourCC');
   IniFile.DeleteKey(section, 'CodecVersion');
   IniFile.DeleteKey(section, 'CodecSettings');
   IniFile.DeleteKey(section, 'CodecSettingsSize');
-  result := success;
-END;
+  Result := success;
+end;
 
-
-FUNCTION FindWindowByWindowStructParam(wHandle: HWND; lParam: Cardinal): Bool; STDCALL;
-VAR
-  Title, ClassName                 : ARRAY[0..255] OF char;
-  dwProcessId {, dwThreadId}       : cardinal;
-BEGIN
+function FindWindowByWindowStructParam(wHandle: HWND; lParam: Cardinal): Bool; stdcall;
+var
+  Title, ClassName: array[0 .. 255] of Char;
+  dwProcessId: Cardinal;
+begin
   Result := True;
-  IF GetClassName(wHandle, ClassName, 255) <= 0 THEN
-    exit;
-  IF Pos(PFindWindowStruct(lParam).ClassName, StrPas(ClassName)) = 0 THEN
-    exit;
-  IF GetWindowText(wHandle, Title, 255) <= 0 THEN
-    exit;
-  IF Pos(PFindWindowStruct(lParam).Caption, StrPas(Title)) = 0 THEN
-    exit;
-  {dwThreadId := }GetWindowThreadProcessId(wHandle, dwProcessId);
-  IF dwProcessId <> PFindWindowStruct(lParam).ProcessId THEN
-    exit;
+  if (GetClassName(wHandle, ClassName, 255) > 0) and (Pos(PFindWindowStruct(lParam).ClassName, StrPas(ClassName)) > 0) and
+     (GetWindowText(wHandle, Title, 255) > 0) and (Pos(PFindWindowStruct(lParam).Caption, StrPas(Title)) > 0) then
+  begin
+    GetWindowThreadProcessId(wHandle, dwProcessId);
+    if dwProcessId = PFindWindowStruct(lParam).ProcessId then
+    begin
+      PFindWindowStruct(lParam).WindowHandle := wHandle;
+      Result := False;
+    end;
+  end;
+end;
 
-  PFindWindowStruct(lParam).WindowHandle := wHandle;
-  Result := False;
-END;
+procedure TCutApplicationVirtualDub.FindProgressWindow(Sender: TObject);
+const
+  ID_OPTIONS_SHOWSTATUSWINDOW = 40034;
+var
+  WindowInfo: TFindWindowStruct;
+begin
+  if CutApplicationProcess.State = psReady then // CutApp not running ...
+  begin
+    FFindProgressWindowTimer.Enabled := False;
+  end else
+  begin
+    with WindowInfo do
+    begin
+      Caption      := 'VirtualDub Status';
+      ClassName    := '#32770';
+      ProcessID    := CutApplicationProcess.ProcessInfo.dwProcessId;
+      WindowHandle := 0;
+      EnumWindows(@FindWindowByWindowStructParam, LongInt(@WindowInfo));
+      if WindowHandle <> 0 then
+      begin
+        // if not IsWindowVisible(vDubWindow) then
+        ShowWindow(WindowHandle, SW_SHOW);
+        // Activate progress window
+        // WM_COMMAND, lParam=0, wParam=ID_OPTIONS_SHOWSTATUSWINDOW (40034)
+        // SendMessage(wnd, WM_COMMAND, ID_OPTIONS_SHOWSTATUSWINDOW, 0);
+        FFindProgressWindowTimer.Enabled := False;
+      end;
+    end;
+  end;
+end;
 
-PROCEDURE TCutApplicationVirtualDub.FindProgressWindow(Sender: TObject);
-CONST
-  ID_OPTIONS_SHOWSTATUSWINDOW      = 40034;
-VAR
-  WindowInfo                       : TFindWindowStruct;
-BEGIN
-  IF CutApplicationProcess.State = psReady THEN {// CutApp not running ...} BEGIN
-    FFindProgressWindowTimer.Enabled := false;
-    Exit;
-  END;
-
-  WITH WindowInfo DO BEGIN
-    Caption := 'VirtualDub Status';
-    ClassName := '#32770';
-    ProcessID := CutApplicationProcess.ProcessInfo.dwProcessId;
-    WindowHandle := 0;
-    EnumWindows(@FindWindowByWindowStructParam, LongInt(@WindowInfo));
-    IF WindowHandle <> 0 THEN BEGIN
-      //if not IsWindowVisible(vDubWindow) then
-      ShowWindow(WindowHandle, SW_SHOW);
-      // Activate progress window
-      // WM_COMMAND, lParam=0, wParam=ID_OPTIONS_SHOWSTATUSWINDOW (40034)
-      //SendMessage(wnd, WM_COMMAND, ID_OPTIONS_SHOWSTATUSWINDOW, 0);
-      FFindProgressWindowTimer.Enabled := false;
-    END;
-  END;
-END;
-
-FUNCTION TCutApplicationVirtualDub.StartCutting: boolean;
-BEGIN
-  result := INHERITED StartCutting;
-  IF result THEN BEGIN
+function TCutApplicationVirtualDub.StartCutting: Boolean;
+begin
+  Result := inherited StartCutting;
+  if Result then
+  begin
     WaitForInputIdle(CutApplicationProcess.ProcessInfo.hProcess, 1000);
-    IF FShowProgressWindow THEN
-      FFindProgressWindowTimer.Enabled := true;
-  END;
-END;
+    if FShowProgressWindow then
+      FFindProgressWindowTimer.Enabled := True;
+  end;
+end;
 
-FUNCTION TCutApplicationVirtualDub.PrepareCutting(SourceFileName: STRING;
-  VAR DestFileName: STRING; Cutlist: TObjectList): boolean;
-VAR
-  TempCutlist                      : TCutlist;
-  MustFreeTempCutlist              : boolean;
-  CommandLine, message_string      : STRING;
-BEGIN
-  result := INHERITED PrepareCutting(SourceFileName, DestFileName, Cutlist);
-  IF NOT Result THEN
-    Exit;
+function TCutApplicationVirtualDub.PrepareCutting(SourceFileName: string; var DestFileName: string; Cutlist: TObjectList): Boolean;
+var
+  TempCutlist: TCutlist;
+  MustFreeTempCutlist: Boolean;
+  CommandLine: string;
+begin
+  Result := inherited PrepareCutting(SourceFileName, DestFileName, Cutlist);
+  if Result then
+  begin
+    FCommandLines.Clear;
+    MustFreeTempCutlist := False;
+    TempCutlist := (Cutlist as TCutlist);
 
-  self.FCommandLines.Clear;
-  MustFreeTempCutlist := false;
-  TempCutlist := (Cutlist AS TCutlist);
+    if TempCutlist.Mode <> clmTrim then
+    begin
+      TempCutlist := TempCutlist.convert;
+      MustFreeTempCutlist := True;
+    end;
 
-  IF TempCutlist.Mode <> clmTrim THEN BEGIN
-    TempCutlist := TempCutlist.convert;
-    MustFreeTempCutlist := True;
-  END;
+    try
+      FScriptFileName := '';
+      if TempDir = '' then
+      begin
+        FScriptFileName := SourceFileName + '.syl';
+      end else
+      begin
+        if not DirectoryExists(TempDir) then
+        begin
+          if YesNoWarnMsgFmt(RsMsgCutAppTempDirMissing, [TempDir]) then
+            ForceDirectories(TempDir);
+        end;
+        if not DirectoryExists(TempDir) then
+          Exit;
 
-  TRY
-    FScriptFileName := '';
-    IF self.TempDir = '' THEN BEGIN
-      FScriptFileName := SourceFileName + '.syl';
-    END ELSE BEGIN
-      IF NOT DirectoryExists(TempDir) THEN BEGIN
-        message_string := Format(CAResources.RsMsgCutAppTempDirMissing, [TempDir]);
-        IF application.messagebox(PChar(message_string), NIL, MB_YESNO + MB_ICONWARNING) = IDYES THEN
-          ForceDirectories(TempDir);
-      END;
-      IF NOT DirectoryExists(TempDir) THEN
-        Exit;
+        FScriptFileName := IncludeTrailingPathDelimiter(TempDir) + ExtractFileName(SourceFileName) + '.syl';
+      end;
 
-      FScriptFileName := IncludeTrailingPathDelimiter(TempDir) + ExtractFileName(SourceFileName) + '.syl';
-    END;
+      CreateScript(TempCutlist, SourceFileName, DestFileName, FScriptFileName);
 
-    CreateScript(TempCutlist, SourceFileName, DestFileName, FScriptFileName);
+      CommandLine := '/s"' + FScriptFileName + '"';
+      if RedirectOutput then
+        CommandLine := '/console ' + CommandLine;
 
-    CommandLine := '/s"' + FScriptFileName + '"';
-    IF self.RedirectOutput THEN
-      CommandLine := '/console ' + CommandLine;
-    IF NOT self.FNotClose THEN
-      CommandLine := CommandLine + ' /x';
+      if not FNotClose then
+        CommandLine := CommandLine + ' /x';
 
-    self.FCommandLines.Add(CommandLine);
-    result := true;
-  FINALLY
-    IF MustFreeTempCutlist THEN
-      FreeAndNIL(TempCutlist);
-  END;
-END;
+      FCommandLines.Add(CommandLine);
+      Result := True;
+    finally
+      if MustFreeTempCutlist then
+        FreeAndNil(TempCutlist);
+    end;
+  end;
+end;
 
-
-FUNCTION TCutApplicationVirtualDub.InfoString: STRING;
-VAR
-  HiVer, LoVer                     : integer;
-BEGIN
+function TCutApplicationVirtualDub.InfoString: string;
+var
+  HiVer, LoVer: Integer;
+begin
   HiVer := HiWord(CutAppSettings.CodecVersion);
   LoVer := LoWord(CutAppSettings.CodecVersion);
-  Result := Format(CAResources.RsCutAppInfoVirtualDub, [
-    INHERITED InfoString,
-      BoolToStr(UseSmartRendering, true),
-      CutAppSettings.CodecName,
-      IntToStr(HiVer) + '.' + IntToStr(LoVer)
-      ]);
-END;
 
-FUNCTION TCutApplicationVirtualDub.WriteCutlistInfo(CutlistFile: TCustomIniFile;
-  section: STRING): boolean;
-BEGIN
-  result := INHERITED WriteCutlistInfo(CutlistFile, section);
-  IF result THEN BEGIN
-    cutlistfile.WriteBool(section, 'VDUseSmartRendering', self.UseSmartRendering);
-    IF UseSmartRendering THEN BEGIN
+  Result := Format(RsCutAppInfoVirtualDub, [inherited InfoString, BoolToStr(UseSmartRendering, True), CutAppSettings.CodecName, IntToStr(HiVer) + '.' + IntToStr(LoVer)]);
+end;
+
+function TCutApplicationVirtualDub.WriteCutlistInfo(CutlistFile: TCustomIniFile; section: string): Boolean;
+begin
+  Result := inherited WriteCutlistInfo(CutlistFile, section);
+  if Result then
+  begin
+    cutlistfile.WriteBool(section, 'VDUseSmartRendering', UseSmartRendering);
+    if UseSmartRendering then
+    begin
       cutlistfile.WriteString(section, 'VDSmartRenderingCodecFourCC', '0x' + IntToHex(CutAppSettings.CodecFourCC, 8));
       cutlistfile.WriteString(section, 'VDSmartRenderingCodecVersion', '0x' + IntToHex(CutAppSettings.CodecVersion, 8));
-    END;
-    result := true;
-  END;
-END;
+    end;
+  end;
+end;
 
-FUNCTION TCutApplicationVirtualDub.CleanUpAfterCutting: boolean;
-VAR
-  success                          : boolean;
-BEGIN
-  result := false;
-  FFindProgressWindowTimer.Enabled := false;
-  IF self.CleanUp THEN BEGIN
-    result := INHERITED CleanUpAfterCutting;
-    IF FileExists(FScriptFileName) THEN BEGIN
+function TCutApplicationVirtualDub.CleanUpAfterCutting: Boolean;
+var
+  success: Boolean;
+begin
+  Result := False;
+  FFindProgressWindowTimer.Enabled := False;
+  if CleanUp then
+  begin
+    Result := inherited CleanUpAfterCutting;
+    if FileExists(FScriptFileName) then
+    begin
       success := DeleteFile(FScriptFileName);
-      result := result AND success;
-    END;
-  END;
-END;
+      Result  := Result and success;
+    end;
+  end;
+end;
 
 { TfrmCutApplicationVirtualDub }
 
-PROCEDURE TfrmCutApplicationVirtualDub.Init;
-BEGIN
-  INHERITED;
-  cbNotClose.Checked := CutApplication.FNotClose;
-  cbUseSmartRendering.Checked := CutApplication.FUseSmartRendering;
+procedure TfrmCutApplicationVirtualDub.Init;
+begin
+  inherited;
+  cbNotClose.Checked           := CutApplication.FNotClose;
+  cbUseSmartRendering.Checked  := CutApplication.FUseSmartRendering;
   cbShowProgressWindow.Checked := CutApplication.ShowProgressWindow;
-END;
+end;
 
-PROCEDURE TfrmCutApplicationVirtualDub.Apply;
-BEGIN
-  INHERITED;
-  CutApplication.FNotClose := cbNotClose.Checked;
+procedure TfrmCutApplicationVirtualDub.Apply;
+begin
+  inherited;
+  CutApplication.FNotClose          := cbNotClose.Checked;
   CutApplication.FUseSmartRendering := cbUseSmartRendering.Checked;
-  CutApplication.ShowProgressWindow := self.cbShowProgressWindow.Checked;
-END;
+  CutApplication.ShowProgressWindow := cbShowProgressWindow.Checked;
+end;
 
-PROCEDURE TfrmCutApplicationVirtualDub.SetCutApplication(
-  CONST Value: TCutApplicationVirtualDub);
-BEGIN
+procedure TfrmCutApplicationVirtualDub.SetCutApplication(const Value: TCutApplicationVirtualDub);
+begin
   FCutApplication := Value;
-END;
+end;
 
-FUNCTION TfrmCutApplicationVirtualDub.GetCutApplication: TCutApplicationVirtualDub;
-BEGIN
-  result := (self.FCutApplication AS TCutApplicationVirtualDub);
-END;
+function TfrmCutApplicationVirtualDub.GetCutApplication: TCutApplicationVirtualDub;
+begin
+  Result := (FCutApplication as TCutApplicationVirtualDub);
+end;
 
-FUNCTION TCutApplicationVirtualDub.CreateScript(aCutlist: TObjectList;
-  Inputfile, Outputfile: STRING; VAR scriptfile: STRING): boolean;
+function TCutApplicationVirtualDub.CreateScript(aCutlist: TObjectList; Inputfile, Outputfile: string; var scriptfile: string): Boolean;
 
-  FUNCTION EscapeString(s: STRING): STRING;
-  BEGIN
-    result := AnsiReplaceStr(s, '\', '\\');
-    result := AnsiReplaceStr(Result, '''', '\''');
-  END;
+  function EscapeString(s: string): string;
+  begin
+    Result := AnsiReplaceStr(s, '\', '\\');
+    Result := AnsiReplaceStr(Result, '''', '\''');
+  end;
 
-VAR
-  f                                : Textfile;
-  i                                : integer;
-  vdubStart, vdubLength            : STRING;
-  cutlist                          : TCutlist;
-BEGIN
-  result := false;
-  IF NOT (aCutlist IS TCutlist) THEN exit;
-  cutlist := (aCutlist AS TCutlist);
-  IF NOT (cutlist.Mode = clmTrim) THEN exit;
+var
+  f: Textfile;
+  i: Integer;
+  vdubStart, vdubLength: string;
+  cutlist: TCutlist;
+begin
+  Result := False;
+  if aCutlist is TCutlist then
+  begin
+    cutlist := (aCutlist as TCutlist);
+    if cutlist.Mode = clmTrim then
+    begin
+      if scriptfile = '' then
+        scriptfile := Inputfile + '.syl';
+      AssignFile(f, scriptfile);
+      Rewrite(f);
+      Writeln(f, '// virtual Dub Sylia Script');
+      Writeln(f, '// Generated by ' + Application_friendly_name);
+      Writeln(f, 'VirtualDub.Open("' + EscapeString(Inputfile) + '",0,0);');
+      Writeln(f, 'VirtualDub.audio.SetMode(0);');
+      if UseSmartRendering then
+      begin
+        Writeln(f, 'VirtualDub.video.SetMode(1);'); // fast Recompression
+        Writeln(f, 'VirtualDub.video.SetSmartRendering(1);');
+        if CutAppSettings.CodecFourCC <> 0 then
+        begin
+          Writeln(f, 'VirtualDub.video.SetCompression(0x' + IntToHex(CutAppSettings.CodecFourCC, 8) + ',0,10000,0);');
+          if CutAppSettings.CodecSettings <> '' then
+            Writeln(f, 'VirtualDub.video.SetCompData(' + IntToStr(CutAppSettings.CodecSettingsSize) + ',"' + CutAppSettings.CodecSettings + '");');
+        end;
+      end else
+        Writeln(f, 'VirtualDub.video.SetMode(0);');
 
-  IF scriptfile = '' THEN scriptfile := Inputfile + '.syl';
-  assignfile(f, scriptfile);
-  rewrite(f);
-  writeln(f, '// Virtual Dub Sylia Script');
-  writeln(f, '// Generated by ' + Application_friendly_name);
-  writeln(f, 'VirtualDub.Open("' + EscapeString(Inputfile) + '",0,0);');
-  writeln(f, 'VirtualDub.audio.SetMode(0);');
-  IF self.UseSmartRendering THEN BEGIN
-    writeln(f, 'VirtualDub.video.SetMode(1);'); //fast Recompression
-    writeln(f, 'VirtualDub.video.SetSmartRendering(1);');
-    IF CutAppSettings.CodecFourCC <> 0 THEN BEGIN
-      writeln(f, 'VirtualDub.video.SetCompression(0x' + IntToHex(CutAppSettings.CodecFourCC, 8) + ',0,10000,0);');
-      IF CutAppSettings.CodecSettings <> '' THEN BEGIN
-        writeln(f, 'VirtualDub.video.SetCompData(' + inttostr(CutAppSettings.CodecSettingsSize) + ',"' + CutAppSettings.CodecSettings + '");');
-      END;
-    END;
-  END ELSE BEGIN
-    writeln(f, 'VirtualDub.video.SetMode(0);');
-  END;
-  writeln(f, 'VirtualDub.subset.Clear();');
+      Writeln(f, 'VirtualDub.subset.Clear();');
 
-  cutlist.sort;
-  FOR i := 0 TO cutlist.Count - 1 DO BEGIN
-    IF cutlist.FramesPresent AND NOT cutlist.HasChanged THEN BEGIN
-      vdubstart := inttostr(cutlist.Cut[i].frame_from);
-      vdubLength := inttostr(cutlist.Cut[i].DurationFrames);
-    END ELSE BEGIN
-      vdubstart := inttostr(round(cutlist.Cut[i].pos_from / MovieInfo.frame_duration));
-      vdubLength := inttostr(round((cutlist.Cut[i].pos_to - cutlist.Cut[i].pos_from) / MovieInfo.frame_duration + 1));
-    END;
-    writeln(f, 'VirtualDub.subset.AddRange(' + vdubstart + ', ' + vdubLength + ');');
-  END;
+      cutlist.Sort;
+      for i := 0 to Pred(cutlist.Count) do
+      begin
+        if cutlist.FramesPresent and not cutlist.HasChanged then
+        begin
+          vdubstart  := IntToStr(cutlist.Cut[i].frame_from);
+          vdubLength := IntToStr(cutlist.Cut[i].DurationFrames);
+        end else
+        begin
+          vdubstart  := IntToStr(Round(cutlist.Cut[i].pos_from / MovieInfo.frame_duration));
+          vdubLength := IntToStr(Round((cutlist.Cut[i].pos_to - cutlist.Cut[i].pos_from) / MovieInfo.frame_duration + 1));
+        end;
+        Writeln(f, 'VirtualDub.subset.AddRange(' + vdubstart + ', ' + vdubLength + ');');
+      end;
 
-  writeln(f, 'VirtualDub.SaveAVI(U"' + OutputFile + '");'); //For OUTPUT use undecorated string!
-  IF NOT FNotClose THEN
-    writeln(f, 'VirtualDub.Close();');
+      Writeln(f, 'VirtualDub.SaveAVI(U"' + OutputFile + '");'); // for OUTPUT use undecorated string!
+      if not FNotClose then
+        Writeln(f, 'VirtualDub.Close();');
 
-  closefile(f);
-  result := true;
-END;
+      CloseFile(f);
+      Result := True;
+    end;
+  end;
+end;
 
-FUNCTION TCutApplicationVirtualDub.CanDoSmartRendering: boolean;
-CONST
-  //only VD 1.7.0 or later can do smart rendering
-  MinVersion                       : DWORD = $00010007;
-VAR
-  VersionMS                        : DWORD;
-BEGIN
-  result := false;
-  VersionMS := MakeLong(self.VersionWords[1], self.VersionWords[0]);
-  IF VersionMS >= MinVersion THEN
-    result := true;
-END;
+function TCutApplicationVirtualDub.CanDoSmartRendering: Boolean;
+begin
+  Result := MakeLong(VersionWords[1], VersionWords[0]) >= $00010007; // only VD 1.7.0 or later can do smart rendering
+end;
 
-FUNCTION TCutApplicationVirtualDub.UseSmartRendering: boolean;
-BEGIN
-  result := (self.FUseSmartRendering AND self.CanDoSmartRendering);
-END;
+function TCutApplicationVirtualDub.UseSmartRendering: Boolean;
+begin
+  Result := FUseSmartRendering and CanDoSmartRendering;
+end;
 
-END.
+end.
 

@@ -1,306 +1,287 @@
-UNIT UCutApplicationMP4Box;
+unit UCutApplicationMP4Box;
 
-INTERFACE
+{$I Information.inc}
 
-USES
-  Windows,
-  Messages,
-  SysUtils,
-  Variants,
-  Classes,
-  Graphics,
-  Controls,
-  Forms,
-  Dialogs,
-  UCutApplicationBase,
-  StdCtrls,
-  IniFiles,
-  Contnrs,
-  JvExStdCtrls,
-  JvCheckBox;
+// basic review and reformatting: done
 
-CONST
-  MP4BOX_DEFAULT_EXENAME           = 'MP4Box.exe';
+interface
 
-TYPE
-  TCutApplicationMP4Box = CLASS;
+uses
+  // Delphi
+  System.Classes, System.IniFiles, System.Contnrs, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.Controls,
 
-  TfrmCutApplicationMP4Box = CLASS(TfrmCutApplicationBase)
+  // Jedi
+  JvExStdCtrls, JvCheckBox,
+
+  // CA
+  UCutApplicationBase;
+
+type
+  TCutApplicationMP4Box = class;
+
+  TfrmCutApplicationMP4Box = class(TfrmCutApplicationBase)
     edtCommandLineOptions: TEdit;
     lblCommandLineOptions: TLabel;
-  PRIVATE
-    { Private declarations }
-    PROCEDURE SetCutApplication(CONST Value: TCutApplicationMP4Box);
-    FUNCTION GetCutApplication: TCutApplicationMP4Box;
-  PUBLIC
-    { Public declarations }
-    PROPERTY CutApplication: TCutApplicationMP4Box READ GetCutApplication WRITE SetCutApplication;
-    PROCEDURE Init; OVERRIDE;
-    PROCEDURE Apply; OVERRIDE;
-  END;
+  private
+    { private declarations }
+    procedure SetCutApplication(const Value: TCutApplicationMP4Box);
+    function GetCutApplication: TCutApplicationMP4Box;
+  public
+    { public declarations }
+    property CutApplication: TCutApplicationMP4Box read GetCutApplication write SetCutApplication;
+    procedure Init; override;
+    procedure Apply; override;
+  end;
 
-  TCutApplicationMP4Box = CLASS(TCutApplicationBase)
-  PROTECTED
-    FSourceFile, FDestFile: STRING;
-    FFilePath: STRING;
+  TCutApplicationMP4Box = class(TCutApplicationBase)
+  protected
+    FSourceFile, FDestFile: string;
+    FFilePath: string;
     FOriginalFileList, FTempFileList: TStringList;
     FAddLastCommandTriggerIndex: Integer;
-    PROCEDURE CommandLineTerminate(Sender: TObject; CONST CommandLineIndex: Integer; CONST CommandLine: STRING);
-  PUBLIC
-    CommandLineOptions: STRING;
-    CONSTRUCTOR create; OVERRIDE;
-    DESTRUCTOR destroy; OVERRIDE;
-    FUNCTION LoadSettings(IniFile: TCustomIniFile): boolean; OVERRIDE;
-    FUNCTION SaveSettings(IniFile: TCustomIniFile): boolean; OVERRIDE;
-    FUNCTION InfoString: STRING; OVERRIDE;
-    FUNCTION WriteCutlistInfo(CutlistFile: TCustomIniFile; section: STRING): boolean; OVERRIDE;
-    FUNCTION PrepareCutting(SourceFileName: STRING; VAR DestFileName: STRING; Cutlist: TObjectList): boolean; OVERRIDE;
-    FUNCTION CleanUpAfterCutting: boolean; OVERRIDE;
-  END;
+    procedure CommandLineTerminate(Sender: TObject; const CommandLineIndex: Integer; const CommandLine: string); override;
+  public
+    CommandLineOptions: string;
+    constructor Create; override;
+    destructor Destroy; override;
+    function LoadSettings(IniFile: TCustomIniFile): Boolean; override;
+    function SaveSettings(IniFile: TCustomIniFile): Boolean; override;
+    function InfoString: string; override;
+    function WriteCutlistInfo(CutlistFile: TCustomIniFile; section: string): Boolean; override;
+    function PrepareCutting(SourceFileName: string; var DestFileName: string; Cutlist: TObjectList): Boolean; override;
+    function CleanUpAfterCutting: Boolean; override;
+  end;
 
-VAR
-  frmCutApplicationMP4Box          : TfrmCutApplicationMP4Box;
+var
+  frmCutApplicationMP4Box: TfrmCutApplicationMP4Box;
 
-IMPLEMENTATION
+implementation
 
 {$R *.dfm}
 
-{$WARN UNIT_PLATFORM OFF}
+uses
+  // Delphi
+  System.SysUtils, System.StrUtils, System.Math,
 
-USES
-  CAResources,
-  FileCtrl,
-  StrUtils,
-  UCutlist,
-  UfrmCutting,
-  Utils;
+  // CA
+  UCutlist, CAResources, Utils;
 
+const
+  MP4BOX_DEFAULT_EXENAME = 'MP4Box.exe';
 
 { TCutApplicationMP4Box }
 
-CONSTRUCTOR TCutApplicationMP4Box.create;
-BEGIN
-  INHERITED;
-  RawRead := false;
-  self.OnCommandLineTerminate := self.CommandLineTerminate;
+constructor TCutApplicationMP4Box.Create;
+begin
+  inherited;
+  RawRead := False;
   FrameClass := TfrmCutApplicationMP4Box;
   Name := 'MP4Box';
   DefaultExeNames.Add(MP4BOX_DEFAULT_EXENAME);
-  RedirectOutput := true;
-  ShowAppWindow := false;
+  RedirectOutput := True;
+  ShowAppWindow := False;
 
   FOriginalFileList := TStringList.Create;
   FTempFileList := TStringList.Create;
-END;
+end;
 
-FUNCTION TCutApplicationMP4Box.LoadSettings(IniFile: TCustomIniFile): boolean;
-VAR
-  section                          : STRING;
-  success                          : boolean;
-BEGIN
-  success := INHERITED LoadSettings(IniFile);
+function TCutApplicationMP4Box.LoadSettings(IniFile: TCustomIniFile): Boolean;
+var
+  section: string;
+  success: Boolean;
+begin
+  success := inherited LoadSettings(IniFile);
   section := GetIniSectionName;
   CommandLineOptions := IniFile.ReadString(section, 'CommandLineOptions', '');
-  result := success;
-END;
+  Result := success;
+end;
 
-FUNCTION TCutApplicationMP4Box.SaveSettings(IniFile: TCustomIniFile): boolean;
-VAR
-  section                          : STRING;
-  success                          : boolean;
-BEGIN
-  success := INHERITED SaveSettings(IniFile);
-
+function TCutApplicationMP4Box.SaveSettings(IniFile: TCustomIniFile): Boolean;
+var
+  section: string;
+  success: Boolean;
+begin
+  success := inherited SaveSettings(IniFile);
   section := GetIniSectionName;
   IniFile.WriteString(section, 'CommandLineOptions', CommandLineOptions);
-  result := success;
-END;
+  Result := success;
+end;
 
-FUNCTION TCutApplicationMP4Box.PrepareCutting(SourceFileName: STRING;
-  VAR DestFileName: STRING; Cutlist: TObjectList): boolean;
-CONST
-  ForcedFileExt                    = '.mp4';
-VAR
-  TempCutlist                      : TCutlist;
-  iCut                             : Integer;
-  MustFreeTempCutlist              : boolean;
-  CommandLine                      : STRING;
-  SearchRec                        : TSearchRec;
-BEGIN
-  result := INHERITED PrepareCutting(SourceFileName, DestFileName, Cutlist);
-  IF NOT Result THEN
-    Exit;
+function TCutApplicationMP4Box.PrepareCutting(SourceFileName: string; var DestFileName: string; Cutlist: TObjectList): Boolean;
+const
+  ForcedFileExt = '.mp4';
+var
+  TempCutlist: TCutlist;
+  iCut: Integer;
+  MustFreeTempCutlist: Boolean;
+  CommandLine: string;
+  SearchRec: TSearchRec;
+begin
+  Result := inherited PrepareCutting(SourceFileName, DestFileName, Cutlist);
+  if Result then
+  begin
+    // Rename Files to MP4
+    // TempFileExt := ExtractFileExt(SourceFileName);
+    // ChangeFileExt(SourceFileName, ForcedFileExt);
+    // ChangeFileExt(DestFileName, ForcedFileExt);
 
-  // Rename Files to MP4
-  // TempFileExt := ExtractFileExt(SourceFileName);
-  // ChangeFileExt(SourceFileName, ForcedFileExt);
-  // ChangeFileExt(DestFileName, ForcedFileExt);
+    FCommandLines.Clear;
+    MustFreeTempCutlist := False;
+    TempCutlist := TCutlist(Cutlist);
+    FSourceFile := SourceFileName;
+    FDestFile   := DestFileName;
 
-  self.FCommandLines.Clear;
-  MustFreeTempCutlist := false;
-  TempCutlist := (Cutlist AS TCutlist);
+    if TempCutlist.Mode <> clmTrim then
+    begin
+      TempCutlist := TempCutlist.Convert;
+      MustFreeTempCutlist := True;
+    end;
 
-  self.FSourceFile := SourceFileName;
-  self.FDestFile := DestFileName;
+    try
+      TempCutlist.Sort;
+      for iCut := 0 to Pred(tempCutlist.Count) do
+      begin
+        CommandLine := '"' + SourceFileName + '"';
+        CommandLine := CommandLine + ' -splitx ' + FloatToStrInvariant(TempCutlist[iCut].pos_from) + ':' + FloatToStrInvariant(TempCutlist[iCut].pos_to);
+        FCommandLines.Add(CommandLine);
+      end;
 
-  IF TempCutlist.Mode <> clmTrim THEN BEGIN
-    TempCutlist := TempCutlist.convert;
-    MustFreeTempCutlist := True;
-  END;
+      //Workaround for not working -out parameter
+      //Add final Command after last Command of list is executed
+      FAddLastCommandTriggerIndex := Pred(FCommandLines.Count);
+      //
+      FFilePath := ExtractFilePath(SourceFileName);
+      //Make List of existing files
+      FOriginalFileList.Clear;
+      if FindFirst(FFilePath + '*.*', faAnyFile, SearchRec) = 0 then
+      begin
+        repeat
+          FOriginalFileList.Add(SearchRec.Name);
+        until FindNext(SearchRec) <> 0;
+        FindClose(SearchRec);
+      end;
 
-  TRY
-    TempCutlist.sort;
-    FOR iCut := 0 TO tempCutlist.Count - 1 DO BEGIN
-      CommandLine := '"' + SourceFileName + '"';
-      CommandLine := CommandLine + ' -splitx ' + FloatToStrInvariant(TempCutlist[iCut].pos_from) + ':' + FloatToStrInvariant(TempCutlist[iCut].pos_to);
-      self.FCommandLines.Add(CommandLine);
-    END;
+      Result := True;
+    finally
+      if MustFreeTempCutlist then
+        FreeAndNil(TempCutlist);
+    end;
+  end;
+end;
 
-    //Workaround for not working -out parameter
-    //Add final Command after last Command of list is executed
-    FAddLastCommandTriggerIndex := FCommandLines.Count - 1;
-    //
-    FFilePath := extractFilePath(SourceFileName);
-    //Make List of existing files
-    self.FOriginalFileList.Clear;
-    IF findFirst(FFilePath + '*.*', faAnyFile, SearchRec) = 0 THEN BEGIN
-      REPEAT
-        FOriginalFileList.Add(SearchRec.Name);
-      UNTIL FindNext(SearchRec) <> 0;
-      FindClose(SearchRec);
-    END;
+function TCutApplicationMP4Box.InfoString: string;
+begin
+  Result := Format(CAResources.RsCutAppInfoMP4Box, [inherited InfoString, CommandLineOptions]);
+end;
 
-    result := true;
-  FINALLY
-    IF MustFreeTempCutlist THEN
-      FreeAndNIL(TempCutlist);
-  END;
+function TCutApplicationMP4Box.WriteCutlistInfo(CutlistFile: TCustomIniFile; section: string): Boolean;
+begin
+  Result := inherited WriteCutlistInfo(CutlistFile, section);
+  if Result then
+  begin
+    cutlistfile.WriteString(section, 'IntendedCutApplicationOptions', CommandLineOptions);
+    Result := True;
+  end;
+end;
 
-END;
+destructor TCutApplicationMP4Box.Destroy;
+begin
+  FreeAndNil(FTempFileList);
+  FreeAndNil(FOriginalFileList);
+  inherited;
+end;
 
+function FileNameCompare(List: TStringList; Index1, Index2: Integer): Integer;
+begin
+  Result := Sign(Integer(List.Objects[Index1]) - Integer(List.Objects[Index2]));
+end;
 
-FUNCTION TCutApplicationMP4Box.InfoString: STRING;
-BEGIN
-  Result := Format(CAResources.RsCutAppInfoMP4Box, [
-    INHERITED InfoString,
-      self.CommandLineOptions
-      ]);
-END;
-
-FUNCTION TCutApplicationMP4Box.WriteCutlistInfo(CutlistFile: TCustomIniFile;
-  section: STRING): boolean;
-BEGIN
-  result := INHERITED WriteCutlistInfo(CutlistFile, section);
-  IF result THEN BEGIN
-    cutlistfile.WriteString(section, 'IntendedCutApplicationOptions', self.CommandLineOptions);
-    result := true;
-  END;
-END;
-
-DESTRUCTOR TCutApplicationMP4Box.destroy;
-BEGIN
-  FreeAndNIL(FTempFileList);
-  FreeAndNIL(FOriginalFileList);
-  INHERITED;
-END;
-
-
-FUNCTION FileNameCompare(List: TStringList; Index1, Index2: Integer): Integer;
-{The callback returns
-   a value less than 0 if the string identified by Index1 comes before the string identified by Index2
-   0 if the two strings are equivalent
-   a value greater than 0 if the string with Index1 comes after the string identified by Index2.}
-VAR
-  int1, int2                       : Integer;
-BEGIN
-  int1 := Integer(List.Objects[Index1]);
-  int2 := Integer(List.Objects[Index2]);
-  IF int1 > int2 THEN result := 1
-  ELSE IF int1 < int2 THEN result := -1
-  ELSE { if int1=int2 then } result := 0;
-END;
-
-PROCEDURE TCutApplicationMP4Box.CommandLineTerminate(Sender: TObject;
-  CONST CommandLineIndex: Integer; CONST CommandLine: STRING);
-VAR
-  SearchRec                        : TSearchRec;
-  i                                : Integer;
-  NewCommandLine                   : STRING;
-  EndsSeconds                      : Integer;
-  posUnderscore, posDot            : Integer;
-BEGIN
-  IF CommandLineIndex = FAddLastCommandTriggerIndex THEN BEGIN
+procedure TCutApplicationMP4Box.CommandLineTerminate(Sender: TObject; const CommandLineIndex: Integer; const CommandLine: string);
+var
+  SearchRec: TSearchRec;
+  i: Integer;
+  NewCommandLine: string;
+  EndsSeconds: Integer;
+  posUnderscore, posDot: Integer;
+begin
+  if CommandLineIndex = FAddLastCommandTriggerIndex then
+  begin
     //Last Command Line Executed, now determine new files and add -cat command
     //Make List of new files
     FTempFileList.Clear;
-    IF findFirst(FFilePath + '*.*', faAnyFile, SearchRec) = 0 THEN BEGIN
-      REPEAT
-        IF FOriginalFileList.IndexOf(SearchRec.Name) < 0 THEN BEGIN
-          //get End Time in seconds from file Name
+    if findFirst(FFilePath + '*.*', faAnyFile, SearchRec) = 0 then
+    begin
+      repeat
+        if FOriginalFileList.IndexOf(SearchRec.Name) < 0 then
+        begin
+          //get end Time in seconds from file Name
           EndsSeconds := 0;
           posUnderscore := LastDelimiter('_', SearchRec.Name);
-          IF PosUnderscore > 0 THEN BEGIN
+          if PosUnderscore > 0 then
+          begin
             posDot := LastDelimiter('.', SearchRec.Name);
-            IF posDot < posUnderScore THEN posDot := length(SearchRec.Name) + 1;
+            if posDot < posUnderScore then posDot := Length(SearchRec.Name) + 1;
             EndsSeconds := StrToIntDef(midstr(SearchRec.Name, PosUnderScore + 1, PosDot - (PosUnderScore + 1)), 0);
-          END;
+          end;
           FTempFileList.AddObject(SearchRec.Name, TObject(EndsSeconds));
-        END;
-      UNTIL FindNext(SearchRec) <> 0;
+        end;
+      until FindNext(SearchRec) <> 0;
       FindClose(SearchRec);
       //sort List
       FTempFileList.CustomSort(FileNameCompare);
       //Make CommandLine
-      FOR i := 0 TO FTempFileList.Count - 1 DO BEGIN
+      for i := 0 to Pred(FTempFileList.Count) do
         NewCommandLine := NewCommandLine + ' -cat "' + FFilePath + FTempFileList.Strings[i] + '"';
-      END;
+
       NewCommandLine := NewCommandLine + ' "' + FDestFile + '"';
       FCommandLines.Add(NewCommandLine);
-    END;
-  END;
-END;
+    end;
+  end;
+end;
 
-FUNCTION TCutApplicationMP4Box.CleanUpAfterCutting: boolean;
-VAR
-  i                                : Integer;
-  success                          : boolean;
-BEGIN
-  result := false;
-  IF self.CleanUp THEN BEGIN
-    result := INHERITED CleanUpAfterCutting;
-    FOR i := 0 TO FTempFileList.Count - 1 DO BEGIN
-      IF FileExists(FFilePath + FTempFileList.Strings[i]) THEN BEGIN
+function TCutApplicationMP4Box.CleanUpAfterCutting: Boolean;
+var
+  i: Integer;
+  success: Boolean;
+begin
+  if CleanUp then
+  begin
+    Result := inherited CleanUpAfterCutting;
+    for i := 0 to Pred(FTempFileList.Count) do
+    begin
+      if FileExists(FFilePath + FTempFileList.Strings[i]) then
+      begin
         success := DeleteFile(FFilePath + FTempFileList.Strings[i]);
-        result := result AND success;
-      END;
-    END;
-  END;
-END;
+        Result  := Result and success;
+      end;
+    end;
+  end else
+    Result := False;
+end;
 
 { TfrmCutApplicationMP4Box }
 
-PROCEDURE TfrmCutApplicationMP4Box.Init;
-BEGIN
-  INHERITED;
-  self.edtCommandLineOptions.Text := CutApplication.CommandLineOptions;
-END;
+procedure TfrmCutApplicationMP4Box.Init;
+begin
+  inherited;
+  edtCommandLineOptions.Text := CutApplication.CommandLineOptions;
+end;
 
-PROCEDURE TfrmCutApplicationMP4Box.Apply;
-BEGIN
-  INHERITED;
+procedure TfrmCutApplicationMP4Box.Apply;
+begin
+  inherited;
   CutApplication.CommandLineOptions := edtCommandLIneOptions.Text;
-END;
+end;
 
-PROCEDURE TfrmCutApplicationMP4Box.SetCutApplication(
-  CONST Value: TCutApplicationMP4Box);
-BEGIN
+procedure TfrmCutApplicationMP4Box.SetCutApplication(const Value: TCutApplicationMP4Box);
+begin
   FCutApplication := Value;
-END;
+end;
 
-FUNCTION TfrmCutApplicationMP4Box.GetCutApplication: TCutApplicationMP4Box;
-BEGIN
-  result := (self.FCutApplication AS TCutApplicationMP4Box);
-END;
+function TfrmCutApplicationMP4Box.GetCutApplication: TCutApplicationMP4Box;
+begin
+  Result := FCutApplication as TCutApplicationMP4Box;
+end;
 
+end.
 
-END.
