@@ -27,7 +27,7 @@ type
     cmdOk: TButton;
     edtUserComment: TEdit;
     lblComment: TLabel;
-    lblAuthor: TLabel;
+    lblAuthor: TEdit;
     pnlAuthor: TPanel;
     lblSuggestedFilename: TLabel;
     edtMovieName: TEdit;

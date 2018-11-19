@@ -214,7 +214,7 @@ object FCutlistInfo: TFCutlistInfo
     Anchors = [akLeft, akRight, akBottom]
     BevelInner = bvLowered
     TabOrder = 6
-    object lblAuthor: TLabel
+    object lblAuthor: TEdit
       Left = 2
       Top = 5
       Width = 364
@@ -222,17 +222,18 @@ object FCutlistInfo: TFCutlistInfo
       Align = alBottom
       Alignment = taCenter
       AutoSize = False
-      Caption = 'Cutlist Author unknown'
-      Color = clNone
+      BorderStyle = bsNone
       Font.Charset = ANSI_CHARSET
       Font.Color = clNavy
       Font.Height = -13
       Font.Name = 'Microsoft Sans Serif'
       Font.Pitch = fpVariable
       Font.Style = []
-      ParentColor = False
+      ParentColor = True
       ParentFont = False
-      Transparent = True
+      ReadOnly = True
+      TabOrder = 0
+      Text = 'Cutlist Author unknown'
     end
   end
   object edtMovieName: TEdit
