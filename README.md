@@ -2,7 +2,7 @@
 # Cut Assistant 2018
 
 
-[![License](https://img.shields.io/badge/License-GPL%203.0-blue.svg)](https://opensource.org/licenses/GPL-3.0)  [![Download](https://img.shields.io/badge/License-GPL%203.0-blue.svg)](../releases/latest)
+[![License](https://img.shields.io/badge/License-GPL%203.0-blue.svg)](https://opensource.org/licenses/GPL-3.0)  [![Download](https://img.shields.io/badge/download-latest-brightgreen.svg)](../../releases/latest)
 
 
 Project website: https://github.com/abc874/ca2018
