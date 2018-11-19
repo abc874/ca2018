@@ -1,32 +1,27 @@
-UNIT UCutApplicationBase;
+unit UCutApplicationBase;
 
-INTERFACE
+{$I Information.inc}
 
-USES
-  Windows,
-  Messages,
-  SysUtils,
-  Variants,
-  Classes,
-  Graphics,
-  Controls,
-  Forms,
-  Dialogs,
-  StdCtrls,
-  IniFiles,
-  Contnrs,
-  JvComponentBase,
-  JvCreateProcess,
-  Utils,
-  JvExStdCtrls,
-  JvCheckBox;
+// basic review and reformatting: done
 
-TYPE
-  TCutApplicationFrameClass = CLASS OF TfrmCutApplicationBase;
+interface
 
-  TCutApplicationBase = CLASS;
+uses
+  // Delphi
+  System.Classes, System.IniFiles, System.Contnrs, Vcl.Dialogs, Vcl.StdCtrls, Vcl.Controls, Vcl.Forms,
 
-  TfrmCutApplicationBase = CLASS(TFrame)
+  // Jedi
+  JvExStdCtrls, JvCheckBox, JvCreateProcess,
+
+  // CA
+  Utils;
+
+type
+  TCutApplicationFrameClass = class of TfrmCutApplicationBase;
+
+  TCutApplicationBase = class;
+
+  TfrmCutApplicationBase = class(TFrame)
     edtPath: TEdit;
     lblAppPath: TLabel;
     btnBrowsePath: TButton;
@@ -37,498 +32,478 @@ TYPE
     cbRedirectOutput: TJvCheckBox;
     cbShowAppWindow: TJvCheckBox;
     cbCleanUp: TJvCheckBox;
-    PROCEDURE btnBrowsePathClick(Sender: TObject);
-    PROCEDURE btnBrowseTempDirClick(Sender: TObject);
-  PRIVATE
-    { Private declarations }
-    PROCEDURE SetCutApplication(CONST Value: TCutApplicationBase);
-  PROTECTED
+    procedure btnBrowsePathClick(Sender: TObject);
+    procedure btnBrowseTempDirClick(Sender: TObject);
+  private
+    { private declarations }
+    procedure SetCutApplication(const Value: TCutApplicationBase);
+  protected
     FCutApplication: TCutApplicationBase;
-  PUBLIC
-    { Public declarations }
-    PROPERTY CutApplication: TCutApplicationBase READ FCutApplication WRITE SetCutApplication;
-    PROCEDURE Init; VIRTUAL;
-    PROCEDURE Apply; VIRTUAL;
-  END;
+  public
+    { public declarations }
+    property CutApplication: TCutApplicationBase read FCutApplication write SetCutApplication;
+    procedure Init; virtual;
+    procedure Apply; virtual;
+  end;
 
-  TCutApplicationCommandLineEvent = PROCEDURE(Sender: TObject; CONST CommandLineIndex: Integer; CONST CommandLine: STRING) OF OBJECT;
-
-  TCutApplicationBase = CLASS(TObject)
-  PRIVATE
-    FName: STRING;
-    FPath: STRING;
-    FVersion: STRING;
-    FVersionWords: ARRAY[0..3] OF word;
+  TCutApplicationBase = class(TObject)
+  private
+    FName: string;
+    FPath: string;
+    FVersion: string;
+    FVersionWords: array[0 .. 3] of Word;
     FDefaultExeNames: TStringlist;
-    FRedirectOutput: boolean;
-    FShowAppWindow: boolean;
-    FTempDir: STRING;
+    FRedirectOutput: Boolean;
+    FShowAppWindow: Boolean;
+    FTempDir: string;
 
     FOutputMemo: TMemo;
     FCommandLineCounter: Integer;
     FjvcpAppProcess: TJvCreateProcess;
-    FProcessAborted: boolean;
-    FCleanUp: boolean;
-    FRawRead: boolean;
+    FProcessAborted: Boolean;
+    FCleanUp: Boolean;
+    FRawRead: Boolean;
     FOnCuttingTerminate: TJvCPSTerminateEvent;
-    FOnCommandLineTerminate: TCutApplicationCommandLineEvent;
 
-    PROCEDURE SetPath(CONST Value: STRING);
-    PROCEDURE SetName(CONST Value: STRING);
-    FUNCTION GetVersionWords(Index: Integer): word;
-    PROCEDURE SetRedirectOutput(CONST Value: boolean);
-    PROCEDURE SetShowAppWindow(CONST Value: boolean);
-    PROCEDURE SetTempDir(CONST Value: STRING);
-    PROCEDURE SetOutputMemo(CONST Value: TMemo);
-    PROCEDURE jvcpAppProcessRead(Sender: TObject; CONST S: STRING; CONST StartsOnNewLine: Boolean);
-    PROCEDURE jvcpAppProcessRawRead(Sender: TObject; CONST S: STRING);
-    PROCEDURE jvcpAppProcessTerminate(Sender: TObject; ExitCode: Cardinal);
-    PROCEDURE SetCleanUp(CONST Value: boolean);
-    PROCEDURE SetRawRead(CONST Value: boolean);
-    PROCEDURE SetOnCommandLineTerminate(
-      CONST Value: TCutApplicationCommandLineEvent);
-  PROTECTED
-    FHasSmartRendering: boolean;
-    FCommandLines: TStringList; //ONLY command line parameters WITHOUT path to exe file!!!
-    PROPERTY RawRead: boolean READ FRawRead WRITE SetRawRead;
-    FUNCTION ExecuteCutProcess: boolean;
-    FUNCTION GetIniSectionName: STRING; VIRTUAL;
-    PROPERTY CutApplicationProcess: TJvCreateProcess READ FjvcpAppProcess;
-  PUBLIC
+    procedure SetPath(const Value: string);
+    procedure SetName(const Value: string);
+    function GetVersionWords(Index: Integer): Word;
+    procedure SetRedirectOutput(const Value: Boolean);
+    procedure SetShowAppWindow(const Value: Boolean);
+    procedure SetTempDir(const Value: string);
+    procedure SetOutputMemo(const Value: TMemo);
+    procedure jvcpAppProcessRead(Sender: TObject; const S: string; const StartsOnNewLine: Boolean);
+    procedure jvcpAppProcessRawRead(Sender: TObject; const S: string);
+    procedure jvcpAppProcessTerminate(Sender: TObject; ExitCode: Cardinal);
+    procedure SetCleanUp(const Value: Boolean);
+    procedure SetRawRead(const Value: Boolean);
+  protected
+    FHasSmartRendering: Boolean;
+    FCommandLines: TStringList; // ONLY command line parameters WITHOUT path to exe file!!!
+    property RawRead: Boolean read FRawRead write SetRawRead;
+    function ExecuteCutProcess: Boolean;
+    function GetIniSectionName: string; virtual;
+    procedure CommandLineTerminate(Sender: TObject; const CommandLineIndex: Integer; const CommandLine: string); virtual;
+    property CutApplicationProcess: TJvCreateProcess read FjvcpAppProcess;
+  public
     CutAppSettings: RCutAppSettings;
     FrameClass: TCutApplicationFrameClass;
-    PROPERTY OutputMemo: TMemo READ FOutputMemo WRITE SetOutputMemo;
-    PROPERTY OnCommandLineTerminate: TCutApplicationCommandLineEvent READ FOnCommandLineTerminate WRITE SetOnCommandLineTerminate;
-    PROPERTY OnCuttingTerminate: TJvCPSTerminateEvent READ FOnCuttingTerminate WRITE FOnCuttingTerminate;
-    PROCEDURE AbortCutProcess;
-    PROCEDURE EmergencyTerminateProcess;
+    property OutputMemo: TMemo read FOutputMemo write SetOutputMemo;
+    property OnCuttingTerminate: TJvCPSTerminateEvent read FOnCuttingTerminate write FOnCuttingTerminate;
+    procedure AbortCutProcess;
+    procedure EmergencyTerminateProcess;
 
-    PROPERTY Name: STRING READ FName WRITE SetName;
-    PROPERTY DefaultExeNames: TStringlist READ FDefaultExeNames WRITE FDefaultExeNames;
-    PROPERTY Path: STRING READ FPath WRITE SetPath;
-    PROPERTY TempDir: STRING READ FTempDir WRITE SetTempDir;
-    PROPERTY RedirectOutput: boolean READ FRedirectOutput WRITE SetRedirectOutput;
-    PROPERTY ShowAppWindow: boolean READ FShowAppWindow WRITE SetShowAppWindow;
-    PROPERTY CleanUp: boolean READ FCleanUp WRITE SetCleanUp;
-    PROPERTY Version: STRING READ FVersion;
-    PROPERTY VersionWords[Index: Integer]: word READ GetVersionWords;
-    PROPERTY HasSmartRendering: boolean READ FHasSmartRendering;
+    property Name: string read FName write SetName;
+    property DefaultExeNames: TStringlist read FDefaultExeNames write FDefaultExeNames;
+    property Path: string read FPath write SetPath;
+    property TempDir: string read FTempDir write SetTempDir;
+    property RedirectOutput: Boolean read FRedirectOutput write SetRedirectOutput;
+    property ShowAppWindow: Boolean read FShowAppWindow write SetShowAppWindow;
+    property CleanUp: Boolean read FCleanUp write SetCleanUp;
+    property Version: string read FVersion;
+    property VersionWords[Index: Integer]: Word read GetVersionWords;
+    property HasSmartRendering: Boolean read FHasSmartRendering;
 
-    CONSTRUCTOR create; VIRTUAL;
-    DESTRUCTOR Destroy; OVERRIDE;
-    FUNCTION LoadSettings(IniFile: TCustomIniFile): boolean; VIRTUAL;
-    FUNCTION SaveSettings(IniFile: TCustomIniFile): boolean; VIRTUAL;
-    FUNCTION InfoString: STRING; VIRTUAL;
-    FUNCTION WriteCutlistInfo(CutlistFile: TCustomIniFile; section: STRING): boolean; VIRTUAL;
+    constructor Create; virtual;
+    destructor Destroy; override;
+    function LoadSettings(IniFile: TCustomIniFile): Boolean; virtual;
+    function SaveSettings(IniFile: TCustomIniFile): Boolean; virtual;
+    function InfoString: string; virtual;
+    function WriteCutlistInfo(CutlistFile: TCustomIniFile; section: string): Boolean; virtual;
 
-    FUNCTION PrepareCutting(SourceFileName: STRING; VAR DestFileName: STRING; Cutlist: TObjectList): boolean; VIRTUAL;
-    PROPERTY CommandLines: TStringList READ FCommandLines;
-    FUNCTION StartCutting: boolean; VIRTUAL;
-    FUNCTION CleanUpAfterCutting: boolean; VIRTUAL;
-    FUNCTION CheckOutputForErrors: boolean; VIRTUAL;
-  END;
+    function PrepareCutting(SourceFileName: string; var DestFileName: string; Cutlist: TObjectList): Boolean; virtual;
+    property CommandLines: TStringList read FCommandLines;
+    function StartCutting: Boolean; virtual;
+    function CleanUpAfterCutting: Boolean; virtual;
+    function CheckOutputForErrors: Boolean; virtual;
+  end;
 
-IMPLEMENTATION
+implementation
 
 {$WARN UNIT_PLATFORM OFF}
 
-USES
-  CAResources,
-  FileCtrl;
+uses
+  // Delphi
+  Winapi.Windows, Winapi.Messages, System.SysUtils, Vcl.FileCtrl,
+
+  // CA
+  CAResources;
 
 {$R *.dfm}
 
 {TfrmCutApplicationBase}
 
-PROCEDURE TfrmCutApplicationBase.Apply;
-BEGIN
-  IF fileexists(edtPath.Text) THEN CutApplication.Path := edtPath.Text;
-  CutApplication.TempDir := self.edtTempDir.Text;
-  CutApplication.RedirectOutput := self.cbRedirectOutput.Checked;
-  CutApplication.ShowAppWindow := self.cbShowAppWindow.Checked;
-  CutApplication.CleanUp := self.cbCleanUp.Checked;
-END;
+procedure TfrmCutApplicationBase.Apply;
+begin
+  if FileExists(edtPath.Text) then
+    CutApplication.Path := edtPath.Text;
 
-PROCEDURE TfrmCutApplicationBase.btnBrowsePathClick(Sender: TObject);
-BEGIN
-  selectFileDlg.Title := Format(CAResources.RsTitleSelectCutApplication, [CutApplication.Name]);
-  selectFileDlg.InitialDir := ExtractFilePath(self.edtPath.Text);
-  selectFileDlg.FileName := ExtractFileName(self.edtPath.Text);
-  IF selectFileDlg.Execute THEN BEGIN
+  CutApplication.TempDir        := edtTempDir.Text;
+  CutApplication.RedirectOutput := cbRedirectOutput.Checked;
+  CutApplication.ShowAppWindow  := cbShowAppWindow.Checked;
+  CutApplication.CleanUp        := cbCleanUp.Checked;
+end;
+
+procedure TfrmCutApplicationBase.btnBrowsePathClick(Sender: TObject);
+begin
+  selectFileDlg.Title      := Format(CAResources.RsTitleSelectCutApplication, [CutApplication.Name]);
+  selectFileDlg.InitialDir := ExtractFilePath(edtPath.Text);
+  selectFileDlg.FileName   := ExtractFileName(edtPath.Text);
+
+  if selectFileDlg.Execute then
     edtPath.Text := selectFileDlg.FileName;
-  END ELSE BEGIN
-    exit;
-  END;
-END;
+end;
 
-PROCEDURE TfrmCutApplicationBase.Init;
-  PROCEDURE AppendFilterString(CONST description: STRING; CONST extensions: STRING); OVERLOAD;
-  VAR
-    filter                         : STRING;
-  BEGIN
-    filter := MakeFilterString(description, extensions);
-    IF selectFileDlg.Filter <> '' THEN
-      selectFileDlg.Filter := selectFileDlg.Filter + '|' + filter
-    ELSE
-      selectFileDlg.Filter := filter
-  END;
-BEGIN
-  self.edtPath.Text := CutApplication.Path;
-  self.edtTempDir.Text := CutApplication.TempDir;
-  self.cbRedirectOutput.Checked := CutApplication.RedirectOutput;
-  self.cbShowAppWindow.Checked := CutApplication.ShowAppWindow;
-  self.cbCleanUp.Checked := CutApplication.CleanUp;
-  selectFileDlg.Filter := '';
-  AppendFilterString(CutApplication.Name, CutApplication.DefaultExeNames.DelimitedText);
-  AppendFilterString(CAResources.RsFilterDescriptionExecutables, '*.exe');
-  AppendFilterString(CAResources.RsFilterDescriptionAll, '*.*');
-END;
+procedure TfrmCutApplicationBase.Init;
+var
+  S: string;
+begin
+  edtPath.Text             := CutApplication.Path;
+  edtTempDir.Text          := CutApplication.TempDir;
+  cbRedirectOutput.Checked := CutApplication.RedirectOutput;
+  cbShowAppWindow.Checked  := CutApplication.ShowAppWindow;
+  cbCleanUp.Checked        := CutApplication.CleanUp;
 
-PROCEDURE TfrmCutApplicationBase.SetCutApplication(
-  CONST Value: TCutApplicationBase);
-VAR
-  lbl                              : STRING;
-  {
-  i: INteger;
-  exeNames: TStrings;
-  cnt: integer;
-  }
-BEGIN
+  S := '';
+  AppendFilterString(S, CutApplication.Name, CutApplication.DefaultExeNames.DelimitedText);
+  AppendFilterString(S, RsFilterDescriptionExecutables, '*.exe');
+  AppendFilterString(S, RsFilterDescriptionAll, '*.*');
+  selectFileDlg.Filter := S;
+end;
+
+procedure TfrmCutApplicationBase.SetCutApplication(const Value: TCutApplicationBase);
+begin
   FCutApplication := Value;
-  lbl := Format(CAResources.RsCutAppPathTo, [FCutApplication.Name]);
-  {
-  exeNames := FCutApplication.DefaultExeNames;
-  cnt := exeNames.Count;
-  if cnt > 0 then begin
-    lbl := lbl + ' (' + exeNames[0];
-    for i := 1 to cnt - 1 do begin
-      lbl := Format(CAResources.RsCutAppPathToMore, [ lbl, exeNames[i] ]);
-    end;
-    lbl := lbl + ')';
-  end;
-  }
-  lblAppPath.Caption := lbl;
-END;
+  lblAppPath.Caption := Format(CAResources.RsCutAppPathTo, [FCutApplication.Name]);
+end;
 
-PROCEDURE TfrmCutApplicationBase.btnBrowseTempDirClick(Sender: TObject);
-VAR
-  newDir                           : STRING;
-BEGIN
-  newDir := self.edtTempDir.Text;
-  IF SelectDirectory(CAResources.RsTitleSelectTemporaryDirectory, '', newDir) THEN
-    self.edtTempDir.Text := newDir;
-END;
+procedure TfrmCutApplicationBase.btnBrowseTempDirClick(Sender: TObject);
+var
+  newDir: string;
+begin
+  newDir := edtTempDir.Text;
+  if SelectDirectory(CAResources.RsTitleSelectTemporaryDirectory, '', newDir) then
+    edtTempDir.Text := newDir;
+end;
 
 { TCutApplicationBase }
 
-PROCEDURE TCutApplicationBase.AbortCutProcess;
-BEGIN
-  IF self.FjvcpAppProcess.State <> psReady THEN BEGIN
-    FProcessAborted := true;
-    self.FjvcpAppProcess.CloseApplication(true);
-  END;
-END;
+procedure TCutApplicationBase.AbortCutProcess;
+begin
+  if FjvcpAppProcess.State <> psReady then
+  begin
+    FProcessAborted := True;
+    FjvcpAppProcess.CloseApplication(True);
+  end;
+end;
 
-FUNCTION TCutApplicationBase.CleanUpAfterCutting: boolean;
-BEGIN
-  result := false;
-  IF self.CleanUp THEN BEGIN
+function TCutApplicationBase.CleanUpAfterCutting: Boolean;
+begin
+  Result := CleanUp;
+end;
 
-    result := true;
-  END;
-END;
+procedure TCutApplicationBase.CommandLineTerminate(Sender: TObject; const CommandLineIndex: Integer; const CommandLine: string);
+begin
+  // overwrite in descendants
+end;
 
-CONSTRUCTOR TCutApplicationBase.create;
-BEGIN
-  INHERITED;
-  FDefaultExeNames := TSTringList.Create;
-  FDefaultExeNames.Delimiter := ';';
-  FCommandLines := TStringList.Create;
-  FjvcpAppProcess := TJvCreateProcess.Create(NIL);
-  FjvcpAppProcess.OnTerminate := self.jvcpAppProcessTerminate;
-  FrameClass := TfrmCutApplicationBase;
-  RedirectOutput := false;
-  ShowAppWindow := true;
-  CleanUp := true;
-  RawRead := true;
-  FHasSmartRendering := false;
-END;
+constructor TCutApplicationBase.Create;
+begin
+  inherited;
+  FDefaultExeNames            := TSTringList.Create;
+  FDefaultExeNames.Delimiter  := ';';
+  FCommandLines               := TStringList.Create;
+  FjvcpAppProcess             := TJvCreateProcess.Create(nil);
+  FjvcpAppProcess.OnTerminate := jvcpAppProcessTerminate;
+  FrameClass                  := TfrmCutApplicationBase;
+  RedirectOutput              := False;
+  ShowAppWindow               := True;
+  CleanUp                     := True;
+  RawRead                     := True;
+  FHasSmartRendering          := False;
+end;
 
-DESTRUCTOR TCutApplicationBase.destroy;
-BEGIN
-  FreeAndNIL(FjvcpAppProcess);
-  FreeAndNIL(FCommandLines);
-  FreeAndNIL(FDefaultExeNames);
-  INHERITED;
-END;
+destructor TCutApplicationBase.Destroy;
+begin
+  FreeAndNil(FjvcpAppProcess);
+  FreeAndNil(FCommandLines);
+  FreeAndNil(FDefaultExeNames);
+  inherited;
+end;
 
-FUNCTION TCutApplicationBase.PrepareCutting(SourceFileName: STRING; VAR DestFileName: STRING; Cutlist: TObjectList): boolean;
-BEGIN
-  Result := false;
-  IF NOT FileExists(self.Path) THEN BEGIN
-    ShowMessageFmt(CAResources.RsCutAppNotFound, [self.Name, self.Path]);
-    exit;
-  END;
+function TCutApplicationBase.PrepareCutting(SourceFileName: string; var DestFileName: string; Cutlist: TObjectList): Boolean;
+begin
+  Result := FileExists(Path);
 
-  Result := true;
-END;
+  if not Result then
+    ErrMsgFmt(CAResources.RsCutAppNotFound, [Name, Path]);
+end;
 
-PROCEDURE TCutApplicationBase.EmergencyTerminateProcess;
-BEGIN
-  IF self.FjvcpAppProcess.State <> psReady THEN BEGIN
-    FProcessAborted := true;
-    self.FjvcpAppProcess.Terminate;
-  END;
-END;
+procedure TCutApplicationBase.EmergencyTerminateProcess;
+begin
+  if FjvcpAppProcess.State <> psReady then
+  begin
+    FProcessAborted := True;
+    FjvcpAppProcess.Terminate;
+  end;
+end;
 
-FUNCTION TCutApplicationBase.ExecuteCutProcess: boolean;
-BEGIN
-  FProcessAborted := false;
-  result := false;
-  IF self.FCommandLines.Count < 1 THEN exit;
+function TCutApplicationBase.ExecuteCutProcess: Boolean;
+begin
+  FProcessAborted := False;
+  Result := False;
 
-  IF assigned(FOutputMemo) THEN BEGIN
-    FOutputMemo.Clear;
-    IF NOT FRedirectOutput THEN
-      FOutputMemo.Lines.Add(CAResources.RsCutAppOutNoOutputRedirection);
-  END;
+  if FCommandLines.Count > 0 then
+  begin
+    if Assigned(FOutputMemo) then
+    begin
+      FOutputMemo.Clear;
+      if not FRedirectOutput then
+        FOutputMemo.Lines.Add(CAResources.RsCutAppOutNoOutputRedirection);
+    end;
 
-  FCommandLineCounter := 0;
-  self.jvcpAppProcessTerminate(self, 0); //start process with first command line
-  result := true;
-END;
+    FCommandLineCounter := 0;
+    jvcpAppProcessTerminate(Self, 0); // start process with first command line
+    Result := True;
+  end;
+end;
 
-FUNCTION TCutApplicationBase.GetIniSectionName: STRING;
-BEGIN
-  result := Name;
-END;
+function TCutApplicationBase.GetIniSectionName: string;
+begin
+  Result := Name;
+end;
 
-FUNCTION TCutApplicationBase.GetVersionWords(Index: Integer): word;
-BEGIN
-  result := 0;
-  IF Index IN [0..3] THEN BEGIN
-    result := FVersionWords[Index];
-  END;
-END;
+function TCutApplicationBase.GetVersionWords(Index: Integer): Word;
+begin
+  if Index in [0 .. 3] then
+    Result := FVersionWords[Index]
+  else
+    Result := 0;
+end;
 
-FUNCTION TCutApplicationBase.InfoString: STRING;
-BEGIN
-  Result := Format(CAResources.RsCutAppInfoBase, [
-    self.Name,
-      self.Path,
-      self.Version
-      ]);
-END;
+function TCutApplicationBase.InfoString: string;
+begin
+  Result := Format(CAResources.RsCutAppInfoBase, [Name, Path, Version]);
+end;
 
-PROCEDURE TCutApplicationBase.jvcpAppProcessRawRead(Sender: TObject;
-  CONST S: STRING);
-BEGIN
-  IF assigned(self.FOutputMemo) AND FRawRead THEN BEGIN
+procedure TCutApplicationBase.jvcpAppProcessRawRead(Sender: TObject; const S: string);
+begin
+  if Assigned(FOutputMemo) and FRawRead then
+  begin
     FOutputMemo.Text := FOutputMemo.Text + S;
-    SendMessage(FOutputMemo.Handle, WM_VSCROLL, SB_BOTTOM, 0); //Scroll down
-  END;
-END;
+    SendMessage(FOutputMemo.Handle, WM_VSCROLL, SB_BOTTOM, 0); // Scroll down
+  end;
+end;
 
-PROCEDURE TCutApplicationBase.jvcpAppProcessRead(Sender: TObject;
-  CONST S: STRING; CONST StartsOnNewLine: Boolean);
-BEGIN
-  IF assigned(self.FOutputMemo) AND NOT FRawRead THEN BEGIN
-    IF StartsOnNewLine THEN BEGIN
+procedure TCutApplicationBase.jvcpAppProcessRead(Sender: TObject; const S: string; const StartsOnNewLine: Boolean);
+begin
+  if Assigned(FOutputMemo) and not FRawRead then
+  begin
+    if StartsOnNewLine then
+    begin
       FOutputMemo.Lines.Add(S);
-      SendMessage(FOutputMemo.Handle, WM_VSCROLL, SB_BOTTOM, 0); //Scroll down
-    END ELSE BEGIN
-      FOutputMemo.Lines.Strings[FOutPutMemo.Lines.Count - 1] := S;
-    END;
-  END;
-END;
+      SendMessage(FOutputMemo.Handle, WM_VSCROLL, SB_BOTTOM, 0); // Scroll down
+    end else
+      FOutputMemo.Lines.Strings[Pred(FOutPutMemo.Lines.Count)] := S;
+  end;
+end;
 
-PROCEDURE TCutApplicationBase.jvcpAppProcessTerminate(Sender: TObject;
-  ExitCode: Cardinal);
-BEGIN
-  IF (FCommandLineCounter > 0) AND assigned(FOnCommandLineTerminate) THEN BEGIN
-    FOnCommandLineTerminate(Sender, FCommandLineCounter - 1, FCommandLines[FCommandLineCounter - 1]);
-  END;
-  IF (FCommandLineCounter >= FCommandLines.Count)
-    OR (ExitCode <> 0)
-    OR FProcessAborted THEN BEGIN
+procedure TCutApplicationBase.jvcpAppProcessTerminate(Sender: TObject; ExitCode: Cardinal);
+begin
+  if FCommandLineCounter > 0 then
+    CommandLineTerminate(Sender, Pred(FCommandLineCounter), FCommandLines[Pred(FCommandLineCounter)]);
 
-    IF ExitCode = 0 THEN BEGIN
-      IF assigned(FOutputMemo) THEN
+  if (FCommandLineCounter >= FCommandLines.Count) or (ExitCode <> 0) or FProcessAborted then
+  begin
+    if ExitCode = 0 then
+    begin
+      if Assigned(FOutputMemo) then
         FOutputMemo.Lines.Add(CAResources.RsCutAppOutFinished);
-    END ELSE BEGIN
-      IF assigned(FOutputMemo) THEN BEGIN
-        IF NOT CheckOutputForErrors THEN BEGIN
+    end else
+    begin
+      if Assigned(FOutputMemo) then
+      begin
+        if not CheckOutputForErrors then
+        begin
           FOutputMemo.Lines.Add(CAResources.RsCutAppOutErrorCommand);
           FOutputMemo.Lines.Add(FCommandLines[FCommandLineCounter - 1]);
-        END;
-      END;
-    END;
-    IF FProcessAborted THEN BEGIN
-      IF assigned(FOutputMemo) THEN
+        end;
+      end;
+    end;
+    if FProcessAborted then
+    begin
+      if Assigned(FOutputMemo) then
         FOutputMemo.Lines.Add(CAResources.RsCutAppOutUserAbort);
       ExitCode := Cardinal(-1);
-    END;
-    IF assigned(FOnCuttingTerminate) THEN
+    end;
+    if Assigned(FOnCuttingTerminate) then
       FOnCuttingTerminate(Sender, ExitCode);
+  end else
+  begin
+    // Next Command Line
+    FjvcpAppProcess.CommandLine := '"' + FPath + '" ' + FCommandLines[FCommandLineCounter];
+    Inc(FCommandLineCounter);
+    FjvcpAppProcess.Run;
+  end;
+end;
 
-  END ELSE BEGIN
-    //Next Command Line
-    self.FjvcpAppProcess.CommandLine := '"' + FPath + '" ' + FCommandLines[FCommandLineCounter];
-    inc(FCommandLineCounter);
-    self.FjvcpAppProcess.Run;
-  END;
-END;
+function TCutApplicationBase.CheckOutputForErrors: Boolean;
+begin
+  Result := False;
+end;
 
-FUNCTION TCutApplicationBase.CheckOutputForErrors: boolean;
-BEGIN
-  Result := false;
-END;
-
-FUNCTION TCutApplicationBase.LoadSettings(IniFile: TCustomIniFile): boolean;
-CONST
-  TEMP_DIR                         = 'temp';
-VAR
-  section                          : STRING;
-BEGIN
+function TCutApplicationBase.LoadSettings(IniFile: TCustomIniFile): Boolean;
+const
+  TEMP_DIR = 'temp';
+var
+  section: string;
+begin
   section := GetIniSectionName;
-  IF Path = '' THEN BEGIN
-    IF DefaultExeNames.Count > 0 THEN
+  if Path = '' then
+  begin
+    if DefaultExeNames.Count > 0 then
       Path := IncludeTrailingPathDelimiter(ExtractFilePath(Application.ExeName)) + DefaultExeNames.Strings[0];
-  END;
+  end;
   Path := IniFile.ReadString(section, 'Path', Path);
-  IF TempDir = '' THEN
-    TempDir := IncludeTrailingPathDelimiter(IncludeTrailingPathDelimiter(ExtractFilePath(application.ExeName)) + TEMP_DIR);
+  if TempDir = '' then
+    TempDir := IncludeTrailingPathDelimiter(IncludeTrailingPathDelimiter(ExtractFilePath(Application.ExeName)) + TEMP_DIR);
   TempDir := IniFile.ReadString(section, 'TempDir', TempDir);
   RedirectOutput := iniFile.ReadBool(Section, 'RedirectOutput', RedirectOutput);
   ShowAppWindow := iniFile.ReadBool(Section, 'ShowAppWindow', ShowAppWindow);
   CleanUp := iniFile.ReadBool(Section, 'CleanUp', CleanUp);
-  result := true;
-END;
+  Result := True;
+end;
 
-FUNCTION TCutApplicationBase.SaveSettings(IniFile: TCustomIniFile): boolean;
-VAR
-  section                          : STRING;
-BEGIN
+function TCutApplicationBase.SaveSettings(IniFile: TCustomIniFile): Boolean;
+var
+  section: string;
+begin
   section := GetIniSectionName;
   IniFile.WriteString(section, 'Path', Path);
   IniFile.WriteString(section, 'TempDir', TempDir);
   IniFile.WriteBool(section, 'RedirectOutput', RedirectOutput);
   IniFile.WriteBool(section, 'ShowAppWindow', ShowAppWindow);
   IniFile.WriteBool(section, 'CleanUp', CleanUp);
-  result := true;
-END;
+  Result := True;
+end;
 
-FUNCTION TCutApplicationBase.WriteCutlistInfo(
-  CutlistFile: TCustomIniFile; section: STRING): boolean;
-BEGIN
+function TCutApplicationBase.WriteCutlistInfo(CutlistFile: TCustomIniFile; section: string): Boolean;
+begin
   cutlistfile.WriteString(section, 'IntendedCutApplicationName', Name);
-  cutlistfile.WriteString(section, 'IntendedCutApplication', extractfilename(Path));
+  cutlistfile.WriteString(section, 'IntendedCutApplication', ExtractFileName(Path));
   cutlistfile.WriteString(section, 'IntendedCutApplicationVersion', Version);
-  result := true;
-END;
+  Result := True;
+end;
 
-PROCEDURE TCutApplicationBase.SetCleanUp(CONST Value: boolean);
-BEGIN
+procedure TCutApplicationBase.SetCleanUp(const Value: Boolean);
+begin
   FCleanUp := Value;
-END;
+end;
 
-PROCEDURE TCutApplicationBase.SetName(CONST Value: STRING);
-BEGIN
+procedure TCutApplicationBase.SetName(const Value: string);
+begin
   FName := Value;
-END;
+end;
 
-PROCEDURE TCutApplicationBase.SetOnCommandLineTerminate(
-  CONST Value: TCutApplicationCommandLineEvent);
-BEGIN
-  FOnCommandLineTerminate := Value;
-END;
-
-PROCEDURE TCutApplicationBase.SetOutputMemo(CONST Value: TMemo);
-BEGIN
-  IF Value <> FOutputMemo THEN BEGIN
+procedure TCutApplicationBase.SetOutputMemo(const Value: TMemo);
+begin
+  if Value <> FOutputMemo then
+  begin
     FOutputMemo := Value;
-    IF assigned(FOutputMemo) THEN BEGIN
-      IF FRawRead THEN BEGIN
-        self.FjvcpAppProcess.OnRead := NIL;
-        self.FjvcpAppProcess.OnRawRead := self.jvcpAppProcessRawRead;
-      END ELSE BEGIN
-        self.FjvcpAppProcess.OnRead := self.jvcpAppProcessRead;
-        self.FjvcpAppProcess.OnRawRead := NIL;
-      END;
-    END ELSE BEGIN
-      self.FjvcpAppProcess.OnRead := NIL;
-      self.FjvcpAppProcess.OnRawRead := NIL;
-    END;
-  END;
-END;
+    if Assigned(FOutputMemo) then
+    begin
+      if FRawRead then
+      begin
+        FjvcpAppProcess.OnRead := nil;
+        FjvcpAppProcess.OnRawRead := jvcpAppProcessRawRead;
+      end else
+      begin
+        FjvcpAppProcess.OnRead := jvcpAppProcessRead;
+        FjvcpAppProcess.OnRawRead := nil;
+      end;
+    end else
+    begin
+      FjvcpAppProcess.OnRead := nil;
+      FjvcpAppProcess.OnRawRead := nil;
+    end;
+  end;
+end;
 
-PROCEDURE TCutApplicationBase.SetPath(CONST Value: STRING);
-VAR
+procedure TCutApplicationBase.SetPath(const Value: string);
+var
   dwFileVersionMS, dwFileVersionLS : DWORD;
-BEGIN
-  IF fileexists(Value) THEN BEGIN
+begin
+  if FileExists(Value) then
+  begin
     FPath := Value;
-    IF Get_File_Version(Value, dwFileVersionMS, dwFileVersionLS) THEN BEGIN
-      FVersion := Get_File_Version(Value);
+    if Get_File_Version(Value, dwFileVersionMS, dwFileVersionLS) then
+    begin
+      FVersion         := Get_File_Version(Value);
       FVersionWords[0] := HiWord(dwFileVersionMS);
       FVersionWords[1] := LoWord(dwFileVersionMS);
       FVersionWords[2] := HiWord(dwFileVersionLS);
       FVersionWords[3] := LoWord(dwFileVersionLS);
-    END ELSE BEGIN
-      FVersion := '';
+    end else
+    begin
+      FVersion         := '';
       FVersionWords[0] := 0;
       FVersionWords[1] := 0;
       FVersionWords[2] := 0;
       FVersionWords[3] := 0;
-    END;
-  END;
-END;
+    end;
+  end;
+end;
 
-PROCEDURE TCutApplicationBase.SetRawRead(CONST Value: boolean);
-BEGIN
+procedure TCutApplicationBase.SetRawRead(const Value: Boolean);
+begin
   FRawRead := Value;
-  IF assigned(FOutputMemo) THEN BEGIN
-    IF FRawRead THEN BEGIN
-      self.FjvcpAppProcess.OnRead := NIL;
-      self.FjvcpAppProcess.OnRawRead := self.jvcpAppProcessRawRead;
-    END ELSE BEGIN
-      self.FjvcpAppProcess.OnRead := self.jvcpAppProcessRead;
-      self.FjvcpAppProcess.OnRawRead := NIL;
-    END;
-  END;
-END;
+  if Assigned(FOutputMemo) then
+  begin
+    if FRawRead then
+    begin
+      FjvcpAppProcess.OnRead := nil;
+      FjvcpAppProcess.OnRawRead := jvcpAppProcessRawRead;
+    end else
+    begin
+      FjvcpAppProcess.OnRead := jvcpAppProcessRead;
+      FjvcpAppProcess.OnRawRead := nil;
+    end;
+  end;
+end;
 
-PROCEDURE TCutApplicationBase.SetRedirectOutput(CONST Value: boolean);
-BEGIN
+procedure TCutApplicationBase.SetRedirectOutput(const Value: Boolean);
+begin
   FRedirectOutput := Value;
-  IF Value THEN BEGIN
-    FjvcpAppProcess.ConsoleOptions := [coRedirect, coOwnerData];
-  END ELSE BEGIN
+
+  if Value then
+    FjvcpAppProcess.ConsoleOptions := [coRedirect, coOwnerData]
+  else
     FjvcpAppProcess.ConsoleOptions := [];
-  END;
-END;
+end;
 
-PROCEDURE TCutApplicationBase.SetShowAppWindow(CONST Value: boolean);
-BEGIN
+procedure TCutApplicationBase.SetShowAppWindow(const Value: Boolean);
+begin
   FShowAppWindow := Value;
-  IF Value THEN BEGIN
+  if Value then
+  begin
     FjvcpAppProcess.StartupInfo.ShowWindow := swNormal;
-    FjvcpAppProcess.StartupInfo.DefaultWindowState := true;
-  END ELSE BEGIN
+    FjvcpAppProcess.StartupInfo.DefaultWindowState := True;
+  end else
+  begin
     FjvcpAppProcess.StartupInfo.ShowWindow := swHide;
-    FjvcpAppProcess.StartupInfo.DefaultWindowState := false;
-  END;
-END;
+    FjvcpAppProcess.StartupInfo.DefaultWindowState := False;
+  end;
+end;
 
-PROCEDURE TCutApplicationBase.SetTempDir(CONST Value: STRING);
-BEGIN
+procedure TCutApplicationBase.SetTempDir(const Value: string);
+begin
   FTempDir := Value;
-END;
+end;
 
-FUNCTION TCutApplicationBase.StartCutting: boolean;
-BEGIN
-  result := ExecuteCutProcess;
-END;
+function TCutApplicationBase.StartCutting: Boolean;
+begin
+  Result := ExecuteCutProcess;
+end;
 
-END.
+end.
 
