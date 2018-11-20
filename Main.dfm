@@ -1,9 +1,8 @@
 object FMain: TFMain
   Left = 301
   Top = 215
-  AutoScroll = False
   Caption = 'Cut Assistant'
-  ClientHeight = 486
+  ClientHeight = 539
   ClientWidth = 792
   Color = clBtnFace
   Constraints.MinHeight = 540
@@ -26,19 +25,19 @@ object FMain: TFMain
   OnShow = FormShow
   DesignSize = (
     792
-    486)
+    539)
   PixelsPerInch = 96
   TextHeight = 13
   object bvCutilistInfo: TBevel
     Left = 367
     Top = 32
     Width = 420
-    Height = 237
+    Height = 288
     Anchors = [akTop, akRight, akBottom]
   end
   object bvMovieControl: TBevel
     Left = 368
-    Top = 277
+    Top = 328
     Width = 242
     Height = 111
     Anchors = [akRight, akBottom]
@@ -47,7 +46,7 @@ object FMain: TFMain
   end
   object lblCutFrom: TLabel
     Left = 403
-    Top = 188
+    Top = 239
     Width = 23
     Height = 13
     Alignment = taRightJustify
@@ -56,7 +55,7 @@ object FMain: TFMain
   end
   object lblCutDuration: TLabel
     Left = 388
-    Top = 238
+    Top = 289
     Width = 40
     Height = 13
     Alignment = taRightJustify
@@ -65,7 +64,7 @@ object FMain: TFMain
   end
   object lblCutTo: TLabel
     Left = 414
-    Top = 214
+    Top = 265
     Width = 13
     Height = 13
     Alignment = taRightJustify
@@ -74,7 +73,7 @@ object FMain: TFMain
   end
   object lblVolume: TLabel
     Left = 377
-    Top = 320
+    Top = 371
     Width = 35
     Height = 13
     Alignment = taRightJustify
@@ -83,7 +82,7 @@ object FMain: TFMain
   end
   object lblPos_nl: TLabel
     Left = 699
-    Top = 389
+    Top = 440
     Width = 82
     Height = 16
     Alignment = taRightJustify
@@ -99,7 +98,7 @@ object FMain: TFMain
   end
   object lblMinFinepos_nl: TLabel
     Left = 13
-    Top = 461
+    Top = 512
     Width = 6
     Height = 13
     Anchors = [akLeft, akBottom]
@@ -107,7 +106,7 @@ object FMain: TFMain
   end
   object lblMaxFinepos_nl: TLabel
     Left = 430
-    Top = 467
+    Top = 518
     Width = 18
     Height = 13
     Anchors = [akRight, akBottom]
@@ -115,7 +114,7 @@ object FMain: TFMain
   end
   object lblDuration_nl: TLabel
     Left = 707
-    Top = 437
+    Top = 488
     Width = 74
     Height = 13
     Alignment = taRightJustify
@@ -124,7 +123,7 @@ object FMain: TFMain
   end
   object lblFinePos_nl: TLabel
     Left = 433
-    Top = 441
+    Top = 492
     Width = 43
     Height = 13
     Alignment = taRightJustify
@@ -133,7 +132,7 @@ object FMain: TFMain
   end
   object lblStartPosition_nl: TLabel
     Left = 13
-    Top = 437
+    Top = 488
     Width = 6
     Height = 13
     Anchors = [akLeft, akBottom]
@@ -141,7 +140,7 @@ object FMain: TFMain
   end
   object ICutlistWarning: TImage
     Left = 751
-    Top = 146
+    Top = 197
     Width = 30
     Height = 28
     Anchors = [akRight, akBottom]
@@ -185,7 +184,7 @@ object FMain: TFMain
   end
   object lblTotalCutoff_nl: TLabel
     Left = 549
-    Top = 146
+    Top = 197
     Width = 117
     Height = 13
     Alignment = taRightJustify
@@ -201,7 +200,7 @@ object FMain: TFMain
   end
   object lblResultingDuration_nl: TLabel
     Left = 487
-    Top = 159
+    Top = 210
     Width = 179
     Height = 13
     Alignment = taRightJustify
@@ -217,7 +216,7 @@ object FMain: TFMain
   end
   object lblRate: TLabel
     Left = 390
-    Top = 353
+    Top = 404
     Width = 23
     Height = 13
     Alignment = taRightJustify
@@ -226,7 +225,7 @@ object FMain: TFMain
   end
   object lblCurrentRate_nl: TLabel
     Left = 544
-    Top = 350
+    Top = 401
     Width = 47
     Height = 20
     Hint = 'Frame Rate (Double click to set to 1.0)'
@@ -244,7 +243,7 @@ object FMain: TFMain
   end
   object lblTrueRate_nl: TLabel
     Left = 568
-    Top = 369
+    Top = 420
     Width = 23
     Height = 13
     Hint = 'Actual Frame Rate'
@@ -254,7 +253,7 @@ object FMain: TFMain
   end
   object lblMovieType_nl: TLabel
     Left = 624
-    Top = 355
+    Top = 406
     Width = 159
     Height = 13
     Alignment = taCenter
@@ -264,7 +263,7 @@ object FMain: TFMain
   end
   object lblCutApplication_nl: TLabel
     Left = 624
-    Top = 371
+    Top = 422
     Width = 159
     Height = 13
     Alignment = taCenter
@@ -274,7 +273,7 @@ object FMain: TFMain
   end
   object lblMovieFPS_nl: TLabel
     Left = 624
-    Top = 339
+    Top = 390
     Width = 159
     Height = 13
     Alignment = taCenter
@@ -286,19 +285,19 @@ object FMain: TFMain
     Left = 4
     Top = 32
     Width = 358
-    Height = 358
+    Height = 409
     Anchors = [akLeft, akTop, akRight, akBottom]
     BevelOuter = bvNone
     TabOrder = 1
     OnResize = pnlVideoWindowResize
     DesignSize = (
       358
-      358)
+      409)
     object VideoWindow: TVideoWindow
       Left = 0
       Top = 0
       Width = 358
-      Height = 358
+      Height = 409
       FilterGraph = FilterGraph
       VMROptions.Mode = vmrWindowless
       VMROptions.Streams = 1
@@ -312,7 +311,7 @@ object FMain: TFMain
   end
   object cmdStop: TButton
     Left = 504
-    Top = 283
+    Top = 334
     Width = 28
     Height = 27
     Action = actStop
@@ -323,7 +322,7 @@ object FMain: TFMain
   end
   object cmdPlayPause: TButton
     Left = 407
-    Top = 283
+    Top = 334
     Width = 28
     Height = 27
     Action = actPlayPause
@@ -336,20 +335,20 @@ object FMain: TFMain
     Left = 371
     Top = 40
     Width = 294
-    Height = 103
+    Height = 154
     Anchors = [akTop, akRight, akBottom]
     Columns = <
       item
+        AutoSize = True
         Caption = '#'
-        Width = 30
       end
       item
+        AutoSize = True
         Caption = 'From'
-        Width = 70
       end
       item
+        AutoSize = True
         Caption = 'To'
-        Width = 70
       end
       item
         AutoSize = True
@@ -357,10 +356,11 @@ object FMain: TFMain
       end>
     GridLines = True
     HideSelection = False
-    Items.Data = {
-      4A0000000100000000000000FFFFFFFFFFFFFFFF030000000000000003313030
-      0B303A30303A30302E3030300B303A30303A30302E3030300B303A30303A3030
-      2E303030FFFFFFFFFFFF}
+    Items.ItemData = {
+      05770000000100000000000000FFFFFFFFFFFFFFFF03000000FFFFFFFF000000
+      00033100300030000B30003A00300030003A00300030002E0030003000300000
+      0000000B30003A00300030003A00300030002E00300030003000000000000B30
+      003A00300030003A00300030002E0030003000300000000000FFFFFFFFFFFF}
     ReadOnly = True
     RowSelect = True
     SortType = stText
@@ -382,7 +382,7 @@ object FMain: TFMain
   end
   object cmdDeleteCut: TButton
     Left = 671
-    Top = 123
+    Top = 114
     Width = 111
     Height = 20
     Action = actDeleteCut
@@ -393,7 +393,7 @@ object FMain: TFMain
   end
   object edtFrom: TEdit
     Left = 436
-    Top = 182
+    Top = 233
     Width = 113
     Height = 21
     Anchors = [akRight, akBottom]
@@ -402,7 +402,7 @@ object FMain: TFMain
   end
   object edtDuration: TEdit
     Left = 436
-    Top = 234
+    Top = 285
     Width = 113
     Height = 21
     Anchors = [akRight, akBottom]
@@ -411,7 +411,7 @@ object FMain: TFMain
   end
   object edtTo: TEdit
     Left = 436
-    Top = 208
+    Top = 259
     Width = 113
     Height = 21
     Anchors = [akRight, akBottom]
@@ -420,7 +420,7 @@ object FMain: TFMain
   end
   object cmdSetFrom: TButton
     Left = 556
-    Top = 182
+    Top = 233
     Width = 72
     Height = 20
     Action = actSetCutStart
@@ -432,7 +432,7 @@ object FMain: TFMain
   end
   object cmdSetTo: TButton
     Left = 556
-    Top = 208
+    Top = 259
     Width = 72
     Height = 20
     Action = actSetCutEnd
@@ -444,7 +444,7 @@ object FMain: TFMain
   end
   object cmdFromStart: TButton
     Left = 633
-    Top = 182
+    Top = 233
     Width = 72
     Height = 20
     Anchors = [akRight, akBottom]
@@ -456,7 +456,7 @@ object FMain: TFMain
   end
   object cmdToEnd: TButton
     Left = 633
-    Top = 208
+    Top = 259
     Width = 72
     Height = 20
     Anchors = [akRight, akBottom]
@@ -468,7 +468,7 @@ object FMain: TFMain
   end
   object cmdJumpFrom: TButton
     Left = 710
-    Top = 182
+    Top = 233
     Width = 72
     Height = 20
     Action = actJumpCutStart
@@ -480,7 +480,7 @@ object FMain: TFMain
   end
   object cmdJumpTo: TButton
     Left = 710
-    Top = 208
+    Top = 259
     Width = 72
     Height = 20
     Action = actJumpCutEnd
@@ -492,7 +492,7 @@ object FMain: TFMain
   end
   object cmdReplaceCut: TButton
     Left = 671
-    Top = 69
+    Top = 66
     Width = 111
     Height = 20
     Action = actReplaceCut
@@ -503,7 +503,7 @@ object FMain: TFMain
   end
   object cmdEditCut: TButton
     Left = 671
-    Top = 96
+    Top = 90
     Width = 111
     Height = 20
     Action = actEditCut
@@ -514,7 +514,7 @@ object FMain: TFMain
   end
   object rgCutMode: TRadioGroup
     Left = 624
-    Top = 273
+    Top = 324
     Width = 161
     Height = 59
     Hint = 
@@ -533,7 +533,7 @@ object FMain: TFMain
   end
   object cmdPrev12: TButton
     Left = 554
-    Top = 461
+    Top = 512
     Width = 111
     Height = 20
     Action = actPrevFrames
@@ -544,7 +544,7 @@ object FMain: TFMain
   end
   object cmdStepBack: TButton
     Left = 374
-    Top = 283
+    Top = 334
     Width = 28
     Height = 27
     Hint = 'Previous Frame'
@@ -556,7 +556,7 @@ object FMain: TFMain
   end
   object cmdStepForwards: TButton
     Left = 439
-    Top = 283
+    Top = 334
     Width = 28
     Height = 27
     Hint = 'Next Frame'
@@ -568,7 +568,7 @@ object FMain: TFMain
   end
   object tbVolume: TTrackBar
     Left = 413
-    Top = 317
+    Top = 368
     Width = 123
     Height = 37
     Anchors = [akRight, akBottom]
@@ -580,7 +580,7 @@ object FMain: TFMain
   end
   object cmdNext12: TButton
     Left = 671
-    Top = 461
+    Top = 512
     Width = 111
     Height = 20
     Action = actNextFrames
@@ -591,7 +591,7 @@ object FMain: TFMain
   end
   object tbFinePos: TtrackBarEx
     Left = 33
-    Top = 448
+    Top = 499
     Width = 398
     Height = 36
     Hint = 'Fine Positioning (in Frames)'
@@ -610,7 +610,7 @@ object FMain: TFMain
   end
   object tbFilePos: TDSTrackBarEx
     Left = 7
-    Top = 409
+    Top = 460
     Width = 775
     Height = 27
     Hint = 'Position (Timeline)'
@@ -631,7 +631,7 @@ object FMain: TFMain
   end
   object cmd12FromTo: TButton
     Left = 460
-    Top = 461
+    Top = 512
     Width = 88
     Height = 20
     Action = actScanInterval
@@ -641,10 +641,10 @@ object FMain: TFMain
     TabOrder = 32
   end
   object cmdConvert: TButton
-    Left = 711
-    Top = 293
-    Width = 68
-    Height = 26
+    Left = 710
+    Top = 344
+    Width = 72
+    Height = 20
     Anchors = [akRight, akBottom]
     Caption = 'Convert'
     TabOrder = 29
@@ -652,7 +652,7 @@ object FMain: TFMain
   end
   object cmdCutlistInfo: TBitBtn
     Left = 671
-    Top = 149
+    Top = 200
     Width = 76
     Height = 20
     Action = actCutlistInfo
@@ -662,7 +662,7 @@ object FMain: TFMain
   end
   object pnlAuthor: TPanel
     Left = 556
-    Top = 234
+    Top = 285
     Width = 226
     Height = 21
     Anchors = [akRight, akBottom]
@@ -693,7 +693,7 @@ object FMain: TFMain
   end
   object tbRate: TtrackBarEx
     Left = 413
-    Top = 348
+    Top = 399
     Width = 123
     Height = 27
     Anchors = [akRight, akBottom]
@@ -706,7 +706,7 @@ object FMain: TFMain
   end
   object cmdNextCut: TButton
     Left = 576
-    Top = 283
+    Top = 334
     Width = 28
     Height = 27
     Action = actNextCut
@@ -717,7 +717,7 @@ object FMain: TFMain
   end
   object cmdPrevCut: TButton
     Left = 543
-    Top = 283
+    Top = 334
     Width = 28
     Height = 27
     Action = actPrevCut
@@ -728,7 +728,7 @@ object FMain: TFMain
   end
   object cmdFF: TButton
     Left = 472
-    Top = 283
+    Top = 334
     Width = 28
     Height = 27
     Hint = 'Fast Forward (Click and Hold)'
@@ -745,7 +745,7 @@ object FMain: TFMain
     Left = 0
     Top = 0
     Width = 792
-    Height = 29
+    Height = 31
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -11
@@ -753,11 +753,12 @@ object FMain: TFMain
     Font.Pitch = fpVariable
     Font.Style = []
     Options = [sbFlatBtns]
-    BtnOffsetHorz = 3
-    BtnOffsetVert = 3
+    BtnOffsetHorz = 4
+    BtnOffsetVert = 5
     BtnWidth = 24
     BtnHeight = 23
     Images = ImageList
+    Locked = True
     BevelOuter = bvNone
     TabOrder = 0
     InternalVer = 1
@@ -767,7 +768,6 @@ object FMain: TFMain
     object JvSpeedItem1: TJvSpeedItem
       Action = actFileExit
       BtnCaption = 'E&xit'
-      Caption = 'JvSpeedItem1'
       Glyph.Data = {
         36040000424D3604000000000000360000002800000010000000100000000100
         2000000000000004000000000000000000000000000000000000FF00FF00FF00
@@ -805,8 +805,8 @@ object FMain: TFMain
         FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00}
       Hint = 'Exit application'
       Spacing = 1
-      Left = 3
-      Top = 3
+      Left = 4
+      Top = 5
       Visible = True
       OnClick = actFileExitExecute
       SectionName = 'Main'
@@ -814,7 +814,6 @@ object FMain: TFMain
     object JvSpeedItem2: TJvSpeedItem
       Action = actOpenCutlist
       BtnCaption = '&Open Cutlist...'
-      Caption = 'JvSpeedItem2'
       Glyph.Data = {
         36040000424D3604000000000000360000002800000010000000100000000100
         2000000000000004000000000000000000000000000000000000FF00FF00FF00
@@ -852,8 +851,8 @@ object FMain: TFMain
         25001680250016802500FF00FF00FF00FF00FF00FF00FF00FF00}
       Hint = 'Open cutlist file...'
       Spacing = 1
-      Left = 75
-      Top = 3
+      Left = 76
+      Top = 5
       Visible = True
       OnClick = actOpenCutlistExecute
       SectionName = 'Main'
@@ -861,7 +860,6 @@ object FMain: TFMain
     object JvSpeedItem3: TJvSpeedItem
       Action = actOpenMovie
       BtnCaption = '&Open Movie...'
-      Caption = 'JvSpeedItem3'
       Glyph.Data = {
         36040000424D3604000000000000360000002800000010000000100000000100
         2000000000000004000000000000000000000000000000000000FF00FF00FF00
@@ -899,8 +897,8 @@ object FMain: TFMain
         25001680250016802500FF00FF00FF00FF00FF00FF00FF00FF00}
       Hint = 'Open movie file...'
       Spacing = 1
-      Left = 43
-      Top = 3
+      Left = 44
+      Top = 5
       Visible = True
       OnClick = actOpenMovieExecute
       SectionName = 'Main'
@@ -908,7 +906,6 @@ object FMain: TFMain
     object JvSpeedItem4: TJvSpeedItem
       Action = actSearchCutlistByFileSize
       BtnCaption = 'Search &Cutlists on Server'
-      Caption = 'JvSpeedItem4'
       Glyph.Data = {
         36040000424D3604000000000000360000002800000010000000100000000100
         2000000000000004000000000000000000000000000000000000FF00FF00FF00
@@ -946,8 +943,8 @@ object FMain: TFMain
         3FFFD5EFD6FFFF00FF00FF00FF00FF00FF00FF00FF00FF00FF00}
       Hint = 'Search matching cutlists on server'
       Spacing = 1
-      Left = 107
-      Top = 3
+      Left = 108
+      Top = 5
       Visible = True
       OnClick = actSearchCutlistByFileSizeExecute
       SectionName = 'Main'
@@ -955,7 +952,6 @@ object FMain: TFMain
     object JvSpeedItem6: TJvSpeedItem
       Action = actSaveCutlist
       BtnCaption = '&Save Cutlist'
-      Caption = 'JvSpeedItem6'
       Glyph.Data = {
         36040000424D3604000000000000360000002800000010000000100000000100
         2000000000000004000000000000000000000000000000000000FF00FF00F8F8
@@ -993,8 +989,8 @@ object FMain: TFMain
         EDFFF0EAEDFFF0EAEDFFF0EAEDFFD76580FFF2CFD8FFFF00FF00}
       Hint = 'Save Cutlist'
       Spacing = 1
-      Left = 171
-      Top = 3
+      Left = 172
+      Top = 5
       Visible = True
       OnClick = actSaveCutlistExecute
       SectionName = 'Main'
@@ -1002,7 +998,6 @@ object FMain: TFMain
     object JvSpeedItem5: TJvSpeedItem
       Action = actSaveCutlistAs
       BtnCaption = 'Save Cutlist &As...'
-      Caption = 'JvSpeedItem5'
       Glyph.Data = {
         36040000424D3604000000000000360000002800000010000000100000000100
         2000000000000004000000000000000000000000000000000000FF00FF00F8F8
@@ -1040,8 +1035,8 @@ object FMain: TFMain
         E1FFE1E1E1FFE1E1E1FFE1E1E1FF209B0CFFB2DFABFFFF00FF00}
       Hint = 'Save cutlist as...'
       Spacing = 1
-      Left = 203
-      Top = 3
+      Left = 204
+      Top = 5
       Visible = True
       OnClick = actSaveCutlistAsExecute
       SectionName = 'Main'
@@ -1049,7 +1044,6 @@ object FMain: TFMain
     object JvSpeedItem7: TJvSpeedItem
       Action = actCutlistUpload
       BtnCaption = '&Upload Cutlist to Server'
-      Caption = 'JvSpeedItem7'
       Glyph.Data = {
         36040000424D3604000000000000360000002800000010000000100000000100
         2000000000000004000000000000000000000000000000000000FF00FF00FF00
@@ -1087,8 +1081,8 @@ object FMain: TFMain
         3FFFD5EFD6FFFF00FF00FF00FF00FF00FF00FF00FF00FF00FF00}
       Hint = 'Upload Cutlist to internet'
       Spacing = 1
-      Left = 235
-      Top = 3
+      Left = 236
+      Top = 5
       Visible = True
       OnClick = actCutlistUploadExecute
       SectionName = 'Main'
@@ -1096,7 +1090,6 @@ object FMain: TFMain
     object JvSpeedItem8: TJvSpeedItem
       Action = actSendRating
       BtnCaption = 'Send &Rating'
-      Caption = 'JvSpeedItem8'
       Glyph.Data = {
         36040000424D3604000000000000360000002800000010000000100000000100
         2000000000000004000000000000000000000000000000000000FF00FF00FF00
@@ -1134,8 +1127,8 @@ object FMain: TFMain
         0000FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00}
       Hint = 'Send Rating to Server'
       Spacing = 1
-      Left = 267
-      Top = 3
+      Left = 268
+      Top = 5
       Visible = True
       OnClick = actSendRatingExecute
       SectionName = 'Main'
@@ -1143,7 +1136,6 @@ object FMain: TFMain
     object JvSpeedItem9: TJvSpeedItem
       Action = actShowFramesForm
       BtnCaption = '&Show Form'
-      Caption = 'JvSpeedItem9'
       Glyph.Data = {
         36040000424D3604000000000000360000002800000010000000100000000100
         2000000000000004000000000000000000000000000000000000000000000000
@@ -1181,8 +1173,8 @@ object FMain: TFMain
         0000000000000000000000000000000000000000000000000000}
       Hint = 'Bring frames form to front'
       Spacing = 1
-      Left = 315
-      Top = 3
+      Left = 316
+      Top = 5
       Visible = True
       OnClick = actShowFramesFormExecute
       SectionName = 'Main'
@@ -1190,7 +1182,6 @@ object FMain: TFMain
     object JvSpeedItem10: TJvSpeedItem
       Action = actScanInterval
       BtnCaption = 'Scan &Interval'
-      Caption = 'JvSpeedItem10'
       Glyph.Data = {
         36040000424D3604000000000000360000002800000010000000100000000100
         2000000000000004000000000000000000000000000000000000FF00FF00FF00
@@ -1228,8 +1219,8 @@ object FMain: TFMain
         FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00}
       Hint = 'Scans selected interval for $$ frames'
       Spacing = 1
-      Left = 347
-      Top = 3
+      Left = 348
+      Top = 5
       Visible = True
       OnClick = actScanIntervalExecute
       SectionName = 'Main'
@@ -1237,7 +1228,6 @@ object FMain: TFMain
     object JvSpeedItem11: TJvSpeedItem
       Action = actPrevFrames
       BtnCaption = '&Previous $$ Frames'
-      Caption = 'JvSpeedItem11'
       Glyph.Data = {
         36040000424D3604000000000000360000002800000010000000100000000100
         2000000000000004000000000000000000000000000000000000FF00FF00FF00
@@ -1275,8 +1265,8 @@ object FMain: TFMain
         FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00}
       Hint = 'Show last $$ frames before current position'
       Spacing = 1
-      Left = 379
-      Top = 3
+      Left = 380
+      Top = 5
       Visible = True
       OnClick = actPrevFramesExecute
       SectionName = 'Main'
@@ -1284,7 +1274,6 @@ object FMain: TFMain
     object JvSpeedItem16: TJvSpeedItem
       Action = actCurrentFrames
       BtnCaption = '$$ frames &around'
-      Caption = 'JvSpeedItem16'
       Glyph.Data = {
         36040000424D3604000000000000360000002800000010000000100000000100
         2000000000000004000000000000000000000000000000000000FF00FF00FF00
@@ -1322,8 +1311,8 @@ object FMain: TFMain
         FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00}
       Hint = 'Show $$ frames around the current position'
       Spacing = 1
-      Left = 411
-      Top = 3
+      Left = 412
+      Top = 5
       Visible = True
       OnClick = actCurrentFramesExecute
       SectionName = 'Main'
@@ -1331,7 +1320,6 @@ object FMain: TFMain
     object JvSpeedItem12: TJvSpeedItem
       Action = actNextFrames
       BtnCaption = '&Next $$ Frames'
-      Caption = 'JvSpeedItem12'
       Glyph.Data = {
         36040000424D3604000000000000360000002800000010000000100000000100
         2000000000000004000000000000000000000000000000000000FF00FF00FF00
@@ -1369,8 +1357,8 @@ object FMain: TFMain
         FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00}
       Hint = 'Show next $$ frames from current position'
       Spacing = 1
-      Left = 443
-      Top = 3
+      Left = 444
+      Top = 5
       Visible = True
       OnClick = actNextFramesExecute
       SectionName = 'Main'
@@ -1378,7 +1366,6 @@ object FMain: TFMain
     object JvSpeedItem13: TJvSpeedItem
       Action = actStartCutting
       BtnCaption = '&Start Cutting'
-      Caption = 'JvSpeedItem13'
       Glyph.Data = {
         36040000424D3604000000000000360000002800000010000000100000000100
         2000000000000004000000000000000000000000000000000000FF00FF00FF00
@@ -1416,8 +1403,8 @@ object FMain: TFMain
         FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00}
       Hint = 'Start external cut application...'
       Spacing = 1
-      Left = 483
-      Top = 3
+      Left = 484
+      Top = 5
       Visible = True
       OnClick = actStartCuttingExecute
       SectionName = 'Main'
@@ -1425,7 +1412,6 @@ object FMain: TFMain
     object JvSpeedItem14: TJvSpeedItem
       Action = actCalculateResultingTimes
       BtnCaption = 'C&heck cut Movie'
-      Caption = 'JvSpeedItem14'
       Glyph.Data = {
         36040000424D3604000000000000360000002800000010000000100000000100
         2000000000000004000000000000000000000000000000000000FF00FF00FF00
@@ -1463,8 +1449,8 @@ object FMain: TFMain
         00FF656582FF000000FFFF00FF00FF00FF00FF00FF00FF00FF00}
       Hint = 'Check Cut Movie'
       Spacing = 1
-      Left = 515
-      Top = 3
+      Left = 516
+      Top = 5
       Visible = True
       OnClick = actCalculateResultingTimesExecute
       SectionName = 'Main'
@@ -1472,7 +1458,6 @@ object FMain: TFMain
     object JvSpeedItem15: TJvSpeedItem
       Action = actBrowseWWWHelp
       BtnCaption = '&Internet Help Pages'
-      Caption = 'JvSpeedItem15'
       Glyph.Data = {
         36040000424D3604000000000000360000002800000010000000100000000100
         2000000000000004000000000000000000000000000000000000FF00FF00FF00
@@ -1510,8 +1495,8 @@ object FMain: TFMain
         E0FFFF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00}
       Hint = 'Browse Internet Help Pages on OTR Wiki'
       Spacing = 1
-      Left = 563
-      Top = 3
+      Left = 564
+      Top = 5
       Visible = True
       OnClick = actBrowseWWWHelpExecute
       SectionName = 'Main'
@@ -1519,7 +1504,6 @@ object FMain: TFMain
     object JvSpeedItem17: TJvSpeedItem
       Action = actSearchCutlistLocal
       BtnCaption = 'Search Cutlists in &Directory'
-      Caption = 'JvSpeedItem17'
       Glyph.Data = {
         36040000424D3604000000000000360000002800000010000000100000000100
         2000000000000004000000000000000000000000000000000000FF00FF00FF00
@@ -1557,8 +1541,8 @@ object FMain: TFMain
         3F00D5EFD600FF00FF00FF00FF00FF00FF00FF00FF00FF00FF00}
       Hint = 'Search matching cutlists in standard cutlist directory'
       Spacing = 1
-      Left = 139
-      Top = 3
+      Left = 140
+      Top = 5
       Visible = True
       OnClick = actSearchCutlistLocalExecute
       SectionName = 'Main'
@@ -1566,7 +1550,7 @@ object FMain: TFMain
   end
   object cbMute: TJvCheckBox
     Left = 543
-    Top = 320
+    Top = 371
     Width = 45
     Height = 17
     Anchors = [akRight, akBottom]
@@ -1574,28 +1558,38 @@ object FMain: TFMain
     TabOrder = 26
     OnClick = cbMuteClick
     LinkedControls = <>
-    HotTrackFont.Charset = ANSI_CHARSET
-    HotTrackFont.Color = clWindowText
-    HotTrackFont.Height = -11
-    HotTrackFont.Name = 'Microsoft Sans Serif'
-    HotTrackFont.Pitch = fpVariable
-    HotTrackFont.Style = []
   end
   object cbCutPreview: TJvCheckBox
     Left = 371
-    Top = 152
+    Top = 203
     Width = 77
     Height = 17
     Anchors = [akRight, akBottom]
     Caption = 'Cut pre&view'
     TabOrder = 35
     LinkedControls = <>
-    HotTrackFont.Charset = ANSI_CHARSET
-    HotTrackFont.Color = clWindowText
-    HotTrackFont.Height = -11
-    HotTrackFont.Name = 'Microsoft Sans Serif'
-    HotTrackFont.Pitch = fpVariable
-    HotTrackFont.Style = []
+  end
+  object cmdMergeCut: TButton
+    Left = 671
+    Top = 138
+    Width = 111
+    Height = 20
+    Action = actMergeCut
+    Anchors = [akTop, akRight]
+    ParentShowHint = False
+    ShowHint = True
+    TabOrder = 36
+  end
+  object cmdSplitCut: TButton
+    Left = 671
+    Top = 162
+    Width = 111
+    Height = 20
+    Action = actSplitCut
+    Anchors = [akTop, akRight]
+    ParentShowHint = False
+    ShowHint = True
+    TabOrder = 37
   end
   object odCutlist: TOpenDialog
     Filter = 'Cut Lists|*.cutlist|All FIles|*.*'
@@ -1652,7 +1646,7 @@ object FMain: TFMain
     Left = 128
     Top = 192
     Bitmap = {
-      494C010117001800040010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010117001900040010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000006000000001002000000000000060
       0000000000000000000000000000000000000000000000000000000000000000
       00000000000000000000000000000000000000000000000000000000000000FF
@@ -2453,8 +2447,6 @@ object FMain: TFMain
   end
   object WebRequest_nl: TIdHTTP
     OnStatus = WebRequest_nlStatus
-    MaxLineAction = maException
-    ReadTimeout = 15000
     OnWork = WebRequest_nlWork
     AllowCookies = True
     HandleRedirects = True
@@ -2463,12 +2455,14 @@ object FMain: TFMain
     Request.ContentLength = -1
     Request.ContentRangeEnd = 0
     Request.ContentRangeStart = 0
+    Request.ContentRangeInstanceLength = -1
     Request.ContentType = 'text/html'
     Request.Accept = 'text/html, */*'
     Request.BasicAuthentication = False
     Request.UserAgent = 'CutAssistant $$ (Indy Library)'
+    Request.Ranges.Units = 'bytes'
+    Request.Ranges = <>
     HTTPOptions = [hoForceEncodeParams]
-    ConnectTimeout = 15000
     Left = 208
     Top = 88
   end
@@ -2727,9 +2721,9 @@ object FMain: TFMain
       Caption = '>II'
       Enabled = False
       Hint = 'Step Forward'
-      ShortCut = 39
       SecondaryShortCuts.Strings = (
         'l')
+      ShortCut = 39
       OnExecute = actStepForwardExecute
     end
     object actStepBackward: TAction
@@ -2738,9 +2732,9 @@ object FMain: TFMain
       Caption = 'II<'
       Enabled = False
       Hint = 'Step Backward'
-      ShortCut = 37
       SecondaryShortCuts.Strings = (
         'j')
+      ShortCut = 37
       OnExecute = actStepBackwardExecute
     end
     object actOpenCutlistHome: TAction
@@ -2804,9 +2798,9 @@ object FMain: TFMain
       Caption = '>>|'
       Enabled = False
       Hint = 'Next Cut'
-      ShortCut = 16423
       SecondaryShortCuts.Strings = (
         'BildAb')
+      ShortCut = 16423
       OnExecute = actNextCutExecute
     end
     object actPrevCut: TAction
@@ -2815,9 +2809,9 @@ object FMain: TFMain
       Caption = '|<<'
       Enabled = False
       Hint = 'Previous Cut'
-      ShortCut = 16421
       SecondaryShortCuts.Strings = (
         'BildAuf')
+      ShortCut = 16421
       OnExecute = actPrevCutExecute
     end
     object actFullScreen: TAction
@@ -2901,7 +2895,6 @@ object FMain: TFMain
       Caption = 'Make a &support request'
       Hint = 'Creates a support request ...'
       Visible = False
-      OnExecute = actSupportRequestExecute
     end
     object actStop: TAction
       Category = 'Navigation'
@@ -2975,6 +2968,16 @@ object FMain: TFMain
       Category = 'Edit'
       Caption = 'Shift Cut ...'
       OnExecute = actShiftCutExecute
+    end
+    object actSplitCut: TAction
+      Category = 'Edit'
+      Caption = 'Split cut'
+      OnExecute = actSplitCutExecute
+    end
+    object actMergeCut: TAction
+      Category = 'Edit'
+      Caption = 'Merge cut'
+      OnExecute = actMergeCutExecute
     end
   end
   object mnuMain: TMainMenu
@@ -3225,6 +3228,10 @@ object FMain: TFMain
     Top = 248
   end
   object RequestWorker: TIdThreadComponent
+    Active = False
+    Loop = False
+    Priority = tpNormal
+    StopMode = smTerminate
     OnException = RequestWorkerException
     OnRun = RequestWorkerRun
     Left = 207
