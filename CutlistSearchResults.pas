@@ -25,7 +25,8 @@ type
     procedure lvLinklistCompare(Sender: TObject; Item1, Item2: TListItem; Data: Integer; var Compare: Integer);
   private
     { private declarations }
-    SortColNr: Integer; // first col = 1
+    SortColNr: Integer; // first col = 1, neg values = desc
+    procedure SortByColumn(Number: Integer);
   public
     { public declarations }
     MovieTypeName: string;
@@ -59,6 +60,8 @@ begin
   for I := 0 to Pred(lvLinklist.Columns.Count) do
     S := S + Format(',%d', [lvLinklist.Columns[I].Width]);
 
+  S := S + Format(',%d', [SortColNr]);
+
   Settings.Additional[ClassName] := S;
 end;
 
@@ -86,8 +89,14 @@ begin
       Width  := W;
       Height := H;
 
+      // Columns
       for I := 0 to Pred(lvLinklist.Columns.Count) do
         lvLinklist.Columns[I].Width := GetOneInt;
+
+      // Sort
+      I := GetOneInt;
+      if I <> 0 then
+        SortByColumn(I);
     end;
   end;
 end;
@@ -99,40 +108,8 @@ begin
 end;
 
 procedure TFCutlistSearchResults.lvLinklistColumnClick(Sender: TObject; Column: TListColumn);
-var
-  Header: HWND;
-  Item: THDItem;
-  I: Integer;
 begin
-  Header := ListView_GetHeader(lvLinklist.Handle);
-  ZeroMemory(@Item, SizeOf(Item));
-  Item.Mask := HDI_FORMAT;
-
-  I := Succ(Column.Index);
-
-  if Abs(SortColNr) <> I then  // other col
-  begin
-    if SortColNr <> 0 then
-    begin
-      Header_GetItem(Header, Pred(Abs(SortColNr)), Item);
-      Item.fmt := Item.fmt and not (HDF_SORTUP or HDF_SORTDOWN);
-      Header_SetItem(Header, Pred(Abs(SortColNr)), Item);
-    end;
-    SortColNr := I;
-  end else
-    SortColNr := - SortColNr;  // switch asc/desc
-
-  lvLinklist.AlphaSort;
-
-  Header_GetItem(Header, Column.Index, Item);
-
-  Item.fmt := Item.fmt and not (HDF_SORTUP or HDF_SORTDOWN);
-  if SortColNr < 0 then
-    Item.fmt := Item.fmt or HDF_SORTDOWN
-  else
-    Item.fmt := Item.fmt or HDF_SORTUP;
-
-  Header_SetItem(Header, Column.Index, Item);
+  SortByColumn(Succ(Column.Index));
 end;
 
 procedure TFCutlistSearchResults.lvLinklistCompare(Sender: TObject; Item1, Item2: TListItem; Data: Integer; var Compare: Integer);
@@ -157,6 +134,40 @@ begin
       lvLinklist.Canvas.Brush.Color := clWebLightYellow;
   end else
     lvLinklist.Canvas.Brush.Color := ColorToRGB(lvLinklist.Color);
+end;
+
+procedure TFCutlistSearchResults.SortByColumn(Number: Integer);
+var
+  Header: HWND;
+  Item: THDItem;
+begin
+  Header := ListView_GetHeader(lvLinklist.Handle);
+  ZeroMemory(@Item, SizeOf(Item));
+  Item.Mask := HDI_FORMAT;
+
+  if Abs(SortColNr) <> Abs(Number) then  // other col
+  begin
+    if SortColNr <> 0 then
+    begin
+      Header_GetItem(Header, Pred(Abs(SortColNr)), Item);
+      Item.fmt := Item.fmt and not (HDF_SORTUP or HDF_SORTDOWN);
+      Header_SetItem(Header, Pred(Abs(SortColNr)), Item);
+    end;
+    SortColNr := Number;
+  end else
+    SortColNr := - SortColNr;  // switch asc/desc
+
+  lvLinklist.AlphaSort;
+
+  Header_GetItem(Header, Pred(Abs(SortColNr)), Item);
+
+  Item.fmt := Item.fmt and not (HDF_SORTUP or HDF_SORTDOWN);
+  if SortColNr < 0 then
+    Item.fmt := Item.fmt or HDF_SORTDOWN
+  else
+    Item.fmt := Item.fmt or HDF_SORTUP;
+
+  Header_SetItem(Header, Pred(Abs(SortColNr)), Item);
 end;
 
 procedure TFCutlistSearchResults.cmdOkClick(Sender: TObject);
