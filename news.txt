@@ -1,3 +1,16 @@
+New in 0.9.20.18 (development)
+- Cutlist (from server or file) treated as UTF-8
+- Rating bug with new cutlist server fixed
+- Two options to suppress rating messages (see options general)
+- Added merge and split cut functions
+- Cutlist list selection window remembers size and column widths
+- Cutlist list selection shows title and format (two new columns)
+- Cutlist list selection sortable
+- Author in info dialog selectable
+- Removed madExcept (will be replaced later by JclDebug)
+- Changed code format (case, indentation ...) - not finished yet
+- Used latetest Delphi (10.2 Tokyo) with manifest
+
 New in 0.9.13.16 (development)
 - Added display of pin information to used filters.
 - Improved multi-thread behaviour of ShowFrames method.
@@ -121,7 +134,7 @@ New in 0.9.9.6
 - New functionality: Automatically close cutting window after some time (configurable).
 - Added Navigation submenu with all navigation actions (single, medium, big skip)
 - Standard cut mode is configurable in settings.
-- New actions for medium(2s) and big(20s) jumps in video. Skipped time duration of 
+- New actions for medium(2s) and big(20s) jumps in video. Skipped time duration of
   medium and big skip is configurable in settings.
 - Size and count of frames in frame window is now configurable.
 - FR1715458: Display frame in addition to time at timeline.
@@ -140,10 +153,10 @@ New in 0.9.9.4
 New in 0.9.9.3 beta
 - fixed bug concerning path names with mp3box
 - New Settings: User can chose preferred source filters for each file type
-- Experimental: Filters can be blacklisted in ini file. Blacklisted Filters are 
+- Experimental: Filters can be blacklisted in ini file. Blacklisted Filters are
   never used in filtergraphs.
   To black list filters add a section like the following to the cut_assistant.ini file:
-  
+
   [Filter Blacklist]
   Count=2                                          //number of blacklisted filters
   Filter_0={78766964-0000-0010-8000-00AA00389B71}  //GUID of Filter
@@ -182,7 +195,7 @@ New in 0.9.6.3
 
 New in 0.9.6.0
 - Only one instance of the application will be opened.
-- Application can be associated with .cutlist files. 
+- Application can be associated with .cutlist files.
 - Frame numbers will only be removed from cutlists if cuts are changed
 - Can change playing speed (depends on movie type)
 - New Buttons: Next / Previous cut.
@@ -233,17 +246,17 @@ New in 0.7.5.2
   -trycutting            Try to cut movie
 
 New in V.0.7.5.0
-- CutApplication -> Repair files    
+- CutApplication -> Repair files
 - Save Movie Infos with cutlist
 - URLs can be changed
 - Show Filtergraph CLSIDs
 - misc...
 
 New in V. 0.7.4.4
-- Automatic search for matching cutlist on cutlist-server 
-- Keyboard Shortcuts for Framestep back (= left arrow or "j") and framestep 
+- Automatic search for matching cutlist on cutlist-server
+- Keyboard Shortcuts for Framestep back (= left arrow or "j") and framestep
   forward (right arrow or "l")
-    
+
 New in V. 0.7.4.1
 - Bug in upload procedure fixed
 
@@ -251,13 +264,13 @@ New in V. 0.7.4
 - Link to OTR Wiki Help
 - Link to Cutlist download
 - Upload of Culists to Cutlist Server (experimental)
-- Cleaned code, removed minor bugs, 
+- Cleaned code, removed minor bugs,
   changed range of fine tuning to +/- 50 frames
 
 New in V. 0.7
-- Drag & Drop for movie files and cutlists     
+- Drag & Drop for movie files and cutlists
 - Scan selected interval and extract frames
-- Improved user interface 
+- Improved user interface
 
 New in V. 0.6.0.2 beta
 - bugfix: frames window correctly displayed
@@ -265,7 +278,7 @@ New in V. 0.6.0.2 beta
 New in V. 0.6 beta
 - Replaced WindowsMediaPlayer Object by DirectShow Filtergraph.
 - Frames are displayed in dedicated window.
-- bugfix: filenames with spaces are now handled correctly 
+- bugfix: filenames with spaces are now handled correctly
 
 New in V. 0.5 beta
 - Settings are now saved in ini-file.
