@@ -31,7 +31,6 @@ object FManageFilters: TFManageFilters
     Height = 13
     Anchors = [akLeft, akBottom]
     Caption = 'Double Click on Filter to show properties'
-    WordWrap = True
   end
   object cmdRemove: TButton
     Left = 4
@@ -89,7 +88,7 @@ object FManageFilters: TFManageFilters
     OnClick = cmdCopyClick
   end
   object chkShowPinInfo: TJvCheckBox
-    Left = 456
+    Left = 424
     Top = 480
     Width = 87
     Height = 17
