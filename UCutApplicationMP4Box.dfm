@@ -1,14 +1,14 @@
 inherited frmCutApplicationMP4Box: TfrmCutApplicationMP4Box
   Height = 210
   Constraints.MinHeight = 210
-  object lblCommandLineOptions: TLabel [2]
+  object lblCommandLineOptions: TLabel
     Left = 8
     Top = 164
     Width = 109
     Height = 13
     Caption = 'Command Line Options'
   end
-  object edtCommandLineOptions: TEdit [3]
+  object edtCommandLineOptions: TEdit
     Left = 8
     Top = 180
     Width = 344
@@ -29,5 +29,8 @@ inherited frmCutApplicationMP4Box: TfrmCutApplicationMP4Box
   inherited btnBrowseTempDir: TButton
     Left = 356
     Enabled = False
+  end
+  inherited selectFileDlg: TOpenDialog
+    Left = 304
   end
 end
