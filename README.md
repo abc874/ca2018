@@ -83,4 +83,6 @@ Using The Kryvich's Delphi Localizer, https://sites.google.com/site/kryvich/loca
 
 Using PBOnceOnly from Peter Below (TeamB)
 
+_________________________________________________________________________
 
+[![All Releases](https://img.shields.io/github/downloads/atom/atom/total.svg)
