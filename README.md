@@ -85,4 +85,4 @@ Using PBOnceOnly from Peter Below (TeamB)
 
 _________________________________________________________________________
 
-[![All Releases](https://img.shields.io/github/downloads/abc874/ca2018/total.svg)
+[![All Releases](https://img.shields.io/github/downloads/abc874/ca2018/total.svg)]
