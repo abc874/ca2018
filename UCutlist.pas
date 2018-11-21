@@ -14,7 +14,8 @@ uses
   Settings_dialog, Movie, Utils, UCutApplicationBase;
 
 const
-  CUTLIST_EXTENSION = '.cutlist';
+  CUTLIST_EXT = 'cutlist';
+  CUTLIST_EXTENSION = '.' + CUTLIST_EXT;
 
 type
   TCutList = class;
@@ -608,7 +609,7 @@ end;
 function TCutList.FilenameSuggestion: string;
 begin
   if FMovieInfo.current_filename <> '' then
-    Result := ChangeFileExt(ExtractFileName(FMovieInfo.current_filename), cutlist_Extension)
+    Result := ChangeFileExt(ExtractFileName(FMovieInfo.current_filename), CUTLIST_EXTENSION)
   else
     Result := 'Cutlist_01' + CUTLIST_EXTENSION;
 end;
@@ -960,11 +961,12 @@ begin
       if AskForPath then
       begin
         saveDlg := TSaveDialog.Create(Application.MainForm);
-        saveDlg.Filter := MakeFilterString(RsFilterDescriptionCutlists, '*' + cutlist_Extension) + '|' + MakeFilterString(RsFilterDescriptionAll, '*.*');
+        saveDlg.Filter := MakeFilterString(RsFilterDescriptionCutlists, '*' + CUTLIST_EXTENSION) + '|' + MakeFilterString(RsFilterDescriptionAll, '*.*');
         saveDlg.FilterIndex := 1;
         saveDlg.Title := RsSaveCutlistAs;
         saveDlg.InitialDir := cutlist_path;
         saveDlg.FileName := FilenameSuggestion;
+        saveDlg.DefaultExt := CUTLIST_EXT;
         saveDlg.Options := saveDlg.Options + [ofOverwritePrompt, ofPathMustExist];
         if saveDlg.Execute then
         begin
@@ -1089,8 +1091,8 @@ begin
       Sort;
 
       section := 'General';
-      cutlistfile.WriteString(section, 'Application', AppName);
-      cutlistfile.WriteString(section, 'Version', AppVersion);
+      cutlistfile.WriteString(section, 'Application', Application_name);
+      cutlistfile.WriteString(section, 'Version', Application_version);
       iniWriteStrings(cutlistfile, section, 'comment', False, Comments);
       cutlistfile.WriteString(section, 'ApplyToFile', ApplyToFile);
       cutlistfile.WriteInteger(section, 'OriginalFileSizeBytes', OriginalFileSize);
