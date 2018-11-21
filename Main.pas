@@ -645,8 +645,6 @@ begin
     Left := Screen.WorkAreaLeft + Max(0, (Screen.WorkAreaWidth  - Width)  div 2);
   end;
 
-  WindowState := Settings.MainFormWindowState;
-
   numFrames := IntToStr(Settings.FramesCount);
   InitFramesProperties(actNextFrames, numFrames);
   InitFramesProperties(actCurrentFrames, numFrames);
@@ -687,6 +685,8 @@ begin
   SampleInfo.Bitmap := TBitmap.Create;
 
   cbCutPreview.Checked := Settings.CutPreview;
+
+  WindowState := Settings.MainFormWindowState;
 end;
 
 procedure TFMain.FormDestroy(Sender: TObject);
@@ -1062,7 +1062,7 @@ begin
   end;
 
   //Use same settings as for saving as default
-  cutlist_filename := ChangeFileExt(ExtractFileName(MovieInfo.current_filename), cutlist_Extension);
+  cutlist_filename := ChangeFileExt(ExtractFileName(MovieInfo.current_filename), CUTLIST_EXTENSION);
   case Settings.SaveCutlistMode of
     smWithSource : cutlist_path := ExtractFilePath(MovieInfo.current_filename);            // with source
     smGivenDir   : cutlist_path := IncludeTrailingPathDelimiter(Settings.CutlistSaveDir);  // in given Dir
@@ -1922,7 +1922,7 @@ begin
 
     if FileExists(Pstring) then
     begin
-      if AnsiLowerCase(ExtractFileExt(Pstring)) = cutlist_Extension then
+      if AnsiLowerCase(ExtractFileExt(Pstring)) = CUTLIST_EXTENSION then
       begin
         if not found_cutlist then
         begin
@@ -1999,7 +1999,7 @@ procedure TFMain.actSaveCutlistAsExecute(Sender: TObject);
 begin
   if cutlist.Save(True) then
     if not batchmode then
-      ErrMsgFmt(RsCutlistSavedAs, [cutlist.SavedToFilename]);
+      InfMsgFmt(RsCutlistSavedAs, [cutlist.SavedToFilename]);
 end;
 
 procedure TFMain.actOpenMovieExecute(Sender: TObject);
@@ -2343,7 +2343,7 @@ begin
   try
     try
       reg.RootKey := HKEY_CLASSES_ROOT;
-      ForceOpenRegKey(reg, '\' + cutlist_Extension);
+      ForceOpenRegKey(reg, '\' + CUTLIST_EXTENSION);
       reg.WriteString('', CutlistID);
       reg.WriteString('Content type', CUTLIST_CONTENT_TYPE);
       reg.CloseKey;
@@ -2426,7 +2426,7 @@ begin
         reg.CloseKey;
       end;
 
-      reg.DeleteKey('\' + cutlist_Extension);
+      reg.DeleteKey('\' + CUTLIST_EXTENSION);
       reg.DeleteKey('\' + CutlistID);
     finally
       FreeAndNil(reg);

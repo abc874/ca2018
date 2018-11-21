@@ -2976,7 +2976,7 @@ object FMain: TFMain
     end
     object actMergeCut: TAction
       Category = 'Edit'
-      Caption = 'Merge cut'
+      Caption = 'Merge cuts'
       OnExecute = actMergeCutExecute
     end
   end
