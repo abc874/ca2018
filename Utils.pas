@@ -224,7 +224,7 @@ procedure WriteCutAppSettings(
   const section: string;
   var CutAppSettings: RCutAppSettings);
 
-function FilterInfoToString(const filterInfo: TFilCatNode): string;
+function FilterInfoToString(const filterInfo: TFilCatNode; FillToLen: Integer = 0): string;
 function StringToFilterGUID(const s: string): TGUID;
 
 procedure ShowExpectedException(E: Exception; const Header: string);
@@ -381,9 +381,23 @@ begin
 end;
 
 procedure TMemIniFileEx.UpdateFile;
+var
+  List: TStringList;
 begin
   if (not Volatile) and (FileName <> '') then
-    inherited UpdateFile;
+  begin
+    // inherited UpdateFile;      writes BOM
+
+    List := TStringList.Create;
+    try
+      GetStrings(List);
+      List.WriteBOM := False;
+      List.SaveToFile(FileName, Encoding);
+    finally
+      List.Free;
+    end;
+    Modified := False;
+  end;
 end;
 
 function TMemIniFileEx.ReadFloat(const Section, Name: string; Default: Double): Double;
@@ -624,7 +638,7 @@ begin
     List.WriteBOM := False;
     List.SaveToStream(Stream, TEncoding.UTF8);
   finally
-    FreeAndNil(List);
+    List.Free;
   end;
 end;
 
@@ -761,23 +775,27 @@ begin
   end;
 end;
 
-function FilterInfoToString(const filterInfo: TFilCatNode): string;
+function FilterInfoToString(const filterInfo: TFilCatNode; FillToLen: Integer = 0): string;
+var
+  S: string;
 begin
-  Result := filterInfo.FriendlyName + '  (' + GUIDToString(filterInfo.CLSID) + ')';
+  if FillToLen > 0 then
+    S := StringOfChar(' ', FillToLen - Length(filterInfo.FriendlyName))
+  else
+    S := '';
+
+  Result := filterInfo.FriendlyName + S + '  (' + GUIDToString(filterInfo.CLSID) + ')';
 end;
 
 function StringToFilterGUID(const s: string): TGUID;
 var
-  idx, len: Integer;
+  L,R: Integer;
 begin
-  idx := LastDelimiter('(', s) + 1;
-  len := LastDelimiter(')', s);
-  if idx >= 0 then
-  begin
-    if len <= idx then
-      len := MaxInt;
-    Result := StringToGUID(Copy(s, idx, len - idx))
-  end else
+  L := LastDelimiter('(', s);
+  R := LastDelimiter(')', s);
+  if L > 0 then
+    Result := StringToGUID(Copy(s, Succ(L), IfThen(R > L, Pred(R - L), Length(s) - L)))
+  else
     Result := GUID_NULL
 end;
 
