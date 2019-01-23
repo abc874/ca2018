@@ -1,3 +1,10 @@
+New in 0.19.1.23 (development)
+- Fine positioning reworked, click on trackbar now moves x frames (set with bottom trackbar, should be accurate)
+- New optional more accurate next frame method (right arrow key) - see settings
+- JclDebug (exception logging) added
+- Minor bug fixes
+- Version number is now 0.Y.M.D
+
 New in 0.9.20.18 (development)
 - Cutlist (from server or file) treated as UTF-8
 - Rating bug with new cutlist server fixed
