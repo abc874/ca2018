@@ -11,6 +11,7 @@ uses
   System.SysUtils,
   Vcl.Forms,
   PBOnceOnly in 'lib\PBOnceOnly.pas',
+  ExceptDlg in 'ExceptDlg.pas' {ExceptionDialog},
   Main in 'Main.pas' {FMain},
   Settings_dialog in 'Settings_dialog.pas' {FSettings},
   UMemoDialog in 'UMemoDialog.pas' {frmMemoDialog},
@@ -98,12 +99,12 @@ begin
 
     FileList := TStringList.Create;
     try
-      for iParam := 1 TO ParamCount do
+      for iParam := 1 to ParamCount do
         FileList.Add(ParamStr(iParam));
       FMain.ProcessFileList(FileList, true);
     finally
       FileList.Free;
-      if BatchMode OR exit_after_commandline then
+      if BatchMode or exit_after_commandline then
         Application.Terminate
       else
         Application.Run;
