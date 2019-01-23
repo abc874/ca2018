@@ -158,6 +158,7 @@ type
     cbSearchCutlistsByName: TJvCheckBox;
     cbNoRateSuccMsg: TJvCheckBox;
     cbNoWarnUseRate: TJvCheckBox;
+    cbNewNextFrameMethod: TJvCheckBox;
     procedure cmdCutMovieSaveDirClick(Sender: TObject);
     procedure cmdCutlistSaveDirClick(Sender: TObject);
     procedure edtProxyPort_nlKeyPress(Sender: TObject; var Key: Char);
@@ -244,6 +245,9 @@ type
     SearchCutlistsByName: Boolean;
     NoRateSuccMsg: Boolean;
     NoWarnUseRate: Boolean;
+    NewNextFrameMethod: Boolean;
+
+    FinePosFrameCount: Integer;
 
     //Warnings
     WarnOnWrongCutApp: Boolean;
@@ -621,6 +625,7 @@ begin
   FSettings.cbAutoMuteOnSeek.Checked               := AutoMuteOnSeek;
   FSettings.cbNoRateSuccMsg.Checked                := NoRateSuccMsg;
   FSettings.cbNoWarnUseRate.Checked                := NoWarnUseRate;
+  FSettings.cbNewNextFrameMethod.Checked           := NewNextFrameMethod;
   FSettings.cbExceptionLogging.Checked             := ExceptionLogging;
   FSettings.cbAutoSaveDownloadedCutlists.Checked   := AutoSaveDownloadedCutlists;
 
@@ -749,12 +754,13 @@ begin
       FramesHeight := StrToInt(FSettings.edtFrameHeight_nl.Text);
       FramesCount  := StrToInt(FSettings.edtFrameCount_nl.Text);
 
-      SmallSkipTime  := StrToInt(FSettings.edtSmallSkip_nl.Text);
-      LargeSkipTime  := StrToInt(FSettings.edtLargeSkip_nl.Text);
-      NetTimeout     := StrToInt(FSettings.edtNetTimeout_nl.Text);
-      AutoMuteOnSeek := FSettings.cbAutoMuteOnSeek.Checked;
-      NoRateSuccMsg  := FSettings.cbNoRateSuccMsg.Checked;
-      NoWarnUseRate  := FSettings.cbNoWarnUseRate.Checked;
+      SmallSkipTime      := StrToInt(FSettings.edtSmallSkip_nl.Text);
+      LargeSkipTime      := StrToInt(FSettings.edtLargeSkip_nl.Text);
+      NetTimeout         := StrToInt(FSettings.edtNetTimeout_nl.Text);
+      AutoMuteOnSeek     := FSettings.cbAutoMuteOnSeek.Checked;
+      NoRateSuccMsg      := FSettings.cbNoRateSuccMsg.Checked;
+      NoWarnUseRate      := FSettings.cbNoWarnUseRate.Checked;
+      NewNextFrameMethod := FSettings.cbNewNextFrameMethod.Checked;
 
       ExceptionLogging := FSettings.cbExceptionLogging.Checked;
 
@@ -953,9 +959,11 @@ begin
     DefaultCutMode           := ini.ReadInteger(section, 'DefaultCutMode', Integer(clmTrim));
     SmallSkipTime            := ini.ReadInteger(section, 'SmallSkipTime', 2);
     LargeSkipTime            := ini.ReadInteger(section, 'LargeSkipTime', 25);
+    FinePosFrameCount        := ini.ReadInteger(section, 'FinePosFrameCount', 5);
     AutoMuteOnSeek           := ini.ReadBool(section, 'AutoMuteOnSeek', False);
     NoRateSuccMsg            := ini.ReadBool(section, 'NoRateSuccMsg', False);
     NoWarnUseRate            := ini.ReadBool(section, 'NoWarnUseRate', False);
+    NewNextFrameMethod       := ini.ReadBool(section, 'NewNextFrameMethod', False);
     AutoSearchCutlists       := ini.ReadBool(section, 'AutoSearchCutlists', False);
     SearchLocalCutlists      := ini.ReadBool(section, 'SearchLocalCutlists', False);
     SearchServerCutlists     := ini.ReadBool(section, 'SearchServerCutlists', True);
@@ -1082,9 +1090,11 @@ begin
     ini.WriteInteger(section, 'DefaultCutMode', DefaultCutMode);
     ini.WriteInteger(section, 'SmallSkipTime', SmallSkipTime);
     ini.WriteInteger(section, 'LargeSkipTime', LargeSkipTime);
+    ini.WriteInteger(section, 'FinePosFrameCount', FinePosFrameCount);
     ini.WriteBool(section, 'AutoMuteOnSeek', AutoMuteOnSeek);
     ini.WriteBool(section, 'NoRateSuccMsg', NoRateSuccMsg);
     ini.WriteBool(section, 'NoWarnUseRate', NoWarnUseRate);
+    ini.WriteBool(section, 'NewNextFrameMethod', NewNextFrameMethod);
     ini.WriteBool(section, 'AutoSearchCutlists', AutoSearchCutlists);
     ini.WriteBool(section, 'SearchLocalCutlists', SearchLocalCutlists);
     ini.WriteBool(section, 'SearchServerCutlists', SearchServerCutlists);
@@ -1235,13 +1245,14 @@ end;
 
 procedure TFSettings.FillBlackList;
 var
-  i, filterCount: Integer;
+  I,M: Integer;
   filterInfo: TFilCatNode;
   blackList: TGUIDList;
+  L: TStringList;
 begin
   blackList := TGUIDList.Create;
   for I := 0 to Pred(Settings.FilterBlackList.Count) do
-    blackList.Add(Settings.FilterBlackList.Item[i]);
+    blackList.Add(Settings.FilterBlackList.Item[I]);
 
   try
     lbchkBlackList_nl.Clear;
@@ -1250,25 +1261,43 @@ begin
     EnumFilters := TSysDevEnum.Create(CLSID_LegacyAmFilterCategory); //DirectShow Filters
     if Assigned(EnumFilters) then
     begin
-      filterCount := EnumFilters.CountFilters;
-      for i := 0 to Pred(filterCount) do
-      begin
-        filterInfo := EnumFilters.Filters[i];
-        if blackList.IsInList(filterInfo.CLSID) then
-          blackList.Delete(filterInfo.CLSID);
-        lbchkBlackList_nl.AddItem(FilterInfoToString(filterInfo), nil);
-        lbchkBlackList_nl.Checked[Pred(lbchkBlackList_nl.Count)] := Settings.FilterIsInBlackList(filterInfo.CLSID);
-        lbchkBlackList_nl.ItemEnabled[Pred(lbchkBlackList_nl.Count)] := not IsEqualGUID(GUID_NULL, filterInfo.CLSID);
-      end;
-      filterInfo.FriendlyName := '???';
-      for I := 0 to Pred(blackList.Count) do
-      begin
-        filterInfo.CLSID := blackList.Item[i];
-        lbchkBlackList_nl.AddItem(FilterInfoToString(filterInfo), nil);
-        lbchkBlackList_nl.Checked[Pred(lbchkBlackList_nl.Count)] := True;
-        lbchkBlackList_nl.ItemEnabled[Pred(lbchkBlackList_nl.Count)] := not IsEqualGUID(GUID_NULL, filterInfo.CLSID);
+      M := 0;
+      L := TStringList.Create;
+      try
+        for I := 0 to Pred(EnumFilters.CountFilters) do
+        begin
+          filterInfo := EnumFilters.Filters[I];
+          if blackList.IsInList(filterInfo.CLSID) then
+            blackList.Delete(filterInfo.CLSID);
+
+          M := Max(M, Length(filterInfo.FriendlyName));
+          L.AddObject(filterInfo.FriendlyName, TObject(I));
+        end;
+
+        L.Sort;
+        for I := 0 to Pred(L.Count) do
+        begin
+          filterInfo := EnumFilters.Filters[Integer(L.Objects[I])];
+
+          lbchkBlackList_nl.AddItem(FilterInfoToString(filterInfo, M), nil);
+          lbchkBlackList_nl.Checked[Pred(lbchkBlackList_nl.Count)] := Settings.FilterIsInBlackList(filterInfo.CLSID);
+          lbchkBlackList_nl.ItemEnabled[Pred(lbchkBlackList_nl.Count)] := not IsEqualGUID(GUID_NULL, filterInfo.CLSID);
+        end;
+
+        // abc874: what is this? blacklisted GUIDs but not in enum? list at bottom (or better discard?)
+        filterInfo.FriendlyName := '???';
+        for I := 0 to Pred(blackList.Count) do
+        begin
+          filterInfo.CLSID := blackList.Item[I];
+          lbchkBlackList_nl.AddItem(FilterInfoToString(filterInfo, M), nil);
+          lbchkBlackList_nl.Checked[Pred(lbchkBlackList_nl.Count)] := True;
+          lbchkBlackList_nl.ItemEnabled[Pred(lbchkBlackList_nl.Count)] := not IsEqualGUID(GUID_NULL, filterInfo.CLSID);
+        end;
+      finally
+        L.Free;
       end;
     end;
+    // lbchkBlackList_nl.Sorted := True; --> not useful: list disappears
   finally
     FreeAndNil(blackList);
   end;

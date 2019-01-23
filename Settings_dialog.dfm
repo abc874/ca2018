@@ -93,7 +93,7 @@ object FSettings: TFSettings
       end
       object lblSmallSkip: TLabel
         Left = 50
-        Top = 116
+        Top = 114
         Width = 72
         Height = 13
         Alignment = taRightJustify
@@ -101,7 +101,7 @@ object FSettings: TFSettings
       end
       object lblLargeSkip: TLabel
         Left = 49
-        Top = 144
+        Top = 141
         Width = 74
         Height = 13
         Alignment = taRightJustify
@@ -109,7 +109,7 @@ object FSettings: TFSettings
       end
       object lblSmallSkipSecs: TLabel
         Left = 156
-        Top = 116
+        Top = 114
         Width = 15
         Height = 14
         AutoSize = False
@@ -117,7 +117,7 @@ object FSettings: TFSettings
       end
       object lblLargeSkipSecs: TLabel
         Left = 156
-        Top = 144
+        Top = 141
         Width = 15
         Height = 14
         AutoSize = False
@@ -134,7 +134,7 @@ object FSettings: TFSettings
       end
       object lblNetTimeout: TLabel
         Left = 43
-        Top = 173
+        Top = 168
         Width = 80
         Height = 13
         Alignment = taRightJustify
@@ -142,7 +142,7 @@ object FSettings: TFSettings
       end
       object lblNetTimeoutSecs: TLabel
         Left = 156
-        Top = 173
+        Top = 168
         Width = 15
         Height = 14
         AutoSize = False
@@ -219,54 +219,55 @@ object FSettings: TFSettings
         OnKeyPress = edtProxyPort_nlKeyPress
       end
       object rgCutMode: TRadioGroup
-        Left = 486
+        Left = 492
         Top = 60
-        Width = 161
-        Height = 73
+        Width = 275
+        Height = 45
         Hint = 
           'Cut out: New file is everything except cuts.'#13#10'Trim: New file is ' +
           'sum of cuts.'
         Caption = 'Default Cut Mode'
+        Columns = 2
         ItemIndex = 1
         Items.Strings = (
           'Cut out'
           'Trim')
         ParentShowHint = False
         ShowHint = True
-        TabOrder = 5
+        TabOrder = 10
       end
       object edtLargeSkip_nl: TEdit
         Left = 128
-        Top = 141
+        Top = 138
         Width = 26
         Height = 21
         AutoSize = False
         MaxLength = 2
-        TabOrder = 7
+        TabOrder = 6
         Text = '25'
         OnExit = edtFrameWidth_nlExit
         OnKeyPress = edtProxyPort_nlKeyPress
       end
       object edtSmallSkip_nl: TEdit
         Left = 128
-        Top = 113
+        Top = 111
         Width = 26
         Height = 21
         AutoSize = False
         MaxLength = 2
-        TabOrder = 6
+        TabOrder = 5
         Text = '2'
         OnExit = edtFrameWidth_nlExit
         OnKeyPress = edtProxyPort_nlKeyPress
       end
       object edtNetTimeout_nl: TEdit
         Left = 128
-        Top = 170
+        Top = 165
         Width = 26
         Height = 21
         AutoSize = False
         MaxLength = 2
-        TabOrder = 9
+        TabOrder = 7
         Text = '20'
         OnExit = edtFrameWidth_nlExit
         OnKeyPress = edtProxyPort_nlKeyPress
@@ -279,14 +280,14 @@ object FSettings: TFSettings
         Style = csDropDownList
         Anchors = [akLeft, akTop, akRight]
         ItemIndex = 0
-        TabOrder = 11
+        TabOrder = 14
         Text = ' Standard'
         Items.Strings = (
           ' Standard')
       end
       object cbAutoMuteOnSeek: TJvCheckBox
         Left = 227
-        Top = 142
+        Top = 139
         Width = 110
         Height = 17
         Caption = 'Auto mute on seek'
@@ -295,16 +296,16 @@ object FSettings: TFSettings
       end
       object cbExceptionLogging: TJvCheckBox
         Left = 227
-        Top = 170
+        Top = 166
         Width = 105
         Height = 17
         Caption = 'Exception logging'
-        TabOrder = 10
+        TabOrder = 9
         LinkedControls = <>
       end
       object cbNoRateSuccMsg: TJvCheckBox
         Left = 486
-        Top = 142
+        Top = 139
         Width = 166
         Height = 17
         Caption = 'Suppress rating done message'
@@ -313,11 +314,20 @@ object FSettings: TFSettings
       end
       object cbNoWarnUseRate: TJvCheckBox
         Left = 486
-        Top = 170
+        Top = 166
         Width = 186
         Height = 17
         Caption = 'Suppress rating proposed message'
         TabOrder = 13
+        LinkedControls = <>
+      end
+      object cbNewNextFrameMethod: TJvCheckBox
+        Left = 486
+        Top = 112
+        Width = 153
+        Height = 17
+        Caption = 'Use new next frame method'
+        TabOrder = 11
         LinkedControls = <>
       end
     end
@@ -446,7 +456,7 @@ object FSettings: TFSettings
         Width = 200
         Height = 17
         Caption = 'Always confirm filename before saving'
-        TabOrder = 3
+        TabOrder = 4
         LinkedControls = <>
       end
       object cbCutlistAutoSaveBeforeCutting: TJvCheckBox
@@ -455,7 +465,7 @@ object FSettings: TFSettings
         Width = 137
         Height = 17
         Caption = 'Auto save before cutting'
-        TabOrder = 4
+        TabOrder = 5
         LinkedControls = <>
       end
       object cbSearchLocalCutlists: TJvCheckBox
@@ -466,7 +476,7 @@ object FSettings: TFSettings
         Caption = 
           'Include cutlist standard directory when auto-searching for cutli' +
           'sts'
-        TabOrder = 5
+        TabOrder = 6
         LinkedControls = <>
       end
       object cbAutoSaveDownloadedCutlists: TJvCheckBox
@@ -477,7 +487,7 @@ object FSettings: TFSettings
         Caption = 'Automatically save downloaded cutlists.'
         Checked = True
         State = cbChecked
-        TabOrder = 6
+        TabOrder = 3
         LinkedControls = <>
       end
     end
@@ -559,7 +569,7 @@ object FSettings: TFSettings
         Height = 92
         Anchors = [akLeft, akTop, akRight]
         Caption = 'Proxy Prameters'
-        TabOrder = 4
+        TabOrder = 6
         DesignSize = (
           764
           92)
@@ -612,7 +622,7 @@ object FSettings: TFSettings
           Width = 585
           Height = 21
           Anchors = [akLeft, akTop, akRight]
-          TabOrder = 0
+          TabOrder = 1
         end
         object edtProxyPort_nl: TEdit
           Left = 705
@@ -620,7 +630,7 @@ object FSettings: TFSettings
           Width = 46
           Height = 21
           Anchors = [akTop, akRight]
-          TabOrder = 1
+          TabOrder = 0
           Text = '0'
           OnKeyPress = edtProxyPort_nlKeyPress
         end
@@ -631,7 +641,7 @@ object FSettings: TFSettings
           Height = 21
           Anchors = [akTop, akRight]
           PasswordChar = '*'
-          TabOrder = 3
+          TabOrder = 2
         end
         object edtProxyUserName_nl: TEdit
           Left = 71
@@ -639,7 +649,7 @@ object FSettings: TFSettings
           Width = 452
           Height = 21
           Anchors = [akLeft, akTop, akRight]
-          TabOrder = 2
+          TabOrder = 3
         end
       end
       object cbSearchServerCutlists: TJvCheckBox
@@ -650,7 +660,7 @@ object FSettings: TFSettings
         Caption = 'Use Cutlist server when auto-searching for cutlists'
         Checked = True
         State = cbChecked
-        TabOrder = 5
+        TabOrder = 4
         LinkedControls = <>
       end
       object cbSearchCutlistsByName: TJvCheckBox
@@ -661,7 +671,7 @@ object FSettings: TFSettings
         Caption = 'Additionally search Cutlists by name'
         Checked = True
         State = cbChecked
-        TabOrder = 6
+        TabOrder = 5
         LinkedControls = <>
       end
     end
@@ -999,7 +1009,7 @@ object FSettings: TFSettings
         Width = 152
         Height = 21
         Style = csDropDownList
-        TabOrder = 8
+        TabOrder = 10
         OnChange = cbCutAppChange
         Items.Strings = (
           '')
@@ -1011,7 +1021,7 @@ object FSettings: TFSettings
         Height = 21
         Style = csDropDownList
         Anchors = [akLeft, akTop, akRight]
-        TabOrder = 9
+        TabOrder = 11
         OnChange = cmbCodecChange
       end
       object btnCodecConfigHQAvi: TButton
@@ -1021,7 +1031,7 @@ object FSettings: TFSettings
         Height = 21
         Anchors = [akTop, akRight]
         Caption = 'Config'
-        TabOrder = 10
+        TabOrder = 8
         OnClick = btnCodecConfigClick
       end
       object btnCodecAboutHQAvi: TButton
@@ -1031,7 +1041,7 @@ object FSettings: TFSettings
         Height = 21
         Anchors = [akTop, akRight]
         Caption = '?'
-        TabOrder = 11
+        TabOrder = 9
         OnClick = btnCodecAboutClick
       end
     end
