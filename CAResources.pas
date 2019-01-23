@@ -86,7 +86,7 @@ resourcestring
   RsTitleCutApplicationSettings    = 'Cut Application Settings';
 
   RsErrorUnknown                   = 'Unknown error.';
-  RsMsgSearchCutlistNoneFound      = 'Search Cutlist by File Size: No Cutlist found.';
+  RsMsgSearchCutlistNoneFound      = 'Search Cutlist: No Cutlist found.';
   RsErrorSearchCutlistXml          = 'XML-Error while getting cutlist infos:'#13#10'%s';
 
   RsMsgSendRatingNotPossible       = 'Current cutlist was not downloaded. Rating not possible.';
@@ -337,6 +337,8 @@ resourcestring
   RsSplitCutWarn                      = 'Current position not inside cut!';
 
   RsShiftCutTime                      = 'shift time';
+
+  RsFrames                            = '%d frames';
 
 implementation
 
