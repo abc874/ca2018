@@ -8,7 +8,7 @@ interface
 
 uses
   // Delphi
-  System.Classes, Vcl.Forms, Vcl.StdCtrls, Vcl.Graphics, Vcl.Controls, Vcl.ExtCtrls,
+  System.Classes, System.SysUtils, Vcl.Forms, Vcl.StdCtrls, Vcl.Graphics, Vcl.Controls, Vcl.ExtCtrls,
 
   // Jedi
   JvGIF, JvPoweredBy, JvExControls;
@@ -27,6 +27,7 @@ type
     lblDSPack_nl: TLabel;
     lblCopyright_nl: TLabel;
     procedure FormCreate(Sender: TObject);
+    procedure iProgram_nlDblClick(Sender: TObject);
   private
     { private-Deklarationen }
   public
@@ -47,6 +48,18 @@ uses
 procedure TAboutBox.FormCreate(Sender: TObject);
 begin
   lblVersion_nl.Caption := 'Version ' + Get_File_Version(Application.ExeName);
+end;
+
+procedure TAboutBox.iProgram_nlDblClick(Sender: TObject);
+var
+  I: Integer;
+begin
+  if NoYesMsg('raise exception?') then
+  begin
+    I := Random(256);
+    I := I div (I - I);
+    InfMsg(IntToStr(I));
+  end;
 end;
 
 end.

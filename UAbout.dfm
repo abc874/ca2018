@@ -427,6 +427,7 @@ object AboutBox: TAboutBox
         FEFFFFFFFEFEFEFFFFFFFEFEFEFFFFFFFEFEFEFFFFFFFEFEFEFFFFFFFEFEFEFF
         FFFF}
       Stretch = True
+      OnDblClick = iProgram_nlDblClick
       IsControl = True
     end
     object lblProductName_nl: TLabel
