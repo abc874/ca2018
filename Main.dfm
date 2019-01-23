@@ -105,7 +105,7 @@ object FMain: TFMain
     Caption = '1'
   end
   object lblMaxFinepos_nl: TLabel
-    Left = 430
+    Left = 434
     Top = 518
     Width = 18
     Height = 13
@@ -122,11 +122,10 @@ object FMain: TFMain
     Caption = '0 / 0:00:00.000'
   end
   object lblFinePos_nl: TLabel
-    Left = 433
+    Left = 434
     Top = 492
     Width = 43
     Height = 13
-    Alignment = taRightJustify
     Anchors = [akRight, akBottom]
     Caption = '5 Frames'
   end
@@ -140,10 +139,11 @@ object FMain: TFMain
   end
   object ICutlistWarning: TImage
     Left = 751
-    Top = 197
-    Width = 30
-    Height = 28
+    Top = 194
+    Width = 36
+    Height = 35
     Anchors = [akRight, akBottom]
+    AutoSize = True
     Picture.Data = {
       0B544A76474946496D6167651804000047494638396124002300F70000FFFF00
       7F7F00808003EEEEEED2D2D2BFBFBF7F7F7F0303030000000000000000000000
@@ -606,11 +606,10 @@ object FMain: TFMain
     ShowHint = True
     TabOrder = 31
     OnChange = tbFinePosChange
-    OnMOuseUp = tbFinePosMOuseUp
   end
   object tbFilePos: TDSTrackBarEx
-    Left = 7
-    Top = 460
+    Left = 9
+    Top = 459
     Width = 775
     Height = 27
     Hint = 'Position (Timeline)'
@@ -624,6 +623,7 @@ object FMain: TFMain
     TabOrder = 30
     OnChange = tbFilePosChange
     FilterGraph = FilterGraph
+    TimerInterval = 10
     OnTimer = tbFilePosTimer
     OnPositionChangedByMouse = tbFilePosPositionChangedByMouse
     OnSelChanged = tbFilePosSelChanged
@@ -653,7 +653,7 @@ object FMain: TFMain
   object cmdCutlistInfo: TBitBtn
     Left = 671
     Top = 200
-    Width = 76
+    Width = 111
     Height = 20
     Action = actCutlistInfo
     Anchors = [akRight, akBottom]
@@ -2905,7 +2905,7 @@ object FMain: TFMain
     end
     object actPlayPause: TAction
       Category = 'Navigation'
-      Caption = '>/||'
+      Caption = '>'
       Hint = 'Play / pause movie'
       ShortCut = 114
       OnExecute = actPlayPauseExecute

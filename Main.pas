@@ -24,7 +24,7 @@ uses
 
   // Jedi
   JclSimpleXml, JvDialogs, JvComponentBase, JvAppCommand, JvBaseDlg, JvProgressDialog, JvExStdCtrls, JvCheckBox,
-  JvSpeedbar, JvExExtCtrls, JvExtComponent, JvGIF, JvSimpleXml,
+  JvSpeedbar, JvExExtCtrls, JvExtComponent, JvGIF, JvSimpleXml, JclDebug,
 
   // CA
   CodecSettings, CutlistInfo_dialog, ManageFilters, Movie, Settings_dialog, TrackBarEx, UCutlist, UploadList, Utils;
@@ -295,7 +295,6 @@ type
     procedure tbFilePosChange(Sender: TObject);
     procedure tbFilePosSelChanged(Sender: TObject);
     procedure tbFilePosChannelPostPaint(Sender: TDSTrackBarEx; const ARect: TRect);
-    procedure tbFinePosMouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
     procedure tbFinePosChange(Sender: TObject);
     procedure FilterGraphGraphStepComplete(Sender: TObject);
     procedure pnlVideoWindowResize(Sender: TObject);
@@ -407,6 +406,8 @@ type
     function ConvertUploadData: Boolean;
     procedure AddUploadDataEntry(CutlistDate: TDateTime; CutlistName: string; CutlistID: Integer);
     procedure UpdateMovieInfoControls;
+    procedure UpdatePlayPauseButton;
+    procedure UpdateTrackBarPageSize;
   public
     { public declarations }
     procedure ProcessFileList(FileList: TStringList; IsMyOwnCommandLine: Boolean);
@@ -462,7 +463,7 @@ type
 var
   FMain: TFMain;
   CutList: TCutList;
-  Settings: TSettings;
+  Settings: TSettings = nil;
   pos_to, pos_from: Double;
   vol_temp: Integer;
   last_pos: Double;
@@ -493,7 +494,7 @@ uses
   IdResourceStrings, IdURI,
 
   // Jedi
-  JvParameterList, JvParameterListParameter, JvParameterListTools, JvDynControlEngineVCL,
+  JvParameterList, JvParameterListParameter, JvParameterListTools, JvDynControlEngineVCL, ExceptDlg,
 
   // CA
   DateTools, Frames, CutlistRate_Dialog, ResultingTimes, CutlistSearchResults, UfrmCutting, UCutApplicationBase,
@@ -573,7 +574,7 @@ begin
   if MovieInfo.frame_duration = 0 then
     Result := FormatMoviePosition(0, 0)
   else
-    Result := FormatMoviePosition(Trunc(position / MovieInfo.frame_duration), position)
+    Result := FormatMoviePosition(Round(position / MovieInfo.frame_duration), position)
 end;
 
 function TFMain.FormatMoviePosition(const frame: longint; const duration: Double): string;
@@ -597,6 +598,17 @@ begin
     lblMovieType_nl.Caption      := MovieInfo.GetStringFromMovieType(mtNone);
     lblCutApplication_nl.Caption := Format(RsCaptionCutApplication, [RsNotAvailable]);
   end;
+end;
+
+procedure TFMain.UpdatePlayPauseButton;
+begin
+  actPlayPause.Caption := IfThen(FilterGraph.State = gsPlaying, '||', '>');
+end;
+
+procedure TFMain.UpdateTrackBarPageSize;
+begin
+  if MovieInfo.MovieLoaded then
+    tbFilePos.PageSize := Round(MovieInfo.frame_duration * tbFinePos.Position * 1000 / tbFilePos.TimerInterval);
 end;
 
 procedure TFMain.refresh_times;
@@ -627,7 +639,16 @@ procedure TFMain.FormCreate(Sender: TObject);
 var
   numFrames: string;
   I,J: Integer;
+  icon : TIcon;
 begin
+  icon := TIcon.Create;
+  try
+    icon.Handle := LoadIcon(0, PChar(IDI_EXCLAMATION)) ;
+    ICutlistWarning.Picture.Icon := Icon;
+  finally
+    icon.Free;
+  end;
+
   AdjustFormConstraints(Self);
 
   if Screen.WorkAreaWidth < Constraints.MinWidth then
@@ -684,13 +705,17 @@ begin
   SampleInfo.Active := False;
   SampleInfo.Bitmap := TBitmap.Create;
 
-  cbCutPreview.Checked := Settings.CutPreview;
+  cbCutPreview.Checked  := Settings.CutPreview;
+  tbFinePos.Position    := Settings.FinePosFrameCount;
+  lblFinePos_nl.Caption := Format(RsFrames, [tbFinePos.Position]);
+  tbFilePos.Frequency   := Round(60000 / tbFilePos.TimerInterval); // one tick every minute
 
   WindowState := Settings.MainFormWindowState;
 end;
 
 procedure TFMain.FormDestroy(Sender: TObject);
 begin
+  Settings.FinePosFrameCount := tbFinePos.Position;
   Settings.MainFormBounds := BoundsRect;
   Settings.MainFormWindowState := WindowState;
   Settings.CutPreview := cbCutPreview.Checked;
@@ -831,20 +856,6 @@ begin
     FilterGraph.Volume := tbVolume.Position;
 end;
 
-procedure TFMain.tbFinePosMouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
-var
-  timeToSkip: Double;
-begin
-  // if Button = mbMiddle then Exit;
-  timeToSkip := tbFinePos.Position * MovieInfo.frame_duration;
-  if Button = mbRight then // Invert direction on right mouse button ...
-    timeToSkip := - timeToSkip;
-
-  if tbFinePos.Tag = tbFinePos.Position then
-    JumpTo(currentPosition + timeToSkip);
-  tbFinePos.Tag := tbFinePos.Position;
-end;
-
 procedure TFMain.refresh_lvCutlist(cutlist: TCutlist);
 var
   icut: Integer;
@@ -901,7 +912,7 @@ begin
   lblResultingDuration_nl.Caption := Format(RsCaptionResultingDuration, [secondsToTimeString(resulting_duration)]);
 
   //Cuts in Trackbar are taken from global var "cutlist"!
-  TBFilePos.Perform(CM_RECREATEWND, 0, 0); // Show Cuts in Trackbar
+  tbFilePos.Perform(CM_RECREATEWND, 0, 0); // Show Cuts in Trackbar
 
   case cutlist.Mode of
     clmCutOut : rgCutMode.ItemIndex := 0;
@@ -911,6 +922,11 @@ begin
   ICutlistWarning.Visible := (cutlist.RatingByAuthorPresent and (cutlist.RatingByAuthor <= 2)) or
     cutlist.EPGError or cutlist.MissingBeginning or cutlist.MissingEnding or cutlist.MissingVideo or
     cutlist.MissingAudio or cutlist.OtherError;
+
+  if ICutlistWarning.Visible then
+    cmdCutlistInfo.Width := ICutlistWarning.Left - cmdSplitCut.Left - 4
+  else
+    cmdCutlistInfo.Width := cmdSplitCut.Width;
 
   if cutlist.Author <> '' then
   begin
@@ -1031,6 +1047,10 @@ begin
       Application.Title := ExtractFileName(MovieInfo.current_filename);
 
       MovieInfo.MovieLoaded := True;
+
+      tbFilePos.Max := Round(MovieInfo.current_file_duration * 1000 / tbFilePos.TimerInterval);
+      UpdateTrackBarPageSize;
+
       Result := True;
     except
       on E: Exception do
@@ -1274,7 +1294,7 @@ begin
 
     //filtergraph.State
     MediaEvent.WaitForCompletion(500, event);
-    TBFilePos.TriggerTimer;
+    tbFilePos.TriggerTimer;
   end;
 end;
 
@@ -1296,7 +1316,7 @@ procedure TFMain.tbFilePosTimer(sender: TObject; CurrentPos, StopPos: Cardinal);
 var
   TrueRate: Double;
 begin
-  TrueRate := CalcTrueRate(TBFilePos.TimerInterval / 1000);
+  TrueRate := CalcTrueRate(tbFilePos.TimerInterval / 1000);
   if TrueRate > 0 then
     lblTrueRate_nl.Caption := '[' + floattostrF(TrueRate, ffFixed, 15, 3) + 'x]'
   else
@@ -1307,8 +1327,8 @@ end;
 
 procedure TFMain.tbFilePosChange(Sender: TObject);
 begin
-  if TBFilePos.IsMouseDown then
-    lblPos_nl.Caption := FormatMoviePosition(TBFilePos.position);
+  if tbFilePos.IsMouseDown then
+    lblPos_nl.Caption := FormatMoviePosition(tbFilePos.TimerInterval / 1000 * tbFilePos.Position);
 end;
 
 procedure TFMain.FilterGraphGraphStepComplete(Sender: TObject);
@@ -1327,8 +1347,10 @@ end;
 
 procedure TFMain.tbFinePosChange(Sender: TObject);
 begin
-  lblFinePos_nl.Caption := IntToStr(tbFinePos.Position);
-  tbFilePos.PageSize := tbFinePos.Position;
+  lblFinePos_nl.Caption := Format(RsFrames, [tbFinePos.Position]);
+  Settings.FinePosFrameCount := tbFinePos.Position;
+
+  UpdateTrackBarPageSize;
 end;
 
 procedure TFMain.FormClose(Sender: TObject; var Action: TCloseAction);
@@ -1492,7 +1514,7 @@ begin
   if Settings.AutoMuteOnSeek then
     interval := 10
   else
-    interval := Max(10, Trunc(MovieInfo.frame_duration * 1000.0) div 2);
+    interval := Max(10, Round(MovieInfo.frame_duration * 1000.0) div 2);
 
   while not AllStepComplete do
   begin
@@ -1826,7 +1848,7 @@ begin
       scan_2 := -1;
     end;
   end;
-  if TBFilePos.SelEnd - TBFilePos.SelStart > 0 then
+  if tbFilePos.SelEnd - tbFilePos.SelStart > 0 then
     actScanInterval.Enabled := True
   else
     actScanInterval.Enabled := False;
@@ -2042,11 +2064,9 @@ begin
   if odMovie.Execute then
   begin
     settings.CurrentMovieDir := ExtractFilePath(odMovie.FileName);
-    if OpenFile(odMovie.FileName) then
-    begin
-      if MovieInfo.MovieLoaded and (Settings.AutoSearchCutlists xor AltDown) then
+    if OpenFile(odMovie.FileName) and MovieInfo.MovieLoaded then
+      if Settings.AutoSearchCutlists xor AltDown then
         SearchCutlists(True, ShiftDown xor Settings.SearchLocalCutlists, CtrlDown xor Settings.SearchServerCutlists, [cstBySize]);
-    end;
   end;
 end;
 
@@ -2191,8 +2211,8 @@ begin
 
     if (i1 = -1) or (i2 = -1) then
     begin
-      pos1 := TBFilePos.SelStart;
-      pos2 := TBFilePos.SelEnd;
+      pos1 := tbFilePos.SelStart;
+      pos2 := tbFilePos.SelEnd;
     end else
     begin
       if i1 > i2 then
@@ -2467,17 +2487,24 @@ begin
   if FilterGraph.State <> gsPaused then
     GraphPause;
 
-  if Assigned(FrameStep) then
+  if Settings.NewNextFrameMethod then
   begin
-    if Settings.AutoMuteOnSeek and not CBMute.Checked then
-      FilterGraph.Volume := 0;
-    FrameStep.Step(1, nil);
-    MediaEvent.WaitForCompletion(500, event);
-    TBFilePos.TriggerTimer;
-    if Settings.AutoMuteOnSeek and not CBMute.Checked then
-      FilterGraph.Volume := tbVolume.Position;
+    JumpTo(currentPosition + MovieInfo.frame_duration);
   end else
-    actStepForward.Enabled := False;
+  begin
+    //	inaccurate?
+    if Assigned(FrameStep) then
+    begin
+      if Settings.AutoMuteOnSeek and not CBMute.Checked then
+        FilterGraph.Volume := 0;
+      FrameStep.Step(1, nil);
+      MediaEvent.WaitForCompletion(500, event);
+      tbFilePos.TriggerTimer;
+      if Settings.AutoMuteOnSeek and not CBMute.Checked then
+        FilterGraph.Volume := tbVolume.Position;
+    end else
+      actStepForward.Enabled := False;
+  end;
 end;
 
 procedure TFMain.actStepBackwardExecute(Sender: TObject);
@@ -2517,7 +2544,7 @@ begin
     else if shift = [ssAlt] then
       timeToSkip := Settings.LargeSkipTime
     else
-      timeToSkip := tbFilePos.PageSize * MovieInfo.frame_duration;
+      timeToSkip := tbFilePos.PageSize * MovieInfo.frame_duration; ////////************
 
     JumpTo(currentPosition - timeToSkip * Sign(WheelDelta));
   end;
@@ -2575,6 +2602,8 @@ begin
     TeeFilter.FilterGraph       := nil;
     NullRenderer.FilterGraph    := nil;
     // AviDecompressor.FilterGraph := nil;
+
+    UpdatePlayPauseButton;
   end;
   MovieInfo.current_filename := '';
   MovieInfo.current_filesize := -1;
@@ -3291,9 +3320,9 @@ var
 begin
   if MovieInfo.current_file_duration = 0 then Exit;
   if cutlist.Mode = clmTrim then
-    TBFilePos.ChannelCanvas.Brush.Color := clgreen
+    tbFilePos.ChannelCanvas.Brush.Color := clgreen
   else
-    TBFilePos.ChannelCanvas.Brush.Color := clred;
+    tbFilePos.ChannelCanvas.Brush.Color := clred;
   scale := (ARect.Right - ARect.Left) / MovieInfo.current_file_duration; //pixel per second
   CutRect := ARect;
   for iCut := 0 to Pred(cutlist.Count) do
@@ -3301,7 +3330,7 @@ begin
     CutRect.Left := ARect.Left + Round(Cutlist[iCut].pos_from * scale);
     CutRect.Right := ARect.Left + Round(Cutlist[iCut].pos_to * scale);
     if CutRect.right >= CutRect.Left then
-      TBFilePos.ChannelCanvas.FillRect(CutRect);
+      tbFilePos.ChannelCanvas.FillRect(CutRect);
   end;
 end;
 
@@ -3383,14 +3412,16 @@ begin
   if Result then
   begin
     cmdFF.Enabled := False;
-    TBFilePos.TriggerTimer;
+    tbFilePos.TriggerTimer;
+
+    UpdatePlayPauseButton;
   end;
 end;
 
 function TFMain.GraphPlay: Boolean;
 var
-  ACurrent                         : Double;
-  ACut                             : TCut;
+  ACurrent: Double;
+  ACut: TCut;
 begin
   if FilterGraph.State = gsPlaying then
     Result := True
@@ -3413,7 +3444,9 @@ begin
   if Result then
   begin
     cmdFF.Enabled := True;
-    TBFilePos.TriggerTimer;
+    tbFilePos.TriggerTimer;
+
+    UpdatePlayPauseButton;
   end;
 end;
 
@@ -3425,7 +3458,7 @@ end;
 
 procedure TFMain.tbRateChange(Sender: TObject);
 var
-  NewRate                          : Double;
+  NewRate: Double;
 begin
   NewRate := Power(2, (TBRate.Position / 8));
   filtergraph.Rate := newRate;
@@ -4040,9 +4073,9 @@ begin
   EnableMovieControls(False);
   actStepForward.Enabled := False;
 
-  tbFinePos.Position := 5; // ToDO: save standard in settings
+  tbFinePos.Position := Settings.FinePosFrameCount;
   tbFinePos.Tag := tbFinePos.Position;
-  tbFilePos.PageSize := tbFinePos.Position;
+  tbFilePos.PageSize := Round(0.04 * tbFinePos.Position * 1000 / tbFilePos.TimerInterval); // Def. 25 fps
 
   lblDuration_nl.Caption := FormatMoviePosition(0);
   lblPos_nl.Caption := FormatMoviePosition(0);
@@ -4054,7 +4087,7 @@ begin
   actNextFrames.Enabled := Value;
   actCurrentFrames.Enabled := Value;
   actPrevFrames.Enabled := Value;
-  TBFilePos.Enabled := Value;
+  tbFilePos.Enabled := Value;
   tbFinePos.Enabled := Value;
   actSmallSkipForward.Enabled := Value;
   actLargeSkipForward.Enabled := Value;
@@ -4450,7 +4483,6 @@ begin
   end;
 end;
 
-
 procedure TFMain.actStopExecute(Sender: TObject);
 begin
   GraphPause; //set Play/Pause Button Caption
@@ -4479,7 +4511,8 @@ begin
   begin
     GraphPause;
     GraphPlay;
-  end;
+  end else
+    actPlayPause.Caption := '>';
 end;
 
 procedure TFMain.actSetCutStartExecute(Sender: TObject);
@@ -4550,36 +4583,25 @@ begin
 end;
 
 initialization
-  begin
-    Settings := nil;
-    Randomize;
+  Randomize;
 
-    FreeLocalizer.LanguageDir := Application_Dir;
-    FreeLocalizer.ErrorProcessing := epErrors;
+  FreeLocalizer.LanguageDir := Application_Dir;
+  FreeLocalizer.ErrorProcessing := epErrors;
 
-    Settings := TSettings.Create;
-    Settings.load;
+  Settings := TSettings.Create;
+  Settings.Load;
 
-    FreeLocalizer.AutoTranslate := Settings.LanguageFile <> '';
-    if FreeLocalizer.AutoTranslate then
-      FreeLocalizer.LanguageFile := Settings.LanguageFile;
+  FreeLocalizer.AutoTranslate := Settings.LanguageFile <> '';
+  if FreeLocalizer.AutoTranslate then
+    FreeLocalizer.LanguageFile := Settings.LanguageFile;
 
-    //RegisterDSAMessage(1, 'CutlistRated', 'Cutlist rated');
-    MovieInfo := TMovieInfo.Create;
-    Cutlist := TCutList.Create(Settings, MovieInfo);
-  end;
-
+  //RegisterDSAMessage(1, 'CutlistRated', 'Cutlist rated');
+  MovieInfo := TMovieInfo.Create;
+  Cutlist   := TCutList.Create(Settings, MovieInfo);
 finalization
-  begin
-    FreeAndNil(Cutlist);
-    FreeAndNil(MovieInfo);
-    Settings.save;
-    FreeAndNil(Settings);
-
-    // UnregisterExceptionHandler(DebugExceptionHandler);
-    // UnregisterHiddenExceptionHandler(DebugExceptionHandler);
-  end;
-
+  FreeAndNil(Cutlist);
+  FreeAndNil(MovieInfo);
+  Settings.Save;
+  FreeAndNil(Settings);
 end.
-
 
