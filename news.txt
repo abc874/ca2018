@@ -1,3 +1,6 @@
+New in 0.19.1.24 (development)
+- No changes! Only fixed version number
+
 New in 0.19.1.23 (development)
 - Fine positioning reworked, click on trackbar now moves x frames (set with bottom trackbar, should be accurate)
 - New optional more accurate next frame method (right arrow key) - see settings
