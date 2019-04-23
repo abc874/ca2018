@@ -1240,6 +1240,50 @@ object FSettings: TFSettings
         OnChange = cmbSourceFilterListChange
       end
     end
+    object tabReplace: TTabSheet
+      Caption = 'Replace filename'
+      ImageIndex = 7
+      object scrBox: TScrollBox
+        Left = 0
+        Top = 0
+        Width = 776
+        Height = 302
+        Align = alClient
+        BorderStyle = bsNone
+        TabOrder = 0
+        inline ReplaceFrameX: TReplaceFrame
+          Left = 0
+          Top = 0
+          Width = 776
+          Height = 32
+          Align = alTop
+          TabOrder = 0
+          inherited sbTest: TSpeedButton
+            Left = 699
+          end
+          inherited sbAdd: TSpeedButton
+            Left = 723
+          end
+          inherited sbDel: TSpeedButton
+            Left = 747
+          end
+          inherited lbSearch: TLabel
+            Width = 34
+            Margins.Bottom = 0
+          end
+          inherited lbReplace: TLabel
+            Width = 40
+            Margins.Bottom = 0
+          end
+          inherited cbRegEx: TCheckBox
+            Left = 591
+          end
+          inherited cbActive: TCheckBox
+            Left = 647
+          end
+        end
+      end
+    end
   end
   object pnlButtons: TPanel
     Left = 0

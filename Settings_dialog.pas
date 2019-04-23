@@ -9,7 +9,7 @@ interface
 uses
   // Delphi
   Winapi.Windows, System.Classes, System.SysUtils, System.Contnrs, Vcl.Forms, Vcl.Controls, Vcl.StdCtrls, Vcl.CheckLst,
-  Vcl.ExtCtrls, Vcl.Mask, Vcl.ComCtrls,
+  Vcl.ExtCtrls, Vcl.Mask, Vcl.ComCtrls, Vcl.Buttons,
 
   // Jedi
   JvExMask, JvSpin, JvExStdCtrls, JvCheckBox,
@@ -18,7 +18,7 @@ uses
   DXSUtils,
 
   // CA
-  CodecSettings, Movie, Utils, UCutApplicationBase;
+  CodecSettings, Movie, Utils, UCutApplicationBase, ReplaceFrame, ReplaceList;
 
 const
   //Settings Save...Mode
@@ -159,6 +159,9 @@ type
     cbNoRateSuccMsg: TJvCheckBox;
     cbNoWarnUseRate: TJvCheckBox;
     cbNewNextFrameMethod: TJvCheckBox;
+    tabReplace: TTabSheet;
+    scrBox: TScrollBox;
+    ReplaceFrameX: TReplaceFrame;
     procedure cmdCutMovieSaveDirClick(Sender: TObject);
     procedure cmdCutlistSaveDirClick(Sender: TObject);
     procedure edtProxyPort_nlKeyPress(Sender: TObject; var Key: Char);
@@ -269,10 +272,7 @@ type
     FilterBlackList: TGUIDList;
 
     //URLs and Proxy
-    url_cutlists_home,
-      url_cutlists_upload,
-      url_info_file,
-      url_help: string;
+    url_cutlists_home, url_cutlists_upload, url_info_file, url_help: string;
     proxyServerName, proxyUserName, proxyPassword: string;
     proxyPort: Integer;
 
@@ -286,6 +286,8 @@ type
 
     // UI Language
     Language: string;
+
+    ReplaceList: TReplaceList;
 
     // Additional settings
     property Additional[const name: string]: string read GetAdditional write SetAdditional;
@@ -556,6 +558,8 @@ begin
   CutAppSettingsOther.PreferredSourceFilter := GUID_NULL;
 
   FAdditional := TStringList.Create;
+
+  ReplaceList := TReplaceList.Create;
 end;
 
 function TSettings.GetFilter(Index: Integer): TFilCatNode;
@@ -575,6 +579,7 @@ end;
 
 destructor TSettings.Destroy;
 begin
+  FreeAndNil(ReplaceList);
   FreeAndNil(FAdditional);
   FreeAndNil(FLanguageList);
   FreeAndNil(FCodecList);
@@ -662,6 +667,8 @@ begin
   else
     FSettings.ECheckInfoInterval_nl.Text := '0';
   FSettings.CBInfoCheckEnabled.Checked := CheckInfos;
+
+  ReplaceList.SaveToDialogFrames(FSettings.scrBox);
 
   FSettings.Init;
 
@@ -794,6 +801,8 @@ begin
           (FSettings.pgSettings.Pages[iTabSheet].Controls[0] as FrameClass).Apply;
         end;
       end;
+
+      ReplaceList.LoadFromDialogFrames(FSettings.scrBox);
 
       Save;
     end;
@@ -991,6 +1000,8 @@ begin
 
     section := 'Additional';
     ini.ReadSectionValues(section, FAdditional);
+
+    ReplaceList.LoadFromIni(ini);
   finally
     FreeAndNil(ini);
   end;
@@ -1123,6 +1134,8 @@ begin
     with FAdditional do
       for idx := 0 to Pred(Count) do
         ini.WriteString(section, Names[idx], ValueFromIndex[idx]);
+
+    ReplaceList.SaveToIni(ini);
   finally
     FreeAndNil(ini);
     _NewSettingsCreated := not FileExists(FileName);
@@ -1188,7 +1201,6 @@ begin
   cmbCodecMP4_nl.Items   := CodecList;
   cmbCodecOther_nl.Items := CodecList;
 end;
-
 
 procedure TFSettings.FormDestroy(Sender: TObject);
 begin
