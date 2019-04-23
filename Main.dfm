@@ -110,7 +110,7 @@ object FMain: TFMain
     Width = 18
     Height = 13
     Anchors = [akRight, akBottom]
-    Caption = '100'
+    Caption = '500'
   end
   object lblDuration_nl: TLabel
     Left = 707
@@ -597,7 +597,7 @@ object FMain: TFMain
     Hint = 'Fine Positioning (in Frames)'
     Anchors = [akLeft, akRight, akBottom]
     Enabled = False
-    Max = 200
+    Max = 500
     Min = 1
     ParentShowHint = False
     PageSize = 5

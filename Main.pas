@@ -707,7 +707,7 @@ begin
 
   cbCutPreview.Checked  := Settings.CutPreview;
   tbFinePos.Position    := Settings.FinePosFrameCount;
-  lblFinePos_nl.Caption := Format(RsFrames, [tbFinePos.Position]);
+  lblFinePos_nl.Caption := Format(RsFrames, [tbFinePos.Position, tbFinePos.Position / 25]);
   tbFilePos.Frequency   := Round(60000 / tbFilePos.TimerInterval); // one tick every minute
 
   WindowState := Settings.MainFormWindowState;
@@ -803,7 +803,7 @@ begin
       saveDlg.Filter     := '*' + SourceExtension + '|*' + SourceExtension;
       saveDlg.Title      := RsSaveCutMovieAs;
       saveDlg.InitialDir := targetpath;
-      saveDlg.FileName   := targetfile;
+      saveDlg.FileName   := Settings.ReplaceList.SearchAndReplace(targetfile);
       saveDlg.Options    := saveDlg.Options + [ofOverwritePrompt, ofPathMustExist];
       if saveDlg.Execute then
       begin
@@ -1346,8 +1346,15 @@ begin
 end;
 
 procedure TFMain.tbFinePosChange(Sender: TObject);
+var
+  x: Double;
 begin
-  lblFinePos_nl.Caption := Format(RsFrames, [tbFinePos.Position]);
+  if MovieInfo.MovieLoaded then
+    x := MovieInfo.frame_duration
+  else
+    x := 1 / 25;
+
+  lblFinePos_nl.Caption := Format(RsFrames, [tbFinePos.Position, tbFinePos.Position * x]);
   Settings.FinePosFrameCount := tbFinePos.Position;
 
   UpdateTrackBarPageSize;
