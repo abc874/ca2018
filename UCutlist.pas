@@ -91,7 +91,7 @@ type
     FramesPresent: Boolean;
     SavedToFilename: string;
     RatingSent: Integer;
-    OriginalFileSize: longint;
+    OriginalFileSize: Int64;
     RatingCountOnServer: Integer;
     DownloadTime: Int64;
 
@@ -807,7 +807,7 @@ begin
 
     if AnsiSameText(ApplyToFile, my_file) or noWarnings or YesNoMsgFmt(RsMsgCutlistTargetMismatch, [ApplyToFile, my_file]) then
     begin
-      OriginalFileSize := cutlistfile.ReadInteger(section, 'OriginalFileSizeBytes', -1);
+      OriginalFileSize := cutlistfile.ReadInt64(section, 'OriginalFileSizeBytes', -1);
       // App + version
       if CutApplication <> nil then
       begin
@@ -1095,7 +1095,7 @@ begin
       cutlistfile.WriteString(section, 'Version', Application_version);
       iniWriteStrings(cutlistfile, section, 'comment', False, Comments);
       cutlistfile.WriteString(section, 'ApplyToFile', ApplyToFile);
-      cutlistfile.WriteInteger(section, 'OriginalFileSizeBytes', OriginalFileSize);
+      cutlistfile.WriteInt64(section, 'OriginalFileSizeBytes', OriginalFileSize);
       cutlistfile.WriteFloat(section, 'FramesPerSecond', FrameRate);
 
       // ToDo: do not change contents of cutlist here, use existing values
