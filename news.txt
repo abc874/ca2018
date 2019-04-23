@@ -1,3 +1,13 @@
+New in 0.19.4.23 (development)
+- Build with Delphi Rio 10.3.1
+- File size now saved as Int64 to cutlist (support for files larger than 2 GB)
+- Search and replace rules for name of cut result file
+  see http://docwiki.embarcadero.com/RADStudio/Rio/en/Regular_Expressions
+  example regex (type w/o quotes)
+  search "S(\d\d)E(\d\d)"
+  replace "\1.\2"
+  S01E12.AVI  ==> 01.12.AVI
+
 New in 0.19.1.24 (development)
 - No changes! Only fixed version number
 
