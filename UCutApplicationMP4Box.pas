@@ -125,6 +125,8 @@ begin
     // ChangeFileExt(SourceFileName, ForcedFileExt);
     // ChangeFileExt(DestFileName, ForcedFileExt);
 
+    ChDir(ExtractFileDir(SourceFileName));
+
     FCommandLines.Clear;
     MustFreeTempCutlist := False;
     TempCutlist := TCutlist(Cutlist);
