@@ -41,7 +41,9 @@ uses
   UAbout in 'UAbout.pas' {AboutBox},
   CAResources in 'CAResources.pas',
   uFreeLocalizer in 'KDL\uFreeLocalizer.pas',
-  uStringUtils in 'KDL\uStringUtils.pas';
+  uStringUtils in 'KDL\uStringUtils.pas',
+  ReplaceFrame in 'ReplaceFrame.pas' {ReplaceFrame: TFrame},
+  ReplaceList in 'ReplaceList.pas';
 
 {$R *.res}
 
