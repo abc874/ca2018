@@ -35,7 +35,7 @@ type
     current_file_duration, frame_duration: Double;
     frame_duration_source: Char;
     current_filename, target_filename: string;
-    current_filesize: Longint;
+    current_filesize: Int64;
     property FrameCount: Int64 read GetFrameCount;
     property MovieType: TMovieType read FMovieType write SetMovieType;
     function FormatPosition(Position: Double): string; overload;
@@ -87,6 +87,17 @@ begin
 end;
 
 function TMovieInfo.InitMovie(FileName: string): Boolean;
+  function FileSize64: Int64;
+  var
+    R: TSearchRec;
+  begin
+    if FindFirst(FileName, faAnyFile, R) = 0 then
+    begin
+      Result := R.Size;
+      FindClose(R);
+    end else
+      Result := -1;
+  end;
 const
   BytesToRead = 32;
 var
@@ -104,11 +115,12 @@ begin
     try
       SetLength(FileData, BytesToRead);
       current_filename := FileName;
-      current_filesize := Filesize(f);
+      // current_filesize := Filesize(f);
       BlockRead(f, FileData[1], BytesToRead);
     finally
       CloseFile(f)
     end;
+    current_filesize := FileSize64;
 
     MovieType             := mtUnknown;
     frame_duration        := 0;
