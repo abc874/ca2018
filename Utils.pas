@@ -153,6 +153,9 @@ type
     function ReadGuid(const Section, Name: string; const Default: TGUID): TGUID; virtual;
     procedure WriteGuid(const Section, Name: string; const Value: TGUID); virtual;
 
+    function ReadInt64(const Section, Name: string; const Default: Int64): Int64;
+    procedure WriteInt64(const Section, Name: string; const Value: Int64);
+
     procedure ReadCutAppSettings(const Section: string; var CutAppSettings: RCutAppSettings);
     procedure WriteCutAppSettings(const Section: string; var CutAppSettings: RCutAppSettings);
 
@@ -520,9 +523,22 @@ begin
   end;
 end;
 
+function TMemIniFileEx.ReadInt64(const Section, Name: string; const Default: Int64): Int64;
+var
+  S: string;
+begin
+  S := ReadString(Section, Name, '');
+  Result := StrToIntDef(S, Default);
+end;
+
 procedure TMemIniFileEx.WriteGuid(const Section, Name: string; const Value: TGUID);
 begin
   WriteString(Section, Name, GUIDToString(Value));
+end;
+
+procedure TMemIniFileEx.WriteInt64(const Section, Name: string; const Value: Int64);
+begin
+  WriteString(Section, Name, IntToStr(Value));
 end;
 
 procedure TMemIniFileEx.ReadCutAppSettings(const Section: string; var CutAppSettings: RCutAppSettings);
