@@ -338,7 +338,10 @@ resourcestring
 
   RsShiftCutTime                      = 'shift time';
 
-  RsFrames                            = '%d frames';
+  RsFrames                            = '%d frames (%.2f s)';
+
+  RsInput                             = 'Input';
+  RsFileName                          = 'Filename';
 
 implementation
 
