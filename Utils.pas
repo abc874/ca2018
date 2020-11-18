@@ -266,7 +266,7 @@ function GetVersionRequestParams: string;
 
 // func/proc from abc874
 
-function ExtractBaseFileNameOTR(const S: string): string;
+function ExtractBaseFileNameOTR(const S: string; IgnorePrefix: Boolean): string;
 function FileNameToFormatName(const S: string): string;
 
 function StringToken(var S: string; C: Char): string;
@@ -1396,7 +1396,7 @@ end;
 
 // func/proc from abc874
 
-function ExtractBaseFileNameOTR(const S: string): string;
+function ExtractBaseFileNameOTR(const S: string; IgnorePrefix: Boolean): string;
 var
   I: Integer;
 begin
@@ -1406,6 +1406,9 @@ begin
 
   if I > 0 then
     SetLength(Result, Pred(I));
+
+  if IgnorePrefix then
+    Result := '%' + Result;
 end;
 
 function FileNameToFormatName(const S: string): string;
