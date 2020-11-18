@@ -343,6 +343,8 @@ resourcestring
   RsInput                             = 'Input';
   RsFileName                          = 'Filename';
 
+  RSIgnorePrefix                      = 'Nothing found. Repeat search ignoring prefix?';
+
 implementation
 
 end.
