@@ -1,3 +1,11 @@
+New in 0.20.11.18 (development)
+- Build with Delphi Rio 10.3.3
+- Commandline options for MP4Box
+- Show commandline in progess memo
+- New optional search for cutlists with "strange" prefixes
+- Cutlist extension appended (issue #3)
+- Minor fixes (mute, play/pause button)
+
 New in 0.19.4.23 (development)
 - Build with Delphi Rio 10.3.1
 - File size now saved as Int64 to cutlist (support for files larger than 2 GB)
