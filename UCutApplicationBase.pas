@@ -342,6 +342,7 @@ begin
   begin
     // Next Command Line
     FjvcpAppProcess.CommandLine := '"' + FPath + '" ' + FCommandLines[FCommandLineCounter];
+    FOutputMemo.Lines.Add(FjvcpAppProcess.CommandLine);
     Inc(FCommandLineCounter);
     FjvcpAppProcess.Run;
   end;
