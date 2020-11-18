@@ -143,7 +143,7 @@ begin
       TempCutlist.Sort;
       for iCut := 0 to Pred(tempCutlist.Count) do
       begin
-        CommandLine := '"' + SourceFileName + '"';
+        CommandLine := '"' + SourceFileName + '" ' + CommandLineOptions;
         CommandLine := CommandLine + ' -splitx ' + FloatToStrInvariant(TempCutlist[iCut].pos_from) + ':' + FloatToStrInvariant(TempCutlist[iCut].pos_to);
         FCommandLines.Add(CommandLine);
       end;
@@ -232,8 +232,9 @@ begin
       //sort List
       FTempFileList.CustomSort(FileNameCompare);
       //Make CommandLine
+      NewCommandLine := CommandLineOptions;
       for i := 0 to Pred(FTempFileList.Count) do
-        NewCommandLine := NewCommandLine + ' -cat "' + FFilePath + FTempFileList.Strings[i] + '"';
+        NewCommandLine := NewCommandLine + ' -cat "' { + FFilePath } + FTempFileList.Strings[i] + '"';
 
       NewCommandLine := NewCommandLine + ' "' + FDestFile + '"';
       FCommandLines.Add(NewCommandLine);
