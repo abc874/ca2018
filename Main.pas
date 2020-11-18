@@ -408,6 +408,7 @@ type
     procedure UpdateMovieInfoControls;
     procedure UpdatePlayPauseButton;
     procedure UpdateTrackBarPageSize;
+    procedure UpdateVolume;
   public
     { public declarations }
     procedure ProcessFileList(FileList: TStringList; IsMyOwnCommandLine: Boolean);
@@ -439,7 +440,7 @@ type
     //    function search_cutlist: Boolean;
     function SearchCutlists(AutoOpen: Boolean; SearchLocal, SearchWeb: Boolean; SearchTypes: TCutlistSearchTypes): Boolean;
     function SearchCutlistsByFileSize_Local(SearchType: TCutlistSearchType): Integer;
-    function SearchCutlistsByFileSize_XML(SearchType: TCutlistSearchType): Integer;
+    function SearchCutlistsByFileSize_XML(SearchType: TCutlistSearchType; IgnorePrefix: Boolean = False): Integer;
     //    function DownloadCutlist(cutlist_name: string): Boolean;
     function DownloadCutlistByID(const cutlist_id, TargetFileName: string): Boolean; overload;
     function UploadCutlist(FileName: string): Boolean;
@@ -840,7 +841,7 @@ begin
   end;
 end;
 
-procedure TFMain.cbMuteClick(Sender: TObject);
+procedure TFMain.UpdateVolume;
 begin
   if CBMUte.Checked then
     FilterGraph.Volume := 0
@@ -848,12 +849,14 @@ begin
     FilterGraph.Volume := tbVolume.Position;
 end;
 
+procedure TFMain.cbMuteClick(Sender: TObject);
+begin
+  UpdateVolume;
+end;
+
 procedure TFMain.tbVolumeChange(Sender: TObject);
 begin
-  if CBMute.Checked then
-    FilterGraph.Volume := 0
-  else
-    FilterGraph.Volume := tbVolume.Position;
+  UpdateVolume;
 end;
 
 procedure TFMain.refresh_lvCutlist(cutlist: TCutlist);
@@ -1036,7 +1039,7 @@ begin
             Exit;
           end;
         end;
-        FilterGraph.Volume := tbVolume.Position;
+        UpdateVolume;
 
         GraphPause;
 
@@ -2918,7 +2921,7 @@ begin
   end;
 end;
 
-function TFMain.SearchCutlistsByFileSize_XML(SearchType: TCutlistSearchType): Integer;
+function TFMain.SearchCutlistsByFileSize_XML(SearchType: TCutlistSearchType; IgnorePrefix: Boolean = False): Integer;
 const
   php_name                         = 'getxml.php';
 var
@@ -2947,7 +2950,7 @@ begin
         url := settings.url_cutlists_home
           + php_name
           + '?name='
-          + TIdURI.ParamsEncode(ExtractBaseFileNameOTR(MovieInfo.current_filename));
+          + TIdURI.ParamsEncode(ExtractBaseFileNameOTR(MovieInfo.current_filename, IgnorePrefix));
       end;
   else
     Exit;
@@ -3044,7 +3047,12 @@ begin
     if SearchType in SearchTypes then
     begin
       if SearchWeb then
+      begin
         numFound := numFound + SearchCutlistsByFileSize_XML(SearchType);
+
+        if (numFound = 0) and (SearchType = cstByName) and (MessageDlg(RSIgnorePrefix, mtConfirmation, mbYesNo, 0) = mrYes) then
+          numFound := numFound + SearchCutlistsByFileSize_XML(SearchType, True);
+      end;
 
       if SearchLocal then
         numFound := numFound + SearchCutlistsByFileSize_Local(SearchType);
@@ -3407,6 +3415,8 @@ begin
     Result := GraphPause
   else
     Result := GraphPlay;
+
+  UpdatePlayPauseButton;
 end;
 
 function TFMain.GraphPause: Boolean;
