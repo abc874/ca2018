@@ -609,7 +609,7 @@ end;
 function TCutList.FilenameSuggestion: string;
 begin
   if FMovieInfo.current_filename <> '' then
-    Result := ChangeFileExt(ExtractFileName(FMovieInfo.current_filename), CUTLIST_EXTENSION)
+    Result := ExtractFileName(FMovieInfo.current_filename) + CUTLIST_EXTENSION
   else
     Result := 'Cutlist_01' + CUTLIST_EXTENSION;
 end;
