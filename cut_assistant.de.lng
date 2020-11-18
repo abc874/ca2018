@@ -391,6 +391,7 @@ cbActive.Caption=Aktiv
 [ResourceStrings]
 64208_CAResources_RsInput=Eingabe
 64209_CAResources_RsFileName=Dateiname
+64210_CAResources_RSIgnorePrefix=Nichts gefunden. Suche wiederholen und "komische" Präfixe ignorieren?
 64224_CAResources_RsMsgServerCommandErrorCommand=Nicht unterstützter Server-Befehl "%s".
 64225_CAResources_RsMsgServerCommandErrorProtocol=Nicht unterstütztes Kommunikationsprotokoll %d.
 64226_CAResources_RsMsgServerCommandErrorUnspecified=Unbekannter Fehler (%d).
