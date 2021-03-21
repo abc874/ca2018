@@ -220,6 +220,7 @@ begin
     SetCodecSettings(Settings.CutAppSettingsWmv, cas);
     SetCodecSettings(Settings.CutAppSettingsAvi, cas);
     SetCodecSettings(Settings.CutAppSettingsHQAVI, cas);
+    SetCodecSettings(Settings.CutAppSettingsHDAVI, cas);
     SetCodecSettings(Settings.CutAppSettingsMP4, cas);
     SetCodecSettings(Settings.CutAppSettingsOther, cas);
   end;

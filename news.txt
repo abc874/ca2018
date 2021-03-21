@@ -1,3 +1,9 @@
+New in 0.21.3.21 (development - alpha!)
+- Settings saved in profile (C:\Users\Username\AppData\Roaming\CutAsisstant) if no write access to program folder
+- Location of settings file (ini) shown in caption of settings dialog
+- Additional settings for HD files
+- Extended search mode configurable (holzi!) in settings dialog (tab URLs)
+
 New in 0.20.11.18 (development)
 - Build with Delphi Rio 10.3.3
 - Commandline options for MP4Box

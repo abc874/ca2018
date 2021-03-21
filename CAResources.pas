@@ -80,6 +80,7 @@ resourcestring
   RsCutApplicationWmv              = 'WMV Cut Application';
   RsCutApplicationAvi              = 'AVI Cut Application';
   RsCutApplicationHqAvi            = 'HQ Avi Cut Application';
+  RsCutApplicationHdAvi            = 'HD Avi Cut Application';
   RsCutApplicationMp4              = 'MP4 Cut Application';
   RsCutApplicationOther            = 'Other Cut Application';
 
@@ -224,6 +225,7 @@ resourcestring
   RsMovieTypeAvi                   = 'AVI File';
   RsMovieTypeMp4                   = 'MP4 Iso File';
   RsMovieTypeHqAvi                 = 'HQ AVI File';
+  RsMovieTypeHdAvi                 = 'HD AVI File';
   RsMovieTypeNone                  = '[None]';
 
   { Settings_dialog }
@@ -344,6 +346,8 @@ resourcestring
   RsFileName                          = 'Filename';
 
   RSIgnorePrefix                      = 'Nothing found. Repeat search ignoring prefix?';
+
+  RSIniInProfile                      = 'Using %s.';
 
 implementation
 

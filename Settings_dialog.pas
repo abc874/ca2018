@@ -9,7 +9,7 @@ interface
 uses
   // Delphi
   Winapi.Windows, System.Classes, System.SysUtils, System.Contnrs, Vcl.Forms, Vcl.Controls, Vcl.StdCtrls, Vcl.CheckLst,
-  Vcl.ExtCtrls, Vcl.Mask, Vcl.ComCtrls, Vcl.Buttons,
+  Vcl.ExtCtrls, Vcl.Mask, Vcl.ComCtrls, Vcl.Buttons, System.IOUtils,
 
   // Jedi
   JvExMask, JvSpin, JvExStdCtrls, JvCheckBox,
@@ -162,6 +162,14 @@ type
     tabReplace: TTabSheet;
     scrBox: TScrollBox;
     ReplaceFrameX: TReplaceFrame;
+    rgExtSearchMode: TRadioGroup;
+    lblCutWithHDAvi: TLabel;
+    CBHDAviApp_nl: TComboBox;
+    cmbCodecHDAvi_nl: TComboBox;
+    btnCodecConfigHDAvi: TButton;
+    btnCodecAboutHDAvi: TButton;
+    lblSourceFilterHDAvi: TLabel;
+    cmbSourceFilterListHDAVI_nl: TComboBox;
     procedure cmdCutMovieSaveDirClick(Sender: TObject);
     procedure cmdCutlistSaveDirClick(Sender: TObject);
     procedure edtProxyPort_nlKeyPress(Sender: TObject; var Key: Char);
@@ -180,7 +188,7 @@ type
     procedure cmbSourceFilterListChange(Sender: TObject);
   private
     { private declarations }
-    HQAviAppSettings, AviAppSettings, WmvAppSettings, MP4AppSettings, OtherAppSettings: RCutAppSettings;
+    HQAviAppSettings, HDAviAppSettings, AviAppSettings, WmvAppSettings, MP4AppSettings, OtherAppSettings: RCutAppSettings;
     EnumFilters: TSysDevEnum;
     procedure FillBlackList;
     function GetCodecList: TCodecList;
@@ -202,8 +210,12 @@ type
   //deprecated:
   TCutApp = (caAsfBin = 0, caVirtualDub = 1, caAviDemux = 2);
 
+  TExtendedSearchMode = (esmNever, esmOnDemand, esmAlways);
+
   TSettings = class(TObject)
   private
+    IniFileAtExe, IniFileAtUser: string;
+    UseIniFileAtUser: Boolean;
     SourceFilterList: TSourceFilterList;
     _SaveCutListMode, _SaveCutMovieMode: Byte;
     _NewSettingsCreated: Boolean;
@@ -246,6 +258,7 @@ type
     SearchServerCutlists: Boolean;
     AutoSaveDownloadedCutlists: Boolean;
     SearchCutlistsByName: Boolean;
+    ExtendedSearchMode: TExtendedSearchMode;
     NoRateSuccMsg: Boolean;
     NoWarnUseRate: Boolean;
     NewNextFrameMethod: Boolean;
@@ -267,6 +280,7 @@ type
     //SourceFilter, CodecSettings
     CutAppSettingsAvi, CutAppSettingsWmv, CutAppSettingsMP4, CutAppSettingsOther: RCutAppSettings;
     CutAppSettingsHQAvi: RCutAppSettings;
+    CutAppSettingsHDAvi: RCutAppSettings;
 
     //Blacklist of Filters
     FilterBlackList: TGUIDList;
@@ -533,6 +547,10 @@ constructor TSettings.Create;
 begin
   inherited;
 
+  IniFileAtExe     := ChangeFileExt(Application.ExeName, '.ini');
+  IniFileAtUser    := IncludeTrailingPathDelimiter(TPath.GetHomePath) + 'CutAsisstant\' + ChangeFileExt(ExtractFileName(Application.ExeName), '.ini');
+  UseIniFileAtUser := FileExists(IniFileAtUser);
+
   Language := '';
   ExceptionLogging := False;
 
@@ -554,6 +572,7 @@ begin
   CutAppSettingsWmv.PreferredSourceFilter   := GUID_NULL;
   CutAppSettingsAvi.PreferredSourceFilter   := GUID_NULL;
   CutAppSettingsHQAvi.PreferredSourceFilter := GUID_NULL;
+  CutAppSettingsHDAvi.PreferredSourceFilter := GUID_NULL;
   CutAppSettingsMP4.PreferredSourceFilter   := GUID_NULL;
   CutAppSettingsOther.PreferredSourceFilter := GUID_NULL;
 
@@ -610,6 +629,7 @@ begin
   FSettings.SetCutAppSettings(mtWMV, CutAppSettingsWmv);
   FSettings.SetCutAppSettings(mtAVI, CutAppSettingsAvi);
   FSettings.SetCutAppSettings(mtHQAVI, CutAppSettingsHQAvi);
+  FSettings.SetCutAppSettings(mtHDAVI, CutAppSettingsHDAvi);
   FSettings.SetCutAppSettings(mtMP4, CutAppSettingsMP4);
   FSettings.SetCutAppSettings(mtUnknown, CutAppSettingsOther);
 
@@ -638,6 +658,7 @@ begin
   FSettings.cbSearchLocalCutlists.Checked  := SearchLocalCutlists;
   FSettings.cbSearchServerCutlists.Checked := SearchServerCutlists;
   FSettings.cbSearchCutlistsByName.Checked := SearchCutlistsByName;
+  FSettings.rgExtSearchMode.ItemIndex      := Ord(ExtendedSearchMode);
 
   Fsettings.edtURL_Cutlist_Home_nl.Text   := url_cutlists_home;
   Fsettings.edtURL_Info_File_nl.Text      := url_info_file;
@@ -716,6 +737,7 @@ begin
       FSettings.GetCutAppSettings(mtWMV, CutAppSettingsWmv);
       FSettings.GetCutAppSettings(mtAVI, CutAppSettingsAvi);
       FSettings.GetCutAppSettings(mtHQAVI, CutAppSettingsHQAvi);
+      FSettings.GetCutAppSettings(mtHDAVI, CutAppSettingsHDAvi);
       FSettings.GetCutAppSettings(mtMP4, CutAppSettingsMP4);
       FSettings.GetCutAppSettings(mtUnknown, CutAppSettingsOther);
 
@@ -775,6 +797,7 @@ begin
       SearchLocalCutlists  := FSettings.cbSearchLocalCutlists.Checked;
       SearchServerCutlists := FSettings.cbSearchServerCutlists.Checked;
       SearchCutlistsByName := FSettings.cbSearchCutlistsByName.Checked;
+      ExtendedSearchMode   := TExtendedSearchMode(FSettings.rgExtSearchMode.ItemIndex);
 
       newLanguage := GetLanguageByIndex(FSettings.cmbLanguage_nl.ItemIndex);
       if Language <> newLanguage then
@@ -844,6 +867,7 @@ begin
     mtWMV   : Result := CutAppSettingsWmv;
     mtAVI   : Result := CutAppSettingsAvi;
     mtHQAVI : Result := CutAppSettingsHQAvi;
+    mtHDAVI : Result := CutAppSettingsHDAvi;
     mtMP4   : Result := CutAppSettingsMP4;
     else      Result := CutAppSettingsOther;
   end;
@@ -871,7 +895,7 @@ end;
 
 procedure TSettings.Load;
 var
-  ini: TCustomIniFile;
+  ini: TIniFile;
   FileName: string;
   section: string;
   iFilter, iCutApplication: Integer;
@@ -892,8 +916,11 @@ var
   end;
 
 begin
-  FileName := ChangeFileExt(Application.ExeName, '.ini');
-  _NewSettingsCreated := not FileExists(FileName);
+  if UseIniFileAtUser then
+    FileName := IniFileAtUser
+  else
+    FileName := IniFileAtExe;
+
   ini := TIniFile.Create(FileName);
   try
     section := 'General';
@@ -915,6 +942,9 @@ begin
 
     section := 'HQ AVI Files';
     ReadCutAppSettings(ini, section, CutAppSettingsHQAVI);
+
+    section := 'HD AVI Files';
+    ReadCutAppSettings(ini, section, CutAppSettingsHDAVI);
 
     section := 'MP4 Files';
     ReadCutAppSettings(ini, section, CutAppSettingsMP4);
@@ -1021,14 +1051,33 @@ end;
 
 procedure TSettings.save;
 var
-  ini: TCustomIniFile;
+  ini: TIniFile;
   FileName: string;
   section: string;
   idx: Integer;
   iCutApplication: Integer;
   iFilter: Integer;
 begin
-  FileName := ChangeFileExt(Application.ExeName, '.ini');
+  // If Ini in profile - use it.
+  FileName := IniFileAtUser;
+
+  if not UseIniFileAtUser then
+  begin
+    ini := TIniFile.Create(IniFileAtExe);
+    try
+      ini.WriteString('Test', 'Test', 'Test');
+      FileName := IniFileAtExe;
+    except
+      on E: Exception do
+      begin
+        // Too late for message dialog (not working in finalization)
+        // ErrMsg(E.Message + sLineBreak + sLineBreak + Format(RSIniInProfile, [IniFileAtUser]));
+        System.SysUtils.ForceDirectories(ExtractFileDir(IniFileAtUser));
+      end;
+    end;
+    ini.Free;
+  end;
+
   ini := TIniFile.Create(FileName);
   try
     section := 'General';
@@ -1056,6 +1105,9 @@ begin
 
     section := 'HQ AVI Files';
     WriteCutAppSettings(ini, section, CutAppSettingsHQAvi);
+
+    section := 'HD AVI Files';
+    WriteCutAppSettings(ini, section, CutAppSettingsHDAvi);
 
     section := 'MP4 Files';
     WriteCutAppSettings(ini, section, CutAppSettingsMP4);
@@ -1192,14 +1244,18 @@ begin
   CBWmvApp_nl.Items.Assign(CBOtherApp_nl.Items);
   CBAviApp_nl.Items.Assign(CBOtherApp_nl.Items);
   CBHQAviApp_nl.Items.Assign(CBOtherApp_nl.Items);
+  CBHDAviApp_nl.Items.Assign(CBOtherApp_nl.Items);
   CBMP4App_nl.Items.Assign(CBOtherApp_nl.Items);
 
   CodecList.Fill;
   cmbCodecWmv_nl.Items   := CodecList;
   cmbCodecAvi_nl.Items   := CodecList;
   cmbCodecHQAvi_nl.Items := CodecList;
+  cmbCodecHDAvi_nl.Items := CodecList;
   cmbCodecMP4_nl.Items   := CodecList;
   cmbCodecOther_nl.Items := CodecList;
+
+  Caption := Caption  + ' - ' + IfThen(Settings.UseIniFileAtUser, Settings.IniFileAtUser, Settings.IniFileAtExe);
 end;
 
 procedure TFSettings.FormDestroy(Sender: TObject);
@@ -1328,6 +1384,7 @@ begin
     cmbSourceFilterListWMV_nl.Enabled   := False;
     cmbSourceFilterListAVI_nl.Enabled   := False;
     cmbSourceFilterListHQAVI_nl.Enabled := False;
+    cmbSourceFilterListHDAVI_nl.Enabled := False;
     cmbSourceFilterListMP4_nl.Enabled   := False;
     cmbSourceFilterListOther_nl.Enabled := False;
 
@@ -1337,6 +1394,8 @@ begin
     cmbSourceFilterListAVI_nl.ItemIndex := -1;
     cmbSourceFilterListHQAVI_nl.Items.Clear;
     cmbSourceFilterListHQAVI_nl.ItemIndex := -1;
+    cmbSourceFilterListHDAVI_nl.Items.Clear;
+    cmbSourceFilterListHDAVI_nl.ItemIndex := -1;
     cmbSourceFilterListMP4_nl.Items.Clear;
     cmbSourceFilterListMP4_nl.ItemIndex := -1;
     cmbSourceFilterListOther_nl.Items.Clear;
@@ -1353,6 +1412,7 @@ begin
       cmbSourceFilterListWMV_nl.Items.Assign(cmbSourceFilterListOther_nl.Items);
       cmbSourceFilterListAVI_nl.Items.Assign(cmbSourceFilterListOther_nl.Items);
       cmbSourceFilterListHQAVI_nl.Items.Assign(cmbSourceFilterListOther_nl.Items);
+      cmbSourceFilterListHDAVI_nl.Items.Assign(cmbSourceFilterListOther_nl.Items);
       cmbSourceFilterListMP4_nl.Items.Assign(cmbSourceFilterListOther_nl.Items);
 
       cmbSourceFilterListWMV_nl.ItemIndex := Settings.SourceFilterList.GetFilterIndexByCLSID(Settings.CutAppSettingsWmv.PreferredSourceFilter);
@@ -1361,6 +1421,8 @@ begin
       cmbSourceFilterListChange(cmbSourceFilterListAVI_nl);
       cmbSourceFilterListHQAVI_nl.ItemIndex := Settings.SourceFilterList.GetFilterIndexByCLSID(Settings.CutAppSettingsHQAvi.PreferredSourceFilter);
       cmbSourceFilterListChange(cmbSourceFilterListHQAVI_nl);
+      cmbSourceFilterListHDAVI_nl.ItemIndex := Settings.SourceFilterList.GetFilterIndexByCLSID(Settings.CutAppSettingsHDAvi.PreferredSourceFilter);
+      cmbSourceFilterListChange(cmbSourceFilterListHDAVI_nl);
       cmbSourceFilterListMP4_nl.ItemIndex := Settings.SourceFilterList.GetFilterIndexByCLSID(Settings.CutAppSettingsMP4.PreferredSourceFilter);
       cmbSourceFilterListChange(cmbSourceFilterListMP4_nl);
       cmbSourceFilterListOther_nl.ItemIndex := Settings.SourceFilterList.GetFilterIndexByCLSID(Settings.CutAppSettingsOther.PreferredSourceFilter);
@@ -1369,6 +1431,7 @@ begin
       cmbSourceFilterListWMV_nl.Enabled   := True;
       cmbSourceFilterListAVI_nl.Enabled   := True;
       cmbSourceFilterListHQAVI_nl.Enabled := True;
+      cmbSourceFilterListHDAVI_nl.Enabled := True;
       cmbSourceFilterListMP4_nl.Enabled   := True;
       cmbSourceFilterListOther_nl.Enabled := True;
     end;
@@ -1387,6 +1450,7 @@ begin
     cmbSourceFilterListWMV_nl.Clear;
     cmbSourceFilterListAVI_nl.Clear;
     cmbSourceFilterListHQAVI_nl.Clear;
+    cmbSourceFilterListHDAVI_nl.Clear;
     cmbSourceFilterListMP4_nl.Clear;
     cmbSourceFilterListOther_nl.Clear;
 
@@ -1415,6 +1479,11 @@ begin
   else if (Sender = cmbSourceFilterListHQAVI_nl) or (Sender = CBHQAviApp_nl) or (Sender = cmbCodecHQAvi_nl) or (Sender = btnCodecConfigHQAvi) or (Sender = btnCodecAboutHQAvi) then
   begin
     MovieType := mtHQAvi;
+    Result    := True;
+  end
+  else if (Sender = cmbSourceFilterListHDAVI_nl) or (Sender = CBHDAviApp_nl) or (Sender = cmbCodecHDAvi_nl) or (Sender = btnCodecConfigHDAvi) or (Sender = btnCodecAboutHDAvi) then
+  begin
+    MovieType := mtHDAvi;
     Result    := True;
   end
   else if (Sender = cmbSourceFilterListMP4_nl) or (Sender = CBMP4App_nl) or (Sender = cmbCodecMP4_nl) or (Sender = btnCodecConfigMP4) or (Sender = btnCodecAboutMP4) then
@@ -1462,6 +1531,12 @@ begin
                   btnAbout  := btnCodecAboutHQAvi;
                   Result    := True;
                 end;
+    mtHDAVI   : begin
+                  cbx       := cmbCodecHDAvi_nl;
+                  btnConfig := btnCodecConfigHDAvi;
+                  btnAbout  := btnCodecAboutHDAvi;
+                  Result    := True;
+                end;
     mtMP4     : begin
                   cbx       := cmbCodecMP4_nl;
                   btnConfig := btnCodecConfigMP4;
@@ -1484,24 +1559,28 @@ begin
   CBWmvApp_nl.ItemIndex   := CBWmvApp_nl.Items.IndexOf(WmvAppSettings.CutAppName);
   CBAviApp_nl.ItemIndex   := CBAviApp_nl.Items.IndexOf(AviAppSettings.CutAppName);
   CBHQAviApp_nl.ItemIndex := CBHQAviApp_nl.Items.IndexOf(HQAviAppSettings.CutAppName);
+  CBHDAviApp_nl.ItemIndex := CBHDAviApp_nl.Items.IndexOf(HDAviAppSettings.CutAppName);
   CBMP4App_nl.ItemIndex   := CBMP4App_nl.Items.IndexOf(MP4AppSettings.CutAppName);
   CBOtherApp_nl.ItemIndex := CBOtherApp_nl.Items.IndexOf(OtherAppSettings.CutAppName);
 
   cmbCodecWmv_nl.ItemIndex   := CodecList.IndexOfCodec(WmvAppSettings.CodecFourCC);
   cmbCodecAvi_nl.ItemIndex   := CodecList.IndexOfCodec(AviAppSettings.CodecFourCC);
   cmbCodecHQAvi_nl.ItemIndex := CodecList.IndexOfCodec(HQAviAppSettings.CodecFourCC);
+  cmbCodecHDAvi_nl.ItemIndex := CodecList.IndexOfCodec(HDAviAppSettings.CodecFourCC);
   cmbCodecMP4_nl.ItemIndex   := CodecList.IndexOfCodec(MP4AppSettings.CodecFourCC);
   cmbCodecOther_nl.ItemIndex := CodecList.IndexOfCodec(OtherAppSettings.CodecFourCC);
 
   cbCutAppChange(CBWmvApp_nl);
   cbCutAppChange(CBAviApp_nl);
   cbCutAppChange(CBHQAviApp_nl);
+  cbCutAppChange(CBHDAviApp_nl);
   cbCutAppChange(CBMP4App_nl);
   cbCutAppChange(CBOtherApp_nl);
 
   cmbCodecChange(CBWmvApp_nl);
   cmbCodecChange(CBAviApp_nl);
   cmbCodecChange(CBHQAviApp_nl);
+  cmbCodecChange(CBHDAviApp_nl);
   cmbCodecChange(CBMP4App_nl);
   cmbCodecChange(CBOtherApp_nl);
 end;
@@ -1512,6 +1591,7 @@ begin
     mtWMV     : WmvAppSettings   := ASettings;
     mtAVI     : AviAppSettings   := ASettings;
     mtHQAVI   : HQAviAppSettings := ASettings;
+    mtHDAVI   : HDAviAppSettings := ASettings;
     mtMP4     : MP4AppSettings   := ASettings;
     mtUnknown : OtherAppSettings := ASettings;
   end;
@@ -1531,6 +1611,10 @@ begin
     mtHQAvi   : begin
                   HQAviAppSettings.CutAppName := CBHQAviApp_nl.Text;
                   ASettings := HQAviAppSettings;
+                end;
+    mtHDAvi   : begin
+                  HDAviAppSettings.CutAppName := CBHDAviApp_nl.Text;
+                  ASettings := HDAviAppSettings;
                 end;
     mtMP4     : begin
                   MP4AppSettings.CutAppName := CBMP4App_nl.Text;

@@ -1769,7 +1769,7 @@ begin
       Lines.Add(Format(RsMovieMetaDataFilename, [MovieInfo.current_filename]));
       Lines.Add(Format(RsMovieMetaDataFrameRate, [FloatToStrF(1 / MovieInfo.frame_duration, ffFixed, 15, 4)]));
 
-      if MovieInfo.MovieType in [mtAVI, mtHQAvi] then
+      if MovieInfo.MovieType in [mtAVI, mtHQAvi, mtHDAvi] then
         Lines.Add(Format(RsMovieMetaDataVideoFourCC, [fcc2string(MovieInfo.FFourCC)]));
 
       if MovieInfo.MovieType in [mtWMV] then
@@ -2805,6 +2805,13 @@ begin
     info := info + CutApplication.InfoString + #13#10;
   end;
 
+  CutApplication := Settings.GetCutApplicationByMovieType(mtHDAVI);
+  if Assigned(CutApplication) then
+  begin
+    info := info + RsCutApplicationHdAvi + #13#10;
+    info := info + CutApplication.InfoString + #13#10;
+  end;
+
   CutApplication := Settings.GetCutApplicationByMovieType(mtMP4);
   if Assigned(CutApplication) then
   begin
@@ -3048,10 +3055,16 @@ begin
     begin
       if SearchWeb then
       begin
-        numFound := numFound + SearchCutlistsByFileSize_XML(SearchType);
-
-        if (numFound = 0) and (SearchType = cstByName) and (MessageDlg(RSIgnorePrefix, mtConfirmation, mbYesNo, 0) = mrYes) then
+        if Settings.ExtendedSearchMode = esmAlways then
+        begin
           numFound := numFound + SearchCutlistsByFileSize_XML(SearchType, True);
+        end else
+        begin
+          numFound := numFound + SearchCutlistsByFileSize_XML(SearchType);
+
+          if (numFound = 0) and (SearchType = cstByName) and (Settings.ExtendedSearchMode = esmOnDemand) and (MessageDlg(RSIgnorePrefix, mtConfirmation, mbYesNo, 0) = mrYes) then
+            numFound := numFound + SearchCutlistsByFileSize_XML(SearchType, True);
+        end;
       end;
 
       if SearchLocal then

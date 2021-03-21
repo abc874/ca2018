@@ -16,7 +16,7 @@ const
   MP4_EXTENSIONS: array[0..2] of string = ('.mp4', '.m4v', '.mp4v');
 
 type
-  TMovieType = (mtUnknown, mtWMV, mtAVI, mtMP4, mtHQAVI, mtNone);
+  TMovieType = (mtUnknown, mtWMV, mtAVI, mtMP4, mtHQAVI, mtHDAVI, mtNone);
 
   TMovieInfo = class
   private
@@ -137,8 +137,12 @@ begin
       MovieType := mtMP4;
 
     // for OTR
-    if (MovieType = mtUnknown) and FileName.EndsWith('.hq.avi', True) then
-      MovieType := mtHQAVI;
+    if (MovieType = mtUnknown) then
+      if FileName.EndsWith('.hq.avi', True) then
+        MovieType := mtHQAVI
+      else
+        if FileName.EndsWith('.hd.avi', True) then
+          MovieType := mtHDAVI;
 
     // try to detect MovieType from file extension
     if MovieType = mtUnknown then
@@ -153,15 +157,19 @@ begin
     end;
 
     // try to get Video FourCC from AVI
-    if MovieType in [mtAVI, mtHQAVI] then
+    if MovieType in [mtAVI, mtHQAVI, mtHDAVI] then
     begin
       GetAviInformation;
-      s := fcc2String(FFourCC);
-      if FFourCC = 0 then
-        MovieType := mtUnknown
-      else
-        if SameText(s, 'H264') then
-          MovieType := mtHQAVI;
+      if FFourCC <> 0 then
+      begin
+        s := fcc2String(FFourCC);
+        if SameText(s, 'DX50') then
+          MovieType := mtAVI
+        else
+          if SameText(s, 'H264') and (MovieType = mtAVI) then
+            MovieType := mtHQAVI;
+      end else
+        MovieType := mtUnknown;
     end;
   end;
 end;
@@ -192,6 +200,7 @@ begin
     mtAVI     : Result := CAResources.RsMovieTypeAvi;
     mtMP4     : Result := CAResources.RsMovieTypeMp4;
     mtHQAVI   : Result := CAResources.RsMovieTypeHqAvi;
+    mtHDAVI   : Result := CAResources.RsMovieTypeHdAvi;
     else        Result := CAResources.RsMovieTypeNone;
   end;
 end;

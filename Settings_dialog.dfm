@@ -569,7 +569,7 @@ object FSettings: TFSettings
         Height = 92
         Anchors = [akLeft, akTop, akRight]
         Caption = 'Proxy Prameters'
-        TabOrder = 6
+        TabOrder = 7
         DesignSize = (
           764
           92)
@@ -674,6 +674,24 @@ object FSettings: TFSettings
         TabOrder = 5
         LinkedControls = <>
       end
+      object rgExtSearchMode: TRadioGroup
+        Left = 418
+        Top = 118
+        Width = 349
+        Height = 51
+        Hint = 'Find Cutlists for renamed files'
+        Anchors = [akTop, akRight]
+        Caption = 'Extended search mode'
+        Columns = 3
+        ItemIndex = 1
+        Items.Strings = (
+          'Never (original)'
+          'On demand'
+          'Always')
+        ParentShowHint = False
+        ShowHint = True
+        TabOrder = 6
+      end
     end
     object tabInfoCheck: TTabSheet
       Caption = 'Info Check'
@@ -762,7 +780,7 @@ object FSettings: TFSettings
       end
       object lblCutWithOther: TLabel
         Left = 42
-        Top = 133
+        Top = 160
         Width = 105
         Height = 13
         Alignment = taRightJustify
@@ -784,7 +802,7 @@ object FSettings: TFSettings
       end
       object lblCutWithMP4: TLabel
         Left = 40
-        Top = 106
+        Top = 133
         Width = 107
         Height = 13
         Alignment = taRightJustify
@@ -792,7 +810,7 @@ object FSettings: TFSettings
       end
       object lblAutoCloseCuttingWindow: TLabel
         Left = 31
-        Top = 162
+        Top = 189
         Width = 274
         Height = 13
         Alignment = taRightJustify
@@ -800,7 +818,7 @@ object FSettings: TFSettings
       end
       object lblWaitTimeout: TLabel
         Left = 382
-        Top = 162
+        Top = 189
         Width = 5
         Height = 13
         Caption = 's'
@@ -827,6 +845,14 @@ object FSettings: TFSettings
         Alignment = taRightJustify
         Caption = 'Cut HQ-AVI Files with:'
       end
+      object lblCutWithHDAvi: TLabel
+        Left = 43
+        Top = 106
+        Width = 104
+        Height = 13
+        Alignment = taRightJustify
+        Caption = 'Cut HD-AVI Files with:'
+      end
       object CBWmvApp_nl: TComboBox
         Left = 153
         Top = 21
@@ -851,7 +877,7 @@ object FSettings: TFSettings
       end
       object CBOtherApp_nl: TComboBox
         Left = 153
-        Top = 130
+        Top = 157
         Width = 152
         Height = 21
         Style = csDropDownList
@@ -862,7 +888,7 @@ object FSettings: TFSettings
       end
       object cbMP4App_nl: TComboBox
         Left = 153
-        Top = 103
+        Top = 130
         Width = 152
         Height = 21
         Style = csDropDownList
@@ -873,7 +899,7 @@ object FSettings: TFSettings
       end
       object spnWaitTimeout: TJvSpinEdit
         Left = 314
-        Top = 158
+        Top = 185
         Width = 65
         Height = 21
         CheckMinValue = True
@@ -945,7 +971,7 @@ object FSettings: TFSettings
       end
       object cmbCodecMP4_nl: TComboBox
         Left = 314
-        Top = 103
+        Top = 130
         Width = 359
         Height = 21
         Style = csDropDownList
@@ -955,7 +981,7 @@ object FSettings: TFSettings
       end
       object btnCodecConfigMP4: TButton
         Left = 679
-        Top = 103
+        Top = 130
         Width = 65
         Height = 21
         Anchors = [akTop, akRight]
@@ -965,7 +991,7 @@ object FSettings: TFSettings
       end
       object btnCodecAboutMP4: TButton
         Left = 750
-        Top = 103
+        Top = 130
         Width = 25
         Height = 21
         Anchors = [akTop, akRight]
@@ -975,7 +1001,7 @@ object FSettings: TFSettings
       end
       object cmbCodecOther_nl: TComboBox
         Left = 314
-        Top = 130
+        Top = 157
         Width = 359
         Height = 21
         Style = csDropDownList
@@ -985,7 +1011,7 @@ object FSettings: TFSettings
       end
       object btnCodecConfigOther: TButton
         Left = 679
-        Top = 130
+        Top = 157
         Width = 65
         Height = 21
         Anchors = [akTop, akRight]
@@ -995,7 +1021,7 @@ object FSettings: TFSettings
       end
       object btnCodecAboutOther: TButton
         Left = 750
-        Top = 130
+        Top = 157
         Width = 25
         Height = 21
         Anchors = [akTop, akRight]
@@ -1044,6 +1070,47 @@ object FSettings: TFSettings
         TabOrder = 9
         OnClick = btnCodecAboutClick
       end
+      object CBHDAviApp_nl: TComboBox
+        Left = 153
+        Top = 103
+        Width = 152
+        Height = 21
+        Style = csDropDownList
+        TabOrder = 21
+        OnChange = cbCutAppChange
+        Items.Strings = (
+          '')
+      end
+      object cmbCodecHDAvi_nl: TComboBox
+        Left = 314
+        Top = 103
+        Width = 359
+        Height = 21
+        Style = csDropDownList
+        Anchors = [akLeft, akTop, akRight]
+        TabOrder = 22
+        OnChange = cmbCodecChange
+      end
+      object btnCodecConfigHDAvi: TButton
+        Left = 679
+        Top = 102
+        Width = 65
+        Height = 21
+        Anchors = [akTop, akRight]
+        Caption = 'Config'
+        TabOrder = 23
+        OnClick = btnCodecConfigClick
+      end
+      object btnCodecAboutHDAvi: TButton
+        Left = 749
+        Top = 102
+        Width = 25
+        Height = 21
+        Anchors = [akTop, akRight]
+        Caption = '?'
+        TabOrder = 24
+        OnClick = btnCodecAboutClick
+      end
     end
     object tabSourceFilter: TTabSheet
       Caption = 'Source Filter'
@@ -1071,7 +1138,7 @@ object FSettings: TFSettings
       end
       object lblSourceFilterMP4: TLabel
         Left = 41
-        Top = 120
+        Top = 150
         Width = 75
         Height = 13
         Alignment = taRightJustify
@@ -1079,7 +1146,7 @@ object FSettings: TFSettings
       end
       object lblSourceFilterOther: TLabel
         Left = 41
-        Top = 148
+        Top = 178
         Width = 75
         Height = 13
         Alignment = taRightJustify
@@ -1095,7 +1162,7 @@ object FSettings: TFSettings
       end
       object lblBlacklist: TLabel
         Left = 52
-        Top = 175
+        Top = 206
         Width = 64
         Height = 13
         Alignment = taRightJustify
@@ -1103,11 +1170,19 @@ object FSettings: TFSettings
       end
       object lblSourceFilterHQAvi: TLabel
         Left = 44
-        Top = 93
+        Top = 94
         Width = 72
         Height = 13
         Alignment = taRightJustify
         Caption = 'for HQ AVI files'
+      end
+      object lblSourceFilterHDAvi: TLabel
+        Left = 44
+        Top = 122
+        Width = 72
+        Height = 13
+        Alignment = taRightJustify
+        Caption = 'for HD AVI files'
       end
       object pnlPleaseWait_nl: TPanel
         Left = 122
@@ -1146,24 +1221,7 @@ object FSettings: TFSettings
       end
       object cmbSourceFilterListMP4_nl: TComboBox
         Left = 122
-        Top = 117
-        Width = 646
-        Height = 22
-        Anchors = [akLeft, akTop, akRight]
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -11
-        Font.Name = 'Courier New'
-        Font.Pitch = fpVariable
-        Font.Style = []
-        ParentFont = False
-        TabOrder = 5
-        Text = '(none)'
-        OnChange = cmbSourceFilterListChange
-      end
-      object cmbSourceFilterListOther_nl: TComboBox
-        Left = 122
-        Top = 145
+        Top = 147
         Width = 646
         Height = 22
         Anchors = [akLeft, akTop, akRight]
@@ -1175,6 +1233,23 @@ object FSettings: TFSettings
         Font.Style = []
         ParentFont = False
         TabOrder = 6
+        Text = '(none)'
+        OnChange = cmbSourceFilterListChange
+      end
+      object cmbSourceFilterListOther_nl: TComboBox
+        Left = 122
+        Top = 175
+        Width = 646
+        Height = 22
+        Anchors = [akLeft, akTop, akRight]
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'Courier New'
+        Font.Pitch = fpVariable
+        Font.Style = []
+        ParentFont = False
+        TabOrder = 7
         Text = '(none)'
         OnChange = cmbSourceFilterListChange
       end
@@ -1207,9 +1282,9 @@ object FSettings: TFSettings
       end
       object lbchkBlackList_nl: TCheckListBox
         Left = 122
-        Top = 173
+        Top = 203
         Width = 645
-        Height = 119
+        Height = 91
         OnClickCheck = lbchkBlackList_nlClickCheck
         Anchors = [akLeft, akTop, akRight, akBottom]
         Font.Charset = DEFAULT_CHARSET
@@ -1220,11 +1295,11 @@ object FSettings: TFSettings
         Font.Style = []
         ItemHeight = 14
         ParentFont = False
-        TabOrder = 7
+        TabOrder = 8
       end
       object cmbSourceFilterListHQAVI_nl: TComboBox
         Left = 122
-        Top = 90
+        Top = 91
         Width = 646
         Height = 22
         Anchors = [akLeft, akTop, akRight]
@@ -1236,6 +1311,23 @@ object FSettings: TFSettings
         Font.Style = []
         ParentFont = False
         TabOrder = 4
+        Text = '(none)'
+        OnChange = cmbSourceFilterListChange
+      end
+      object cmbSourceFilterListHDAVI_nl: TComboBox
+        Left = 122
+        Top = 119
+        Width = 646
+        Height = 22
+        Anchors = [akLeft, akTop, akRight]
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'Courier New'
+        Font.Pitch = fpVariable
+        Font.Style = []
+        ParentFont = False
+        TabOrder = 5
         Text = '(none)'
         OnChange = cmbSourceFilterListChange
       end
@@ -1269,11 +1361,9 @@ object FSettings: TFSettings
           end
           inherited lbSearch: TLabel
             Width = 34
-            Margins.Bottom = 0
           end
           inherited lbReplace: TLabel
             Width = 40
-            Margins.Bottom = 0
           end
           inherited cbRegEx: TCheckBox
             Left = 591
