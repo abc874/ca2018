@@ -137,7 +137,7 @@ begin
       MovieType := mtMP4;
 
     // for OTR
-    if (MovieType = mtUnknown) then
+    if (MovieType = mtUnknown) or (MovieType = mtAVI) then
       if FileName.EndsWith('.hq.avi', True) then
         MovieType := mtHQAVI
       else
