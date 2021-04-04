@@ -548,7 +548,7 @@ begin
   inherited;
 
   IniFileAtExe     := ChangeFileExt(Application.ExeName, '.ini');
-  IniFileAtUser    := IncludeTrailingPathDelimiter(TPath.GetHomePath) + 'CutAsisstant\' + ChangeFileExt(ExtractFileName(Application.ExeName), '.ini');
+  IniFileAtUser    := IncludeTrailingPathDelimiter(TPath.GetHomePath) + 'CutAssistant\' + ChangeFileExt(ExtractFileName(Application.ExeName), '.ini');
   UseIniFileAtUser := FileExists(IniFileAtUser);
 
   Language := '';
