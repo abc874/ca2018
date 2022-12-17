@@ -85,7 +85,7 @@ begin
       begin
         msg := StringReplace(Format(RsMsgConfirmRating, [SelectedRatingText]), '&', '', [rfReplaceAll]);
 
-        FRatingSelectedByUser := settings.NoWarnUseRate or NoYesMsg(RsTitleConfirmRating + #13#13 + msg);
+        FRatingSelectedByUser := NoYesMsg(RsTitleConfirmRating + #13#13 + msg, Settings.NoWarnUseRate);
 
         CanClose := FRatingSelectedByUser;
       end;
