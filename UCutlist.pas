@@ -152,7 +152,7 @@ uses
   JclMath,
 
   // CA
-  cutlistInfo_dialog, UCutApplicationAsfbin, UCutApplicationMP4Box, CAResources;
+  CutlistInfo_dialog, UCutApplicationAsfbin, UCutApplicationMP4Box, CAResources, Main;
 
 function CutlistCompareItems(Item1, Item2: Pointer): Integer;
 begin
@@ -805,7 +805,7 @@ begin
     ApplyToFile := cutlistfile.ReadString(section, 'ApplyToFile', Format('(%s)', [RsCutlistTargetUnknown]));
     my_file     := ExtractFileName(FMovieInfo.current_filename);
 
-    if AnsiSameText(ApplyToFile, my_file) or noWarnings or YesNoMsgFmt(RsMsgCutlistTargetMismatch, [ApplyToFile, my_file]) then
+    if AnsiSameText(ApplyToFile, my_file) or noWarnings or YesNoMsgFmt(RsMsgCutlistTargetMismatch, [ApplyToFile, my_file], Settings.NoOtherFileMsg) then
     begin
       OriginalFileSize := cutlistfile.ReadInt64(section, 'OriginalFileSizeBytes', -1);
       // App + version
@@ -821,7 +821,7 @@ begin
         begin
           if not AnsiSameText(intendedCutApp, myCutApp) then
           begin
-            if not YesNoMsgFmt(RsMsgCutlistCutAppMismatch, [IntendedCutApp, myCutApp]) then
+            if not YesNoMsgFmt(RsMsgCutlistCutAppMismatch, [IntendedCutApp, myCutApp], Settings.NoOtherProgMsg) then
               Exit;
           end else
             if (myCutAppVersionWords[0] <> intendedCutAppVersionWords[0]) or (myCutAppVersionWords[1] <> intendedCutAppVersionWords[1]) or (myCutAppVersionWords[2] < intendedCutAppVersionWords[2]) then
