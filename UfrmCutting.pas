@@ -56,7 +56,7 @@ uses
   Winapi.Windows, System.SysUtils, System.DateUtils, Vcl.Clipbrd,
 
   // CA
-  CAResources, DateTools, Main, Utils;
+  CAResources, DateTools, Main, Utils, Movie;
 
 {$R *.dfm}
 
@@ -66,6 +66,8 @@ begin
 end;
 
 function TfrmCutting.ExecuteCutApp: Integer;
+var
+  S: RCutAppSettings;
 begin
   Result   := mrNone;
   FAborted := False;
@@ -78,6 +80,18 @@ begin
     cmdClose_nl.Enabled      := False;
     timAutoClose.Enabled     := False;
     cmdClose_nl.Caption      := RsCaptionCuttingClose;
+
+    // Apply codec settings (HD vs HQ)
+    if MovieInfo.MovieType in [mtHQAVI, mtHDAVI] then
+    begin
+      if MovieInfo.MovieType = mtHQAVI then
+        S := Settings.CutAppSettingsHQAvi
+      else
+        S := Settings.CutAppSettingsHDAvi;
+
+      if Pos('x264vfw', S.CodecName) > 0 then
+        CopyX264RegistrySettings('x264-' + MovieTypeStr[MovieInfo.MovieType], 'x264');
+    end;
 
     CutApplication.StartCutting;
     Result := ShowModal;
