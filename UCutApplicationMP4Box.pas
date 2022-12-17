@@ -217,13 +217,14 @@ begin
         if FOriginalFileList.IndexOf(SearchRec.Name) < 0 then
         begin
           //get end Time in seconds from file Name
+          // Name_22.09.18_22-30_Station_140_TVOON_DE.mpg_6989.3140451_7993.9657083.mp4
           EndsSeconds := 0;
           posUnderscore := LastDelimiter('_', SearchRec.Name);
           if PosUnderscore > 0 then
           begin
-            posDot := LastDelimiter('.', SearchRec.Name);
+            posDot := Pos('.', SearchRec.Name, PosUnderscore);
             if posDot < posUnderScore then posDot := Length(SearchRec.Name) + 1;
-            EndsSeconds := StrToIntDef(midstr(SearchRec.Name, PosUnderScore + 1, PosDot - (PosUnderScore + 1)), 0);
+            EndsSeconds := StrToIntDef(Copy(SearchRec.Name, PosUnderScore + 1, PosDot - (PosUnderScore + 1)), 0);
           end;
           FTempFileList.AddObject(SearchRec.Name, TObject(EndsSeconds));
         end;
