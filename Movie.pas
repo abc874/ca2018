@@ -18,6 +18,10 @@ const
 type
   TMovieType = (mtUnknown, mtWMV, mtAVI, mtMP4, mtHQAVI, mtHDAVI, mtNone);
 
+const
+  MovieTypeStr: array[TMovieType] of string = ('Unknown', 'WMV', 'AVI', 'MP4', 'HQ', 'HD', 'None');
+
+type
   TMovieInfo = class
   private
     FMovieType: TMovieType;
