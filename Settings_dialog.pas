@@ -9,7 +9,7 @@ interface
 uses
   // Delphi
   Winapi.Windows, System.Classes, System.SysUtils, System.Contnrs, Vcl.Forms, Vcl.Controls, Vcl.StdCtrls, Vcl.CheckLst,
-  Vcl.ExtCtrls, Vcl.Mask, Vcl.ComCtrls, Vcl.Buttons, System.IOUtils,
+  Vcl.ExtCtrls, Vcl.Mask, Vcl.ComCtrls, Vcl.Buttons, System.IOUtils, Vcl.Themes,
 
   // Jedi
   JvExMask, JvSpin, JvExStdCtrls, JvCheckBox,
@@ -170,6 +170,13 @@ type
     btnCodecAboutHDAvi: TButton;
     lblSourceFilterHDAvi: TLabel;
     cmbSourceFilterListHDAVI_nl: TComboBox;
+    lblStyle: TLabel;
+    cmbStyle_nl: TComboBox;
+    cbNoOtherFileMsg: TJvCheckBox;
+    cbNoNotFoundMsg: TJvCheckBox;
+    cbSuppressedMsgAsNotify: TJvCheckBox;
+    cbNoOtherProgMsg: TJvCheckBox;
+    cbRememberLastStyle: TJvCheckBox;
     procedure cmdCutMovieSaveDirClick(Sender: TObject);
     procedure cmdCutlistSaveDirClick(Sender: TObject);
     procedure edtProxyPort_nlKeyPress(Sender: TObject; var Key: Char);
@@ -186,13 +193,13 @@ type
     procedure btnCodecAboutClick(Sender: TObject);
     procedure cbCutAppChange(Sender: TObject);
     procedure cmbSourceFilterListChange(Sender: TObject);
+    procedure cmbStyle_nlChange(Sender: TObject);
   private
     { private declarations }
     HQAviAppSettings, HDAviAppSettings, AviAppSettings, WmvAppSettings, MP4AppSettings, OtherAppSettings: RCutAppSettings;
     EnumFilters: TSysDevEnum;
     procedure FillBlackList;
     function GetCodecList: TCodecList;
-    property CodecList: TCodecList read GetCodecList;
   private
     function GetMovieTypeFromControl(const Sender: TObject; var MovieType: TMovieType): Boolean;
     function GetCodecSettingsControls(const Sender: TObject;
@@ -200,11 +207,12 @@ type
     function GetCodecSettingsControls(const MovieType: TMovieType;
       var cbx: TComboBox; var btnConfig, btnAbout: TButton): Boolean; overload;
   public
+    { public declarations }
     procedure Init;
     function GetCodecNameByFourCC(FourCC: DWORD): string;
     procedure GetCutAppSettings(const MovieType: TMovieType; var ASettings: RCutAppSettings);
     procedure SetCutAppSettings(const MovieType: TMovieType; var ASettings: RCutAppSettings);
-    { public declarations }
+    property CodecList: TCodecList read GetCodecList;
   end;
 
   //deprecated:
@@ -261,6 +269,12 @@ type
     ExtendedSearchMode: TExtendedSearchMode;
     NoRateSuccMsg: Boolean;
     NoWarnUseRate: Boolean;
+    NoNotFoundMsg: Boolean;
+    NoOtherFileMsg: Boolean;
+    NoOtherProgMsg: Boolean;
+    SuppressedMsgAsNotify: Boolean;
+    RememberLastStyle: Boolean;
+    UsedStyle: string;
     NewNextFrameMethod: Boolean;
 
     FinePosFrameCount: Integer;
@@ -610,7 +624,7 @@ end;
 
 procedure TSettings.Edit;
 var
-  newLanguage: string;
+  S,newLanguage: string;
   Data_Valid: Boolean;
   iTabSheet: Integer;
   TabSheet: TTabSheet;
@@ -650,6 +664,23 @@ begin
   FSettings.cbAutoMuteOnSeek.Checked               := AutoMuteOnSeek;
   FSettings.cbNoRateSuccMsg.Checked                := NoRateSuccMsg;
   FSettings.cbNoWarnUseRate.Checked                := NoWarnUseRate;
+  FSettings.cbNoNotFoundMsg.Checked                := NoNotFoundMsg;
+  FSettings.cbNoOtherFileMsg.Checked               := NoOtherFileMsg;
+  FSettings.cbNoOtherProgMsg.Checked               := NoOtherProgMsg;
+  FSettings.cbSuppressedMsgAsNotify.Checked        := SuppressedMsgAsNotify;
+
+  FSettings.cmbStyle_nl.Items.BeginUpdate;
+
+  for S in TStyleManager.StyleNames do
+    FSettings.cmbStyle_nl.Items.Add(S);
+
+  FSettings.cmbStyle_nl.Sorted := True;
+
+  FSettings.cmbStyle_nl.Items.EndUpdate;
+
+  FSettings.cbRememberLastStyle.Checked            := RememberLastStyle;
+  FSettings.cmbStyle_nl.ItemIndex                  := FSettings.cmbStyle_nl.Items.IndexOf(TStyleManager.ActiveStyle.Name);
+
   FSettings.cbNewNextFrameMethod.Checked           := NewNextFrameMethod;
   FSettings.cbExceptionLogging.Checked             := ExceptionLogging;
   FSettings.cbAutoSaveDownloadedCutlists.Checked   := AutoSaveDownloadedCutlists;
@@ -789,6 +820,15 @@ begin
       AutoMuteOnSeek     := FSettings.cbAutoMuteOnSeek.Checked;
       NoRateSuccMsg      := FSettings.cbNoRateSuccMsg.Checked;
       NoWarnUseRate      := FSettings.cbNoWarnUseRate.Checked;
+      NoNotFoundMsg      := FSettings.cbNoNotFoundMsg.Checked;
+      NoOtherFileMsg     := FSettings.cbNoOtherFileMsg.Checked;
+      NoOtherProgMsg     := FSettings.cbNoOtherProgMsg.Checked;
+
+      SuppressedMsgAsNotify := FSettings.cbSuppressedMsgAsNotify.Checked;
+
+      RememberLastStyle := FSettings.cbRememberLastStyle.Checked;
+      UsedStyle         := FSettings.cmbStyle_nl.Text;
+
       NewNextFrameMethod := FSettings.cbNewNextFrameMethod.Checked;
 
       ExceptionLogging := FSettings.cbExceptionLogging.Checked;
@@ -979,6 +1019,8 @@ begin
     url_cutlists_upload := ini.ReadString(section, 'CutlistServerUpload', 'http://www.cutlist.at/index.php?upload=2');
     url_info_file       := ini.ReadString(section, 'ApplicationInfoFile', DEFAULT_UPDATE_XML);
     url_help            := ini.ReadString(section, 'ApplicationHelp', 'http://wiki.onlinetvrecorder.com/index.php/Cut_Assistant');
+    ExtendedSearchMode  := TExtendedSearchMode(ini.ReadInteger(section, 'ExtendedSearchMode', Ord(ExtendedSearchMode)));
+
 
     section := 'Connection';
     NetTimeout      := ini.ReadInteger(section, 'Timeout', 20);
@@ -1002,6 +1044,14 @@ begin
     AutoMuteOnSeek           := ini.ReadBool(section, 'AutoMuteOnSeek', False);
     NoRateSuccMsg            := ini.ReadBool(section, 'NoRateSuccMsg', False);
     NoWarnUseRate            := ini.ReadBool(section, 'NoWarnUseRate', False);
+    NoNotFoundMsg            := ini.ReadBool(section, 'NoNotFoundMsg', False);
+    NoOtherFileMsg           := ini.ReadBool(section, 'NoOtherFileMsg', False);
+    NoOtherProgMsg           := ini.ReadBool(section, 'NoOtherProgMsg', False);
+    SuppressedMsgAsNotify    := ini.ReadBool(section, 'SuppressedMsgAsNotify', False);
+
+    RememberLastStyle := ini.ReadBool(section, 'RememberLastStyle', False);
+    UsedStyle         := ini.ReadString(section, 'UsedStyle', '');               // see dpr and main
+
     NewNextFrameMethod       := ini.ReadBool(section, 'NewNextFrameMethod', False);
     AutoSearchCutlists       := ini.ReadBool(section, 'AutoSearchCutlists', False);
     SearchLocalCutlists      := ini.ReadBool(section, 'SearchLocalCutlists', False);
@@ -1134,6 +1184,7 @@ begin
     ini.WriteString(section, 'CutlistServerUpload', url_cutlists_upload);
     ini.WriteString(section, 'ApplicationInfoFile', url_info_file);
     ini.WriteString(section, 'ApplicationHelp', url_help);
+    ini.WriteInteger(section, 'ExtendedSearchMode', Ord(ExtendedSearchMode));
 
     section := 'Connection';
     ini.WriteString(section, 'ProxyServerName', ProxyServerName);
@@ -1157,6 +1208,14 @@ begin
     ini.WriteBool(section, 'AutoMuteOnSeek', AutoMuteOnSeek);
     ini.WriteBool(section, 'NoRateSuccMsg', NoRateSuccMsg);
     ini.WriteBool(section, 'NoWarnUseRate', NoWarnUseRate);
+    ini.WriteBool(section, 'NoNotFoundMsg', NoNotFoundMsg);
+    ini.WriteBool(section, 'NoOtherFileMsg', NoOtherFileMsg);
+    ini.WriteBool(section, 'NoOtherProgMsg', NoOtherProgMsg);
+    ini.WriteBool(section, 'SuppressedMsgAsNotify', SuppressedMsgAsNotify);
+
+    ini.WriteBool(section, 'RememberLastStyle', RememberLastStyle);
+    ini.WriteString(section, 'UsedStyle', UsedStyle);
+
     ini.WriteBool(section, 'NewNextFrameMethod', NewNextFrameMethod);
     ini.WriteBool(section, 'AutoSearchCutlists', AutoSearchCutlists);
     ini.WriteBool(section, 'SearchLocalCutlists', SearchLocalCutlists);
@@ -1694,7 +1753,12 @@ begin
         CutAppSettings.CodecSettingsSize := 0;
       end;
       if Codec.Config(Handle, CutAppSettings.CodecSettings, CutAppSettings.CodecSettingsSize) then
+      begin
         SetCutAppSettings(MovieType, CutAppSettings);
+
+        if (MovieType in [mtHQAVI, mtHDAVI]) and (Codec.ICInfo.szName = 'x264vfw') then
+           CopyX264RegistrySettings('x264', 'x264-' + MovieTypeStr[MovieType]);
+      end;
     end;
   end;
 end;
@@ -1748,6 +1812,11 @@ begin
 
     SetCutAppSettings(MovieType, CutAppSettings);
   end;
+end;
+
+procedure TFSettings.cmbStyle_nlChange(Sender: TObject);
+begin
+  TStyleManager.TrySetStyle(cmbStyle_nl.Items[cmbStyle_nl.ItemIndex]);
 end;
 
 initialization

@@ -26,7 +26,7 @@ object FSettings: TFSettings
     Top = 0
     Width = 784
     Height = 333
-    ActivePage = tabUserData
+    ActivePage = TabExternalCutApplication
     Align = alClient
     MultiLine = True
     Style = tsFlatButtons
@@ -157,12 +157,19 @@ object FSettings: TFSettings
         Caption = 'Language:'
       end
       object lblLanguageChangeHint: TLabel
-        Left = 568
-        Top = 203
+        Left = 128
+        Top = 222
         Width = 114
         Height = 13
-        Anchors = [akTop, akRight]
         Caption = '(change requires restart)'
+      end
+      object lblStyle: TLabel
+        Left = 97
+        Top = 249
+        Width = 26
+        Height = 13
+        Alignment = taRightJustify
+        Caption = 'Style:'
       end
       object edtUserName_nl: TEdit
         Left = 128
@@ -234,7 +241,7 @@ object FSettings: TFSettings
           'Trim')
         ParentShowHint = False
         ShowHint = True
-        TabOrder = 10
+        TabOrder = 13
       end
       object edtLargeSkip_nl: TEdit
         Left = 128
@@ -267,7 +274,7 @@ object FSettings: TFSettings
         Height = 21
         AutoSize = False
         MaxLength = 2
-        TabOrder = 7
+        TabOrder = 8
         Text = '20'
         OnExit = edtFrameWidth_nlExit
         OnKeyPress = edtProxyPort_nlKeyPress
@@ -275,12 +282,11 @@ object FSettings: TFSettings
       object cmbLanguage_nl: TComboBox
         Left = 128
         Top = 199
-        Width = 435
+        Width = 341
         Height = 21
         Style = csDropDownList
-        Anchors = [akLeft, akTop, akRight]
         ItemIndex = 0
-        TabOrder = 14
+        TabOrder = 10
         Text = ' Standard'
         Items.Strings = (
           ' Standard')
@@ -291,7 +297,7 @@ object FSettings: TFSettings
         Width = 110
         Height = 17
         Caption = 'Auto mute on seek'
-        TabOrder = 8
+        TabOrder = 7
         LinkedControls = <>
       end
       object cbExceptionLogging: TJvCheckBox
@@ -309,7 +315,7 @@ object FSettings: TFSettings
         Width = 166
         Height = 17
         Caption = 'Suppress rating done message'
-        TabOrder = 12
+        TabOrder = 15
         LinkedControls = <>
       end
       object cbNoWarnUseRate: TJvCheckBox
@@ -318,7 +324,7 @@ object FSettings: TFSettings
         Width = 186
         Height = 17
         Caption = 'Suppress rating proposed message'
-        TabOrder = 13
+        TabOrder = 16
         LinkedControls = <>
       end
       object cbNewNextFrameMethod: TJvCheckBox
@@ -327,7 +333,65 @@ object FSettings: TFSettings
         Width = 153
         Height = 17
         Caption = 'Use new next frame method'
+        TabOrder = 14
+        LinkedControls = <>
+      end
+      object cmbStyle_nl: TComboBox
+        Left = 128
+        Top = 245
+        Width = 341
+        Height = 21
+        Style = csDropDownList
+        ItemIndex = 0
         TabOrder = 11
+        Text = '1111'
+        OnChange = cmbStyle_nlChange
+        Items.Strings = (
+          '1111')
+      end
+      object cbNoOtherFileMsg: TJvCheckBox
+        Left = 486
+        Top = 220
+        Width = 153
+        Height = 17
+        Caption = 'Suppress other file message'
+        TabOrder = 18
+        LinkedControls = <>
+      end
+      object cbNoNotFoundMsg: TJvCheckBox
+        Left = 486
+        Top = 193
+        Width = 170
+        Height = 17
+        Caption = 'Suppress no list found message'
+        TabOrder = 17
+        LinkedControls = <>
+      end
+      object cbSuppressedMsgAsNotify: TJvCheckBox
+        Left = 486
+        Top = 274
+        Width = 223
+        Height = 17
+        Caption = 'Show suppressed messages as notification'
+        TabOrder = 20
+        LinkedControls = <>
+      end
+      object cbNoOtherProgMsg: TJvCheckBox
+        Left = 486
+        Top = 247
+        Width = 178
+        Height = 17
+        Caption = 'Suppress other program message'
+        TabOrder = 19
+        LinkedControls = <>
+      end
+      object cbRememberLastStyle: TJvCheckBox
+        Left = 128
+        Top = 274
+        Width = 115
+        Height = 17
+        Caption = 'Remember last style'
+        TabOrder = 12
         LinkedControls = <>
       end
     end
