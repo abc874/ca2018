@@ -43,7 +43,9 @@ uses
   uFreeLocalizer in 'KDL\uFreeLocalizer.pas',
   uStringUtils in 'KDL\uStringUtils.pas',
   ReplaceFrame in 'ReplaceFrame.pas' {ReplaceFrame: TFrame},
-  ReplaceList in 'ReplaceList.pas';
+  ReplaceList in 'ReplaceList.pas',
+  Vcl.Themes,
+  Vcl.Styles;
 
 {$R *.res}
 
@@ -78,6 +80,14 @@ begin
       Exit;
 
     Application.Initialize;
+
+    if (Settings.UsedStyle = '') or not Settings.RememberLastStyle then
+      Settings.UsedStyle := TStyleManager.ActiveStyle.Name
+    else
+      if Settings.UsedStyle <> TStyleManager.ActiveStyle.Name then
+          if not TStyleManager.TrySetStyle(Settings.UsedStyle) then
+            Settings.UsedStyle := TStyleManager.ActiveStyle.Name;
+
     Application.Title := 'Cut Assistant';
 
     CheckLocalizer;
