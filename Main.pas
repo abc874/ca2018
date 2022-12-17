@@ -2,7 +2,7 @@ unit Main;
 
 {$I Information.inc}
 
-// basic review and reformatting: up to line 2790
+// basic review and reformatting: up to line 2969
 
 interface
 
@@ -24,7 +24,7 @@ uses
 
   // Jedi
   JclSimpleXml, JvDialogs, JvComponentBase, JvAppCommand, JvBaseDlg, JvProgressDialog, JvExStdCtrls, JvCheckBox,
-  JvSpeedbar, JvExExtCtrls, JvExtComponent, JvGIF, JvSimpleXml, JclDebug,
+  JvSpeedbar, JvExExtCtrls, JvExtComponent, JvGIF, JvSimpleXml, JclDebug, JvDesktopAlert,
 
   // CA
   CodecSettings, CutlistInfo_dialog, ManageFilters, Movie, Settings_dialog, TrackBarEx, UCutlist, UploadList, Utils;
@@ -277,6 +277,10 @@ type
     actMergeCut: TAction;
     cmdMergeCut: TButton;
     cmdSplitCut: TButton;
+    actChangeStyle: TAction;
+    JvSpeedItem18: TJvSpeedItem;
+    mnuStyles: TPopupMenu;
+    JvDesktopAlertStack: TJvDesktopAlertStack;
     procedure FormCreate(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -379,6 +383,7 @@ type
     procedure AppCommandAppCommand(Handle: NativeUInt; Cmd: Word; Device: TJvAppCommandDevice; KeyState: Word; var Handled: Boolean);
     procedure actSplitCutExecute(Sender: TObject);
     procedure actMergeCutExecute(Sender: TObject);
+    procedure actChangeStyleExecute(Sender: TObject);
   private
     { private declarations }
     UploadDataEntries: TStringList;
@@ -409,6 +414,7 @@ type
     procedure UpdatePlayPauseButton;
     procedure UpdateTrackBarPageSize;
     procedure UpdateVolume;
+    procedure SelectStyleClick(Sender: TObject);
   public
     { public declarations }
     procedure ProcessFileList(FileList: TStringList; IsMyOwnCommandLine: Boolean);
@@ -447,6 +453,7 @@ type
     function DeleteCutlistFromServer(const cutlist_id: string): Boolean;
     function AskForUserRating(Cutlist: TCutlist): Boolean;
     function SendRating(Cutlist: TCutlist): Boolean;
+    procedure ShowNotifyMsg(const ACaption, AMessage: string);
   protected
     procedure WMDropFiles(var message: TWMDropFiles); message WM_DROPFILES;
     procedure WMCopyData(var msg: TWMCopyData); message WM_COPYDATA;
@@ -489,13 +496,13 @@ implementation
 
 uses
   // Delphi
-  System.TypInfo, System.UITypes, Vcl.Consts,
+  System.TypInfo, System.UITypes, Vcl.Consts, Vcl.Themes,
 
   // Indy
   IdResourceStrings, IdURI,
 
   // Jedi
-  JvParameterList, JvParameterListParameter, JvParameterListTools, JvDynControlEngineVCL, ExceptDlg,
+  JvParameterList, JvParameterListParameter, JvParameterListTools, JvDynControlEngineVCL, ExceptDlg, JvDesktopAlertForm,
 
   // CA
   DateTools, Frames, CutlistRate_Dialog, ResultingTimes, CutlistSearchResults, UfrmCutting, UCutApplicationBase,
@@ -638,9 +645,10 @@ procedure TFMain.FormCreate(Sender: TObject);
     end;
   end;
 var
-  numFrames: string;
+  S,numFrames: string;
+  M: TMenuItem;
   I,J: Integer;
-  icon : TIcon;
+  icon: TIcon;
 begin
   icon := TIcon.Create;
   try
@@ -710,6 +718,31 @@ begin
   tbFinePos.Position    := Settings.FinePosFrameCount;
   lblFinePos_nl.Caption := Format(RsFrames, [tbFinePos.Position, tbFinePos.Position / 25]);
   tbFilePos.Frequency   := Round(60000 / tbFilePos.TimerInterval); // one tick every minute
+
+  with TStringList.Create do
+  try
+    for S in TStyleManager.StyleNames do
+      Add(S);
+
+    Sort;
+
+    for I := 0 to Pred(Count) do
+    begin
+      M := TMenuItem.Create(mnuStyles);
+      M.Caption    := Strings[I];
+      M.OnClick    := SelectStyleClick;
+      M.AutoCheck  := True;
+      M.RadioItem  := True;
+      M.GroupIndex := 1;
+
+      if Strings[I] = TStyleManager.ActiveStyle.Name then
+        M.Checked := True;
+
+      mnuStyles.Items.Add(M);
+    end;
+  finally
+    Free;
+  end;
 
   WindowState := Settings.MainFormWindowState;
 end;
@@ -1843,6 +1876,44 @@ begin
   end;
 end;
 
+procedure TFMain.ShowNotifyMsg(const ACaption, AMessage: string);
+var
+  A: TJvDesktopAlert;
+begin
+  if Settings.SuppressedMsgAsNotify then
+  begin
+    A := TJvDesktopAlert.Create(Self);
+
+    A.AlertStack  := JvDesktopAlertStack;
+    A.AutoFocus   := True;
+    A.AutoFree    := True;
+    A.Options     := [daoCanClose];
+    A.HeaderText  := ACaption;
+    A.MessageText := AMessage;
+    A.ShowHint    := False;
+    A.ParentFont  := False;
+
+    A.Colors.Frame       := clWindowFrame;
+    A.Colors.WindowFrom  := clWindow;
+    A.Colors.WindowTo    := clWindow;
+    A.Colors.CaptionFrom := clActiveCaption;
+    A.Colors.CaptionTo   := clActiveCaption;
+
+    A.StyleOptions.DisplayDuration := 2345;
+
+    A.HeaderFont := Font;
+    A.HeaderFont.Style := [fsBold];
+
+    A.Font := Font;
+
+    TJvFormDesktopAlert(A.Form).lblText.AutoSize := True;
+
+    A.Location.Height := cDefaultAlertFormHeight + (CountLines(AMessage) - 3) * lblVolume.Height;
+
+    A.Execute;
+  end;
+end;
+
 procedure TFMain.tbFilePosSelChanged(Sender: TObject);
 begin
   with FFrames do
@@ -2866,7 +2937,7 @@ begin
       if FindFirst(PathCombine(searchDir, '*' + CUTLIST_EXTENSION), faArchive, sr) = 0 then
       begin
         repeat
-          ACutlist := TCutlist.create(Settings, MovieInfo);
+          ACutlist := TCutlist.Create(Settings, MovieInfo);
           try
             if not ACutlist.LoadFromFile(PathCombine(searchDir, sr.Name), True) then
               Continue;
@@ -2954,10 +3025,22 @@ begin
     cstByName: begin
         if (MovieInfo.current_filename = '') then
           Exit;
+
+        // From idURI.pas
+        // RLebeau 6/9/2017: if LChar is '%', check if it belongs to a pre-encoded
+        // '%HH' octet, and if so then preserve the whole sequence as-is...
+
+        // So first encode
+        url := TIdURI.ParamsEncode(ExtractBaseFileNameOTR(MovieInfo.current_filename));
+
+        // Then add % as prefix
+        if IgnorePrefix then
+          url := '%25' + url;
+
         url := settings.url_cutlists_home
           + php_name
           + '?name='
-          + TIdURI.ParamsEncode(ExtractBaseFileNameOTR(MovieInfo.current_filename, IgnorePrefix));
+          + url;
       end;
   else
     Exit;
@@ -3015,6 +3098,12 @@ begin
       lvLinks.Items.EndUpdate;
     end;
   end;
+end;
+
+procedure TFMain.SelectStyleClick(Sender: TObject);
+begin
+  if Sender is TMenuItem then
+    TStyleManager.TrySetStyle(StripHotkey(TMenuItem(Sender).Caption));
 end;
 
 procedure TFMain.actSearchCutlistByFileSizeExecute(Sender: TObject);
@@ -3078,7 +3167,7 @@ begin
   if numFound = 0 then
   begin
     if not batchmode then
-      ErrMsg(RsMsgSearchCutlistNoneFound);
+      ErrMsg(RsMsgSearchCutlistNoneFound, Settings.NoNotFoundMsg);
     Exit;
   end;
 
@@ -3162,8 +3251,8 @@ begin
         if Error_message = '' then
         begin
           cutlist.RatingSent := FCutlistRate.SelectedRating;
-          if not (batchmode or settings.NoRateSuccMsg) then
-            InfMsg(RsMsgSendRatingDone);
+          if not batchmode then
+            InfMsg(RsMsgSendRatingDone, Settings.NoRateSuccMsg);
         end;
       end;
       if not batchmode and (Error_message <> '') then
@@ -4293,6 +4382,14 @@ begin
   raise Exception.Create('Exception handling test at ' + FormatDateTime('', Now));
 end;
 
+procedure TFMain.actChangeStyleExecute(Sender: TObject);
+var
+  P: TPoint;
+begin
+  GetCursorPos(P);
+  mnuStyles.Popup(P.X, P.Y);
+end;
+
 procedure TFMain.actCheckInfoOnServerExecute(Sender: TObject);
 begin
   DownloadInfo(Settings, False, Utils.ShiftDown);
@@ -4579,38 +4676,38 @@ begin
       ItemIndex := ItemIndex - 1;
 end;
 
-procedure TFMain.actShiftCutExecute(Sender: TObject);
-var
-  AParams                          : TJvParameterList;
-  AShiftTime                       : TJvDoubleEditParameter;
-  ACut                             : TCut;
-  AShift                           : Double;
-begin
-  AParams := TJvParameterList.Create(nil);
-  try
-    AShiftTime := TJvDoubleEditParameter.Create(AParams);
-    AShiftTime.SearchName := 'Shift';
-    AShiftTime.Caption    := RsShiftCutTime;
-    AShiftTime.AsDouble   := StrToFloatDefInv(Settings.Additional['CutShiftTime'], Settings.SmallSkipTime);
-    AShiftTime.Required   := True;
-    AParams.AddParameter(AShiftTime);
-    AParams.ArrangeSettings.AutoArrange := True;
+  procedure TFMain.actShiftCutExecute(Sender: TObject);
+  var
+    AParams: TJvParameterList;
+    AShiftTime: TJvDoubleEditParameter;
+    ACut: tcut;
+    AShift: Double;
+  begin
+    AParams := TJvParameterList.Create(nil);
+    try
+      AShiftTime := TJvDoubleEditParameter.Create(AParams);
+      AShiftTime.SearchName := 'Shift';
+      AShiftTime.Caption := RsShiftCutTime;
+      AShiftTime.AsDouble := StrToFloatDefInv(settings.Additional['CutShiftTime'], settings.SmallSkipTime);
+      AShiftTime.Required := True;
+      AParams.AddParameter(AShiftTime);
+      AParams.ArrangeSettings.AutoArrange := True;
 
-    AParams.Messages.Caption      := SMsgDlgConfirm;
-    AParams.Messages.OkButton     := SOKButton;
-    AParams.Messages.CancelButton := SCancelButton;
+      AParams.Messages.Caption := SMsgDlgConfirm;
+      AParams.Messages.OkButton := SOKButton;
+      AParams.Messages.CancelButton := SCancelButton;
 
-    if AParams.ShowParameterDialog then
-    begin
-      AShift := AShiftTime.AsDouble;
-      Settings.Additional['CutShiftTime'] := FloatToStrInvariant(AShift);
-      ACut := Cutlist.Cut[lvCutlist.ItemIndex];
-      Cutlist.ReplaceCut(ACut.pos_from + AShift, ACut.pos_to + AShift, lvCutlist.ItemIndex);
+      if AParams.ShowParameterDialog then
+      begin
+        AShift := AShiftTime.AsDouble;
+        settings.Additional['CutShiftTime'] := FloatToStrInvariant(AShift);
+        ACut := cutlist.cut[lvCutlist.ItemIndex];
+        cutlist.ReplaceCut(ACut.pos_from + AShift, ACut.pos_to + AShift, lvCutlist.ItemIndex);
+      end;
+    finally
+      AParams.Free;
     end;
-  finally
-    AParams.Free;
   end;
-end;
 
 initialization
   Randomize;
@@ -4634,4 +4731,3 @@ finalization
   Settings.Save;
   FreeAndNil(Settings);
 end.
-
