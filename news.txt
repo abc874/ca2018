@@ -1,3 +1,17 @@
+New in 0.22.12.17 (development)
+- Build with Delphi Sydney 10.4.2
+- Styles (dark mode and more)
+- Some dialogs can be suppressed - see settings/general
+- Different x264vwf settings for HD and HQ applied before running external cut application
+
+New in 0.22.9.8 (development - alpha!)
+- More suppress message options
+- Styles (dark mode and more)
+
+New in 0.21.4.4 (development - alpha!)
+- Typo CutAsisstant -> CutAssistant in path to ini fixed.
+- Detection of HD and HQ from file name changed.
+
 New in 0.21.3.21 (development - alpha!)
 - Settings saved in profile (C:\Users\Username\AppData\Roaming\CutAsisstant) if no write access to program folder
 - Location of settings file (ini) shown in caption of settings dialog
