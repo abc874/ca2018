@@ -153,9 +153,6 @@ type
     function ReadGuid(const Section, Name: string; const Default: TGUID): TGUID; virtual;
     procedure WriteGuid(const Section, Name: string; const Value: TGUID); virtual;
 
-    function ReadInt64(const Section, Name: string; const Default: Int64): Int64;
-    procedure WriteInt64(const Section, Name: string; const Value: Int64);
-
     procedure ReadCutAppSettings(const Section: string; var CutAppSettings: RCutAppSettings);
     procedure WriteCutAppSettings(const Section: string; var CutAppSettings: RCutAppSettings);
 
@@ -266,27 +263,27 @@ function GetVersionRequestParams: string;
 
 // func/proc from abc874
 
-function ExtractBaseFileNameOTR(const S: string; IgnorePrefix: Boolean): string;
+function ExtractBaseFileNameOTR(const S: string): string;
 function FileNameToFormatName(const S: string): string;
 
 function StringToken(var S: string; C: Char): string;
 
-procedure ErrMsg(const S: string);
+procedure ErrMsg(const S: string; ASuppress: Boolean = False);
 procedure ErrMsgFmt(const S: string; const Args: array of const);
 
-procedure InfMsg(const S: string);
+procedure InfMsg(const S: string; ASuppress: Boolean = False);
 procedure InfMsgFmt(const S: string; const Args: array of const);
 
 procedure WarnMsg(const S: string);
 procedure WarnMsgFmt(const S: string; const Args: array of const);
 
 function YesNoMsg(const S: string): Boolean;
-function YesNoMsgFmt(const S: string; const Args: array of const): Boolean;
+function YesNoMsgFmt(const S: string; const Args: array of const; ASuppress: Boolean = False): Boolean;
 
 function YesNoWarnMsg(const S: string): Boolean;
 function YesNoWarnMsgFmt(const S: string; const Args: array of const): Boolean;
 
-function NoYesMsg(const S: string): Boolean;
+function NoYesMsg(const S: string; ASuppress: Boolean = False): Boolean;
 function NoYesMsgFmt(const S: string; const Args: array of const): Boolean;
 
 function NoYesWarnMsg(const S: string): Boolean;
@@ -295,18 +292,25 @@ function NoYesWarnMsgFmt(const S: string; const Args: array of const): Boolean;
 function YesNoCancelNamed(const Msg: string; const YesCaption: string = ''; const NoCaption: string = '';
   const CancelCaption: string = ''; DefaultButton: TMsgDlgBtn = mbCancel): TModalResult;
 
+function CountLines(const Msg: string): Integer;
+
+procedure CopyX264RegistrySettings(const ASrc, ADst: string);
+
 implementation
 
 uses
   // Delphi
   Winapi.Messages, Winapi.ShellAPI, Winapi.DirectShow9, System.Variants, System.StrUtils, System.Types, System.Math,
-  System.UITypes, System.IOUtils, Vcl.Clipbrd, Vcl.Imaging.jpeg,
+  System.UITypes, System.IOUtils, Vcl.Clipbrd, Vcl.Imaging.jpeg, Vcl.Consts, System.Win.Registry,
 
   // Indy
   IdUri,
 
   // CA
-  CAResources;
+  CAResources, Settings_dialog, Main;
+
+type
+  TRegistryAcc = class(TRegistry);
 
 const
   ScreenWidthDev  = 1280;
@@ -523,22 +527,9 @@ begin
   end;
 end;
 
-function TMemIniFileEx.ReadInt64(const Section, Name: string; const Default: Int64): Int64;
-var
-  S: string;
-begin
-  S := ReadString(Section, Name, '');
-  Result := StrToIntDef(S, Default);
-end;
-
 procedure TMemIniFileEx.WriteGuid(const Section, Name: string; const Value: TGUID);
 begin
   WriteString(Section, Name, GUIDToString(Value));
-end;
-
-procedure TMemIniFileEx.WriteInt64(const Section, Name: string; const Value: Int64);
-begin
-  WriteString(Section, Name, IntToStr(Value));
 end;
 
 procedure TMemIniFileEx.ReadCutAppSettings(const Section: string; var CutAppSettings: RCutAppSettings);
@@ -1396,7 +1387,7 @@ end;
 
 // func/proc from abc874
 
-function ExtractBaseFileNameOTR(const S: string; IgnorePrefix: Boolean): string;
+function ExtractBaseFileNameOTR(const S: string): string;
 var
   I: Integer;
 begin
@@ -1406,9 +1397,6 @@ begin
 
   if I > 0 then
     SetLength(Result, Pred(I));
-
-  if IgnorePrefix then
-    Result := '%' + Result;
 end;
 
 function FileNameToFormatName(const S: string): string;
@@ -1455,9 +1443,12 @@ begin
   end;
 end;
 
-procedure ErrMsg(const S: string);
+procedure ErrMsg(const S: string; ASuppress: Boolean = False);
 begin
-  MessageDlg(S, mtError, [mbOK], 0);
+  if ASuppress then
+    FMain.ShowNotifyMsg(SMsgDlgError, S)
+  else
+    MessageDlg(S, mtError, [mbOK], 0)
 end;
 
 procedure ErrMsgFmt(const S: string; const Args: array of const);
@@ -1465,9 +1456,12 @@ begin
   ErrMsg(Format(S, Args));
 end;
 
-procedure InfMsg(const S: string);
+procedure InfMsg(const S: string; ASuppress: Boolean = False);
 begin
-  MessageDlg(S, mtInformation, [mbOK], 0);
+  if ASuppress then
+    FMain.ShowNotifyMsg(SMsgDlgInformation, S)
+  else
+    MessageDlg(S, mtInformation, [mbOK], 0);
 end;
 
 procedure InfMsgFmt(const S: string; const Args: array of const);
@@ -1490,14 +1484,24 @@ begin
   Result := MessageDlg(S, mtConfirmation, mbYesNo, 0) = mrYes;
 end;
 
-function YesNoMsgFmt(const S: string; const Args: array of const): Boolean;
+function YesNoMsgFmt(const S: string; const Args: array of const; ASuppress: Boolean = False): Boolean;
 begin
-  Result := YesNoMsg(Format(S, Args));
+  if ASuppress then
+  begin
+    FMain.ShowNotifyMsg(SMsgDlgConfirm, Format(S, Args));
+    Result := True;
+  end else
+    Result := YesNoMsg(Format(S, Args));
 end;
 
-function NoYesMsg(const S: string): Boolean;
+function NoYesMsg(const S: string; ASuppress: Boolean = False): Boolean;
 begin
-  Result := MessageDlg(S, mtConfirmation, mbYesNo, 0, mbNo) = mrYes;
+  if ASuppress then
+  begin
+    FMain.ShowNotifyMsg(SMsgDlgConfirm, S);
+    Result := True;
+  end else
+    Result := MessageDlg(S, mtConfirmation, mbYesNo, 0, mbNo) = mrYes;
 end;
 
 function NoYesMsgFmt(const S: string; const Args: array of const): Boolean;
@@ -1547,8 +1551,64 @@ begin
   end;
 end;
 
+function CountLines(const Msg: string): Integer;
+var
+  C: Char;
+begin
+  Result := 1;
+  for C in AdjustLineBreaks(Msg, tlbsLF) do
+    if C = #10 then
+      Inc(Result);
+end;
+
+procedure CopyX264RegistrySettings(const ASrc, ADst: string);
+var
+  RSrc,RDst: TRegistryAcc;
+  Lst: TStringList;
+  R: TRegDataType;
+  Buffer: Pointer;
+  I,L: Integer;
+  N: string;
+begin
+  Lst  := TStringList.Create;
+  RSrc := TRegistryAcc.Create;
+  RDst := TRegistryAcc.Create;
+  try
+    RSrc.RootKey := HKEY_CURRENT_USER;
+    RDst.RootKey := HKEY_CURRENT_USER;
+
+    if RSrc.OpenKey('SOFTWARE\GNU\' + ASrc, True) and RDst.OpenKey('SOFTWARE\GNU\' + ADst, True) then
+    begin
+      // Don't use MoveKey!
+
+      RSrc.GetValueNames(Lst);
+
+      for I := 0 to Pred(Lst.Count) do
+      begin
+        N := Lst[I];
+        L := RSrc.GetDataSize(N);
+        if L >= 0 then
+        begin
+          Buffer := AllocMem(L);
+          try
+            L := RSrc.GetData(N, Buffer, L, R);
+
+            RDst.PutData(N, Buffer, L, R);
+          finally
+            FreeMem(Buffer);
+          end;
+        end;
+      end;
+    end;
+  finally
+    Lst.Free;
+    RDst.Free;
+    RSrc.Free;
+  end;
+end;
+
 initialization
   invariantFormat := TFormatSettings.Create('en-US');
-  UseLatestCommonDialogs := False; // TTaskDialog (VIsta and later cuts long lines (ellipses will be injected).
+  UseLatestCommonDialogs := False; // TTaskDialog (Vista and later cuts long lines (ellipses will be injected).
 end.
 
