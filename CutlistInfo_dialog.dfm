@@ -69,17 +69,17 @@ object FCutlistInfo: TFCutlistInfo
     Anchors = [akLeft, akTop, akRight, akBottom]
     Caption = 'How do you rate your cutlist?'
     Items.Strings = (
-      
+
         '&0 - Test, do not use, or dummy cutlist to save only information' +
         ' about the movie (see below)'
-      
+
         '&1 - I trimmed beginning and end, but there may be one or more c' +
         'ommercials still in the movie'
-      
+
         '&2 - All commercials cut out, but I did the cutting very roughly' +
         ' (+/- 5 sec.)'
-      '&3 - ... I did the cutting fairly accurate (+/- 1 sec.)'
-      '&4 - ... I did the cutting very accurate (to frame)'
+      '&3 - ... I did the cutting fairly accurately (+/- 1 sec.)'
+      '&4 - ... I did the cutting very accurately (to frame)'
       '&5 - ... and I removed duplicate scenes if necessary')
     TabOrder = 1
     OnClick = EnableOK
@@ -118,7 +118,7 @@ object FCutlistInfo: TFCutlistInfo
       Top = 20
       Width = 385
       Height = 17
-      Caption = 
+      Caption =
         'Wrong content, EPG error (filename does not match content). Actu' +
         'al content:'
       TabOrder = 0

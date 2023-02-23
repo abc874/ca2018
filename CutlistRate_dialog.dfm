@@ -52,8 +52,8 @@ object FCutlistRate: TFCutlistRate
       
         '&2 - All commercials cut out, but cutting was done very roughly ' +
         '(+/- 5 sec.)'
-      '&3 - ... cutting was done fairly accurate (+/- 1 sec.)'
-      '&4 - ... cutting was done very accurate (to frame)'
+      '&3 - ... cutting was done fairly accurately (+/- 1 sec.)'
+      '&4 - ... cutting was done very accurately (to frame)'
       
         '&5 - ... perfect! (Duplicate scenes have been removed if necessa' +
         'ry)')
