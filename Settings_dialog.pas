@@ -670,6 +670,7 @@ begin
   FSettings.cbSuppressedMsgAsNotify.Checked        := SuppressedMsgAsNotify;
 
   FSettings.cmbStyle_nl.Items.BeginUpdate;
+  FSettings.cmbStyle_nl.Items.Clear;
 
   for S in TStyleManager.StyleNames do
     FSettings.cmbStyle_nl.Items.Add(S);

@@ -342,12 +342,8 @@ object FSettings: TFSettings
         Width = 341
         Height = 21
         Style = csDropDownList
-        ItemIndex = 0
         TabOrder = 11
-        Text = '1111'
         OnChange = cmbStyle_nlChange
-        Items.Strings = (
-          '1111')
       end
       object cbNoOtherFileMsg: TJvCheckBox
         Left = 486
