@@ -507,6 +507,7 @@ uses
   // CA
   DateTools, Frames, CutlistRate_Dialog, ResultingTimes, CutlistSearchResults, UfrmCutting, UCutApplicationBase,
   UCutApplicationAsfbin, UCutApplicationMP4Box, UMemoDialog, UAbout, ULogging, UDSAStorage, CAResources,
+  TrackbarStyleHookCA,
 
   // Other
   uFreeLocalizer, PBOnceOnly;
@@ -650,6 +651,8 @@ var
   I,J: Integer;
   icon: TIcon;
 begin
+  TStyleManager.Engine.RegisterStyleHook(TDSTrackBarEx, TTrackBarStyleHookCA);
+
   icon := TIcon.Create;
   try
     icon.Handle := LoadIcon(0, PChar(IDI_EXCLAMATION)) ;
