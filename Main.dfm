@@ -2626,6 +2626,7 @@ object FMain: TFMain
   end
   object WebRequest_nl: TIdHTTP
     OnStatus = WebRequest_nlStatus
+    IOHandler = IdSSLIOHandler
     OnWork = WebRequest_nlWork
     HandleRedirects = True
     ProxyParams.BasicAuthentication = False
@@ -3452,5 +3453,17 @@ object FMain: TFMain
   object JvDesktopAlertStack: TJvDesktopAlertStack
     Left = 128
     Top = 384
+  end
+  object IdSSLIOHandler: TIdSSLIOHandlerSocketOpenSSL
+    MaxLineAction = maException
+    Port = 0
+    DefaultPort = 0
+    SSLOptions.Method = sslvSSLv23
+    SSLOptions.SSLVersions = [sslvTLSv1, sslvTLSv1_1, sslvTLSv1_2]
+    SSLOptions.Mode = sslmUnassigned
+    SSLOptions.VerifyMode = []
+    SSLOptions.VerifyDepth = 0
+    Left = 148
+    Top = 312
   end
 end

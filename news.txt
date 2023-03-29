@@ -1,3 +1,11 @@
+New in 0.23.3.29 (development)
+- SSL support (HTTPS)
+
+New in 0.23.2.23 (development)
+- Show selection with active style
+- Style select box fixed
+- Some "ly" added (adverb)
+
 New in 0.22.12.17 (development)
 - Build with Delphi Sydney 10.4.2
 - Styles (dark mode and more)

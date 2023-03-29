@@ -83,6 +83,9 @@ Using The Kryvich's Delphi Localizer, https://sites.google.com/site/kryvich/loca
 
 Using PBOnceOnly from Peter Below (TeamB)
 
+Using OpenSSL DLLs from IndySockets
+https://github.com/IndySockets/OpenSSL-Binaries
+
 _________________________________________________________________________
 
 ![All Releases](https://img.shields.io/github/downloads/abc874/ca2018/total.svg)

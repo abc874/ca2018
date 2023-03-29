@@ -18,6 +18,7 @@ uses
 
   // Indy
   IdComponent, IdThreadComponent, IdBaseComponent, IdTCPConnection, IdTCPClient, IdHTTP, IdReplyRFC,
+  IdIOHandler, IdIOHandlerSocket, IdIOHandlerStack, IdSSL, IdSSLOpenSSL,
 
   // DSPack
   DSPack, DXSUtils, Unit_DSTrackBarEx,
@@ -281,6 +282,7 @@ type
     JvSpeedItem18: TJvSpeedItem;
     mnuStyles: TPopupMenu;
     JvDesktopAlertStack: TJvDesktopAlertStack;
+    IdSSLIOHandler: TIdSSLIOHandlerSocketOpenSSL;
     procedure FormCreate(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
