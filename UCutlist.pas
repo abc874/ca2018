@@ -826,7 +826,7 @@ begin
           end else
             if (myCutAppVersionWords[0] <> intendedCutAppVersionWords[0]) or (myCutAppVersionWords[1] <> intendedCutAppVersionWords[1]) or (myCutAppVersionWords[2] < intendedCutAppVersionWords[2]) then
             begin
-              if not YesNoMsgFmt(RsMsgCutlistCutAppVerMismatch, [IntendedCutApp, intendedCutAppVersionStr, CutApplication.Version]) then
+              if not YesNoMsgFmt(RsMsgCutlistCutAppVerMismatch, [IntendedCutApp, intendedCutAppVersionStr, CutApplication.Version], Settings.NoOtherProgMsg) then
                 Exit;
             end;
         end;
@@ -923,7 +923,7 @@ begin
       Result      := True;
 
       if not noWarnings then
-        InfMsgFmt(RsMsgCutlistLoaded, [Count, cCuts]);
+        InfMsgFmt(RsMsgCutlistLoaded, [Count, cCuts], Settings.NoCutsLoadedMsg);
 
       RefreshGUI;
     end;
