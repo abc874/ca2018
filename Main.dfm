@@ -363,9 +363,10 @@ object FMain: TFMain
       003A00300030003A00300030002E0030003000300000000000FFFFFFFFFFFF}
     ReadOnly = True
     RowSelect = True
-    SortType = stText
+    SortType = stData
     TabOrder = 2
     ViewStyle = vsReport
+    OnCompare = lvCutlistCompare
     OnDblClick = lvCutlistDblClick
     OnSelectItem = lvCutlistSelectItem
   end

@@ -15,7 +15,7 @@ uses
   JvExMask, JvSpin, JvExStdCtrls, JvCheckBox,
 
   // DSPack
-  DXSUtils,
+  DXSUtils, DSPack,
 
   // CA
   CodecSettings, Movie, Utils, UCutApplicationBase, ReplaceFrame, ReplaceList;
@@ -177,6 +177,9 @@ type
     cbSuppressedMsgAsNotify: TJvCheckBox;
     cbNoOtherProgMsg: TJvCheckBox;
     cbRememberLastStyle: TJvCheckBox;
+    cbNoCutsLoaded: TJvCheckBox;
+    cbNoPlsRateMsg: TJvCheckBox;
+    cbUseVMR: TJvCheckBox;
     procedure cmdCutMovieSaveDirClick(Sender: TObject);
     procedure cmdCutlistSaveDirClick(Sender: TObject);
     procedure edtProxyPort_nlKeyPress(Sender: TObject; var Key: Char);
@@ -194,6 +197,7 @@ type
     procedure cbCutAppChange(Sender: TObject);
     procedure cmbSourceFilterListChange(Sender: TObject);
     procedure cmbStyle_nlChange(Sender: TObject);
+    procedure FormShow(Sender: TObject);
   private
     { private declarations }
     HQAviAppSettings, HDAviAppSettings, AviAppSettings, WmvAppSettings, MP4AppSettings, OtherAppSettings: RCutAppSettings;
@@ -261,6 +265,7 @@ type
     SmallSkipTime, LargeSkipTime: Integer;
     NetTimeout: Integer;
     AutoMuteOnSeek: Boolean;
+    UseVMR: Boolean;
     AutoSearchCutlists: Boolean;
     SearchLocalCutlists: Boolean;
     SearchServerCutlists: Boolean;
@@ -272,6 +277,8 @@ type
     NoNotFoundMsg: Boolean;
     NoOtherFileMsg: Boolean;
     NoOtherProgMsg: Boolean;
+    NoCutsLoadedMsg: Boolean;
+    NoPlsRateMsg: Boolean;
     SuppressedMsgAsNotify: Boolean;
     RememberLastStyle: Boolean;
     UsedStyle: string;
@@ -623,6 +630,8 @@ begin
 end;
 
 procedure TSettings.Edit;
+const
+  VideoModes: array[Boolean] of TVideoMode = (vmNormal, vmVMR);
 var
   S,newLanguage: string;
   Data_Valid: Boolean;
@@ -662,11 +671,14 @@ begin
   FSettings.edtLargeSkip_nl.Text                   := IntToStr(LargeSkipTime);
   FSettings.edtNetTimeout_nl.Text                  := IntToStr(NetTimeout);
   FSettings.cbAutoMuteOnSeek.Checked               := AutoMuteOnSeek;
+  FSettings.cbUseVMR.Checked                       := UseVMR;
   FSettings.cbNoRateSuccMsg.Checked                := NoRateSuccMsg;
   FSettings.cbNoWarnUseRate.Checked                := NoWarnUseRate;
   FSettings.cbNoNotFoundMsg.Checked                := NoNotFoundMsg;
   FSettings.cbNoOtherFileMsg.Checked               := NoOtherFileMsg;
   FSettings.cbNoOtherProgMsg.Checked               := NoOtherProgMsg;
+  FSettings.cbNoCutsLoaded.Checked                 := NoCutsLoadedMsg;
+  FSettings.cbNoPlsRateMsg.Checked                 := NoPlsRateMsg;
   FSettings.cbSuppressedMsgAsNotify.Checked        := SuppressedMsgAsNotify;
 
   FSettings.cmbStyle_nl.Items.BeginUpdate;
@@ -819,11 +831,14 @@ begin
       LargeSkipTime      := StrToInt(FSettings.edtLargeSkip_nl.Text);
       NetTimeout         := StrToInt(FSettings.edtNetTimeout_nl.Text);
       AutoMuteOnSeek     := FSettings.cbAutoMuteOnSeek.Checked;
+      UseVMR             := FSettings.cbUseVMR.Checked;
       NoRateSuccMsg      := FSettings.cbNoRateSuccMsg.Checked;
       NoWarnUseRate      := FSettings.cbNoWarnUseRate.Checked;
       NoNotFoundMsg      := FSettings.cbNoNotFoundMsg.Checked;
       NoOtherFileMsg     := FSettings.cbNoOtherFileMsg.Checked;
       NoOtherProgMsg     := FSettings.cbNoOtherProgMsg.Checked;
+      NoCutsLoadedMsg    := FSettings.cbNoCutsLoaded.Checked;
+      NoPlsRateMsg       := FSettings.cbNoPlsRateMsg.Checked;
 
       SuppressedMsgAsNotify := FSettings.cbSuppressedMsgAsNotify.Checked;
 
@@ -839,6 +854,10 @@ begin
       SearchServerCutlists := FSettings.cbSearchServerCutlists.Checked;
       SearchCutlistsByName := FSettings.cbSearchCutlistsByName.Checked;
       ExtendedSearchMode   := TExtendedSearchMode(FSettings.rgExtSearchMode.ItemIndex);
+
+      if VideoModes[UseVMR] <> FMain.VideoWindow.Mode then
+        if not (Assigned(MovieInfo) and MovieInfo.MovieLoaded) then
+          FMain.VideoWindow.Mode := VideoModes[UseVMR];
 
       newLanguage := GetLanguageByIndex(FSettings.cmbLanguage_nl.ItemIndex);
       if Language <> newLanguage then
@@ -1043,11 +1062,14 @@ begin
     LargeSkipTime            := ini.ReadInteger(section, 'LargeSkipTime', 25);
     FinePosFrameCount        := ini.ReadInteger(section, 'FinePosFrameCount', 5);
     AutoMuteOnSeek           := ini.ReadBool(section, 'AutoMuteOnSeek', False);
+    UseVMR                   := ini.ReadBool(section, 'UseVMR', False);
     NoRateSuccMsg            := ini.ReadBool(section, 'NoRateSuccMsg', False);
     NoWarnUseRate            := ini.ReadBool(section, 'NoWarnUseRate', False);
     NoNotFoundMsg            := ini.ReadBool(section, 'NoNotFoundMsg', False);
     NoOtherFileMsg           := ini.ReadBool(section, 'NoOtherFileMsg', False);
     NoOtherProgMsg           := ini.ReadBool(section, 'NoOtherProgMsg', False);
+    NoPlsRateMsg             := ini.ReadBool(section, 'NoPlsRateMsg', False);
+    NoCutsLoadedMsg          := ini.ReadBool(section, 'NoCutsLoadedMsg', False);
     SuppressedMsgAsNotify    := ini.ReadBool(section, 'SuppressedMsgAsNotify', False);
 
     RememberLastStyle := ini.ReadBool(section, 'RememberLastStyle', False);
@@ -1207,11 +1229,14 @@ begin
     ini.WriteInteger(section, 'LargeSkipTime', LargeSkipTime);
     ini.WriteInteger(section, 'FinePosFrameCount', FinePosFrameCount);
     ini.WriteBool(section, 'AutoMuteOnSeek', AutoMuteOnSeek);
+    ini.WriteBool(section, 'UseVMR', UseVMR);
     ini.WriteBool(section, 'NoRateSuccMsg', NoRateSuccMsg);
     ini.WriteBool(section, 'NoWarnUseRate', NoWarnUseRate);
     ini.WriteBool(section, 'NoNotFoundMsg', NoNotFoundMsg);
     ini.WriteBool(section, 'NoOtherFileMsg', NoOtherFileMsg);
     ini.WriteBool(section, 'NoOtherProgMsg', NoOtherProgMsg);
+    ini.WriteBool(section, 'NoPlsRateMsg', NoPlsRateMsg);
+    ini.WriteBool(section, 'NoCutsLoadedMsg', NoCutsLoadedMsg);
     ini.WriteBool(section, 'SuppressedMsgAsNotify', SuppressedMsgAsNotify);
 
     ini.WriteBool(section, 'RememberLastStyle', RememberLastStyle);
@@ -1322,6 +1347,11 @@ procedure TFSettings.FormDestroy(Sender: TObject);
 begin
   if EnumFilters <> nil then
     FreeAndNil(EnumFilters);
+end;
+
+procedure TFSettings.FormShow(Sender: TObject);
+begin
+  cbUseVMR.Enabled := not (Assigned(MovieInfo) and MovieInfo.MovieLoaded);
 end;
 
 procedure TFSettings.ECheckInfoInterval_nlKeyPress(Sender: TObject; var Key: Char);

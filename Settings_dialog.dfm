@@ -3,7 +3,7 @@ object FSettings: TFSettings
   Top = 243
   BorderIcons = []
   Caption = 'Settings'
-  ClientHeight = 359
+  ClientHeight = 630
   ClientWidth = 784
   Color = clBtnFace
   Constraints.MinHeight = 350
@@ -19,13 +19,14 @@ object FSettings: TFSettings
   ShowHint = True
   OnCreate = FormCreate
   OnDestroy = FormDestroy
+  OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 13
   object pgSettings: TPageControl
     Left = 0
     Top = 0
     Width = 784
-    Height = 333
+    Height = 604
     ActivePage = TabExternalCutApplication
     Align = alClient
     MultiLine = True
@@ -36,7 +37,7 @@ object FSettings: TFSettings
       ImageIndex = 4
       DesignSize = (
         776
-        302)
+        573)
       object lblUsername: TLabel
         Left = 20
         Top = 6
@@ -365,7 +366,7 @@ object FSettings: TFSettings
       end
       object cbSuppressedMsgAsNotify: TJvCheckBox
         Left = 486
-        Top = 274
+        Top = 328
         Width = 223
         Height = 17
         Caption = 'Show suppressed messages as notification'
@@ -390,13 +391,40 @@ object FSettings: TFSettings
         TabOrder = 12
         LinkedControls = <>
       end
+      object cbNoCutsLoaded: TJvCheckBox
+        Left = 486
+        Top = 274
+        Width = 123
+        Height = 17
+        Caption = 'Suppress cuts loaded'
+        TabOrder = 21
+        LinkedControls = <>
+      end
+      object cbNoPlsRateMsg: TJvCheckBox
+        Left = 486
+        Top = 301
+        Width = 165
+        Height = 17
+        Caption = 'Suppress please rate message'
+        TabOrder = 22
+        LinkedControls = <>
+      end
+      object cbUseVMR: TJvCheckBox
+        Left = 227
+        Top = 112
+        Width = 67
+        Height = 17
+        Caption = 'Use VMR'
+        TabOrder = 23
+        LinkedControls = <>
+      end
     end
     object tabSaveMovie: TTabSheet
       Caption = 'Save movie'
       ImageIndex = 1
       DesignSize = (
         776
-        302)
+        573)
       object lblCutMovieExtension: TLabel
         Left = 3
         Top = 68
@@ -478,7 +506,7 @@ object FSettings: TFSettings
       ImageIndex = 2
       DesignSize = (
         776
-        302)
+        573)
       object rgSaveCutlistMode: TRadioGroup
         Left = 3
         Top = 3
@@ -557,7 +585,7 @@ object FSettings: TFSettings
       Constraints.MinHeight = 210
       DesignSize = (
         776
-        302)
+        573)
       object lblServerUrl: TLabel
         Left = 66
         Top = 6
@@ -821,7 +849,7 @@ object FSettings: TFSettings
       Caption = 'External cut application'
       DesignSize = (
         776
-        302)
+        573)
       object lblCutWithWMV: TLabel
         Left = 3
         Top = 24
@@ -1180,7 +1208,7 @@ object FSettings: TFSettings
       OnShow = tabSourceFilterShow
       DesignSize = (
         776
-        302)
+        573)
       object lblSourceFilter: TLabel
         Left = 3
         Top = 9
@@ -1344,7 +1372,7 @@ object FSettings: TFSettings
         Left = 122
         Top = 203
         Width = 645
-        Height = 91
+        Height = 362
         OnClickCheck = lbchkBlackList_nlClickCheck
         Anchors = [akLeft, akTop, akRight, akBottom]
         Font.Charset = DEFAULT_CHARSET
@@ -1437,7 +1465,7 @@ object FSettings: TFSettings
   end
   object pnlButtons: TPanel
     Left = 0
-    Top = 333
+    Top = 604
     Width = 784
     Height = 26
     Align = alBottom

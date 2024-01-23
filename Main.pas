@@ -386,6 +386,7 @@ type
     procedure actSplitCutExecute(Sender: TObject);
     procedure actMergeCutExecute(Sender: TObject);
     procedure actChangeStyleExecute(Sender: TObject);
+    procedure lvCutlistCompare(Sender: TObject; Item1, Item2: TListItem; Data: Integer; var Compare: Integer);
   private
     { private declarations }
     UploadDataEntries: TStringList;
@@ -3300,6 +3301,11 @@ begin
   KeyFrameSampleInfo.IsKeyFrame := IsKeyFrame;
 end;
 
+procedure TFMain.lvCutlistCompare(Sender: TObject; Item1, Item2: TListItem; Data: Integer; var Compare: Integer);
+begin
+  Compare := StrToIntDef(Item1.Caption, 0) - StrToIntDef(Item2.Caption, 0);
+end;
+
 procedure TFMain.lvCutlistDblClick(Sender: TObject);
 begin
   actEditCut.Execute;
@@ -3307,11 +3313,11 @@ end;
 
 function TFMain.UploadCutlist(FileName: string): Boolean;
 var
-  Request                          : THttpRequest;
-  Response, Answer                 : string;
-  Cutlist_id                       : Integer;
-  lines                            : TStringList;
-  begin_answer                     : Integer;
+  Request          : THttpRequest;
+  Response, Answer : string;
+  Cutlist_id       : Integer;
+  lines            : TStringList;
+  begin_answer     : Integer;
 begin
   Result := False;
 
@@ -3464,7 +3470,7 @@ var
 begin
   Result := False;
   userIsAuthor := Cutlist.Author = settings.UserName;
-  if (Cutlist.UserShouldSendRating) and not userIsAuthor then
+  if (Cutlist.UserShouldSendRating) and not userIsAuthor and not Settings.NoPlsRateMsg then
   begin
     case MessageDlg(RsMsgAskUserForRating, mtConfirmation, mbYesNoCancel, 0) of
       mrYes : Result := SendRating(Cutlist);
