@@ -44,6 +44,7 @@ uses
   uStringUtils in 'KDL\uStringUtils.pas',
   ReplaceFrame in 'ReplaceFrame.pas' {ReplaceFrame: TFrame},
   ReplaceList in 'ReplaceList.pas',
+  DSPack,
   Vcl.Themes,
   Vcl.Styles;
 
@@ -106,6 +107,9 @@ begin
     Application.CreateForm(TFLogging, FLogging);
     Application.CreateForm(TAboutBox, AboutBox);
     FFrames.MainForm := FMain;
+
+    if Settings.UseVMR then
+      FMain.VideoWindow.Mode := vmVMR;
 
     CheckLocalizer;
 
