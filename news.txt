@@ -1,3 +1,8 @@
+New in 0.24.1.22 (development)
+- More suppress message options
+- Optional VMR mode (mostly useless)
+- Arrangement of cuts for more than 9 cuts revised
+
 New in 0.23.3.29 (development)
 - SSL support (HTTPS)
 
