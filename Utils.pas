@@ -272,7 +272,7 @@ procedure ErrMsg(const S: string; ASuppress: Boolean = False);
 procedure ErrMsgFmt(const S: string; const Args: array of const);
 
 procedure InfMsg(const S: string; ASuppress: Boolean = False);
-procedure InfMsgFmt(const S: string; const Args: array of const);
+procedure InfMsgFmt(const S: string; const Args: array of const; ASuppress: Boolean = False);
 
 procedure WarnMsg(const S: string);
 procedure WarnMsgFmt(const S: string; const Args: array of const);
@@ -1464,9 +1464,9 @@ begin
     MessageDlg(S, mtInformation, [mbOK], 0);
 end;
 
-procedure InfMsgFmt(const S: string; const Args: array of const);
+procedure InfMsgFmt(const S: string; const Args: array of const; ASuppress: Boolean = False);
 begin
-  InfMsg(Format(S, Args));
+  InfMsg(Format(S, Args), ASuppress);
 end;
 
 procedure WarnMsg(const S: string);
