@@ -1,3 +1,6 @@
+New in 0.24.1.25 (development)
+- Arrangement of cuts for more than 9 cuts revised (check cut window)
+
 New in 0.24.1.22 (development)
 - More suppress message options
 - Optional VMR mode (mostly useless)
