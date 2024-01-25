@@ -48,9 +48,10 @@ object FResultingTimes: TFResultingTimes
     HideSelection = False
     ReadOnly = True
     RowSelect = True
-    SortType = stText
+    SortType = stData
     TabOrder = 1
     ViewStyle = vsReport
+    OnCompare = lvTimeListCompare
     OnDblClick = lvTimeListDblClick
   end
   object pnlMovieControl: TPanel
@@ -204,6 +205,7 @@ object FResultingTimes: TFResultingTimes
       VMROptions.Mode = vmrWindowless
       Color = clBlack
       Anchors = [akLeft, akTop, akRight, akBottom]
+      OnClick = VideoWindowClick
     end
   end
   object FilterGraph: TFilterGraph

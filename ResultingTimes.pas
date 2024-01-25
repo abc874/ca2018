@@ -47,6 +47,8 @@ type
     procedure FormDestroy(Sender: TObject);
     function FilterGraphSelectedFilter(Moniker: IMoniker; FilterName: WideString; ClassID: TGUID): Boolean;
     procedure FormShow(Sender: TObject);
+    procedure lvTimeListCompare(Sender: TObject; Item1, Item2: TListItem; Data: Integer; var Compare: Integer);
+    procedure VideoWindowClick(Sender: TObject);
   private
     { private declarations }
     To_Array: array of Double;
@@ -121,6 +123,11 @@ end;
 procedure TFResultingTimes.cmdCloseClick(Sender: TObject);
 begin
   Close;
+end;
+
+procedure TFResultingTimes.lvTimeListCompare(Sender: TObject; Item1, Item2: TListItem; Data: Integer; var Compare: Integer);
+begin
+  Compare := StrToIntDef(Item1.Caption, 0) - StrToIntDef(Item2.Caption, 0);
 end;
 
 procedure TFResultingTimes.lvTimeListDblClick(Sender: TObject);
@@ -296,6 +303,15 @@ end;
 procedure TFResultingTimes.udDurationChanging(Sender: TObject; var AllowChange: Boolean);
 begin
   FOffset := udDuration.Position;
+end;
+
+procedure TFResultingTimes.VideoWindowClick(Sender: TObject);
+begin
+  if FilterGraph.Active then
+    if Filtergraph.State = gsPlaying then
+      FilterGraph.Pause
+    else
+      FilterGraph.Play;
 end;
 
 procedure TFResultingTimes.FormDestroy(Sender: TObject);
