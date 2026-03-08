@@ -29,7 +29,6 @@ type
     procedure SortByColumn(Number: Integer);
   public
     { public declarations }
-    MovieTypeName: string;
   end;
 
 var
@@ -125,15 +124,21 @@ begin
 end;
 
 procedure TFCutlistSearchResults.lvLinklistCustomDrawSubItem(Sender: TCustomListView; Item: TListItem; SubItem: Integer; State: TCustomDrawState; var DefaultDraw: Boolean);
+var
+  C: TColor;
 begin
-  if SubItem = 2 then
-  begin
-    if MovieTypeName = Item.SubItems[1] then
-      lvLinklist.Canvas.Brush.Color := clMoneyGreen
-    else
-      lvLinklist.Canvas.Brush.Color := clWebLightYellow;
-  end else
-    lvLinklist.Canvas.Brush.Color := ColorToRGB(lvLinklist.Color);
+  C := ColorToRGB(lvLinklist.Color);
+
+  case SubItem of
+    1 : if not StringContains(MovieInfo.MovieBaseName, Item.SubItems[0]) then
+          C := clWebLightCoral;
+    2 : if MovieInfo.MovieTypeName = Item.SubItems[1] then
+          C := clMoneyGreen
+        else
+          C := clWebLightYellow;
+  end;
+
+  lvLinklist.Canvas.Brush.Color := C;
 end;
 
 procedure TFCutlistSearchResults.SortByColumn(Number: Integer);
