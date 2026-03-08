@@ -283,6 +283,13 @@ type
     mnuStyles: TPopupMenu;
     JvDesktopAlertStack: TJvDesktopAlertStack;
     IdSSLIOHandler: TIdSSLIOHandlerSocketOpenSSL;
+    lbResolution: TLabel;
+    actFormat43: TAction;
+    actFormat169: TAction;
+    actFormat00: TAction;
+    JvSpeedItem19: TJvSpeedItem;
+    JvSpeedItem20: TJvSpeedItem;
+    JvSpeedItem21: TJvSpeedItem;
     procedure FormCreate(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -387,6 +394,9 @@ type
     procedure actMergeCutExecute(Sender: TObject);
     procedure actChangeStyleExecute(Sender: TObject);
     procedure lvCutlistCompare(Sender: TObject; Item1, Item2: TListItem; Data: Integer; var Compare: Integer);
+    procedure actFormat00Execute(Sender: TObject);
+    procedure actFormat169Execute(Sender: TObject);
+    procedure actFormat43Execute(Sender: TObject);
   private
     { private declarations }
     UploadDataEntries: TStringList;
@@ -418,6 +428,7 @@ type
     procedure UpdateTrackBarPageSize;
     procedure UpdateVolume;
     procedure SelectStyleClick(Sender: TObject);
+    procedure ChangeAspectRatio(ANewValue: Double);
   public
     { public declarations }
     procedure ProcessFileList(FileList: TStringList; IsMyOwnCommandLine: Boolean);
@@ -480,7 +491,7 @@ var
   last_pos: Double;
 
   // Batch flags
-  exit_after_commandline, TryCutting: Boolean;
+  exit_after_commandline, trycutting: Boolean;
 
   // movie params
   MovieInfo: TMovieInfo;
@@ -519,6 +530,15 @@ uses
 
 const
   ServerProtocol = 1;
+
+procedure TFMain.ChangeAspectRatio(ANewValue: Double);
+begin
+  if MovieInfo.MovieLoaded then
+  begin
+    MovieInfo.ratio := ANewValue;
+    pnlVideoWindowResize(pnlVideoWindow);
+  end;
+end;
 
 function TFMain.CheckResponse(const Response: string; const Protocol: Integer; const Command: TCutlistServerCommand): string;
 begin
@@ -1162,7 +1182,8 @@ var
   pVIH2: ^VIDEOINFOHEADER2;
   filter: IBaseFilter;
   BasicVIdeo2: IBasicVideo2;
-  arx, ary: Integer;
+  W, H, arx, ary: Integer;
+  S: string;
 begin
   if FilterGraph.Active then
   begin
@@ -1225,6 +1246,26 @@ begin
       end else
         VMRWindowlessControl := nil;
     end;
+
+    MovieInfo.org_ratio := MovieInfo.ratio;
+
+    W := MovieInfo.nat_w;
+    H := MovieInfo.nat_h;
+
+    if SimplifyFraction(W, H) then
+      S := Format('  %d:%d  ', [W, H])
+    else
+      S := '';
+
+    S := Format('%d x %d  %s  %.4f', [MovieInfo.nat_w, MovieInfo.nat_h, S, MovieInfo.org_ratio]);
+
+    if (MovieInfo.MovieType = mtHQAvi) and (MovieInfo.nat_w = 720) and (MovieInfo.nat_h = 576) then
+    begin
+      MovieInfo.ratio := 16 / 9;
+      S := S + '  -->  16:9';
+    end;
+
+    lbResolution.Caption := S;
 
     if MovieInfo.frame_duration = 0 then
     begin
@@ -1966,6 +2007,7 @@ end;
 
 procedure TFMain.ProcessFileList(FileList: TStringList; IsMyOwnCommandLine: Boolean);
 var
+  SearchTypes: TCutlistSearchTypes;
   iString: Integer;
   Pstring, filename_movie, filename_cutlist, filename_upload_cutlist: string;
   upload_cutlist, found_movie, found_cutlist, get_empty_cutlist: Boolean;
@@ -1975,8 +2017,8 @@ begin
   found_cutlist        := False;
   upload_cutlist       := False;
   try_cutlist_download := False;
-  Batchmode            := False;
-  TryCutting           := False;
+  batchmode            := False;
+  trycutting           := False;
   get_empty_cutlist    := False;
 
   for iString := 0 to Pred(FileList.Count) do
@@ -1996,7 +2038,7 @@ begin
       get_empty_cutlist := True;
     end;
 
-    if AnsiStartsStr('-Exit', AnsiLowerCase(PString)) then
+    if AnsiStartsStr('-exit', AnsiLowerCase(PString)) then
     begin
       if IsMyOwnCommandLine then exit_after_commandline := True;
     end;
@@ -2009,12 +2051,12 @@ begin
 
     if AnsiStartsStr('-batchmode', AnsiLowerCase(PString)) then
     begin
-      if IsMyOwnCommandLine then Batchmode := True;
+      if IsMyOwnCommandLine then batchmode := True;
     end;
 
     if AnsiStartsStr('-trycutting', AnsiLowerCase(PString)) then
     begin
-      TryCutting := True;
+      trycutting := True;
     end;
 
     if AnsiStartsStr('-trycutlistdownload', AnsiLowerCase(PString)) and (not found_cutlist) then
@@ -2078,7 +2120,11 @@ begin
     begin
       if try_cutlist_download and not Settings.AutoSearchCutlists then
       begin
-        if not SearchCutlists(True, Settings.SearchLocalCutlists, Settings.SearchServerCutlists, [cstBySize]) then
+        SearchTypes := [cstBySize];
+        if Settings.SearchCutlistsByName then
+          SearchTypes := SearchTypes + [cstByName];
+
+        if not SearchCutlists(True, Settings.SearchLocalCutlists, Settings.SearchServerCutlists, SearchTypes) then
         begin
           if IsMyOwnCommandLine then ExitCode := 2;
           Exit;
@@ -2094,7 +2140,7 @@ begin
     end;
   end;
 
-  if TryCutting then
+  if trycutting then
   begin
     if MovieInfo.current_filename <> '' then
     begin
@@ -2165,6 +2211,21 @@ end;
 procedure TFMain.actFileExitExecute(Sender: TObject);
 begin
   Close;
+end;
+
+procedure TFMain.actFormat00Execute(Sender: TObject);
+begin
+  ChangeAspectRatio(MovieInfo.org_ratio);
+end;
+
+procedure TFMain.actFormat169Execute(Sender: TObject);
+begin
+  ChangeAspectRatio(16/9);
+end;
+
+procedure TFMain.actFormat43Execute(Sender: TObject);
+begin
+  ChangeAspectRatio(4/3);
 end;
 
 procedure TFMain.actAddCutExecute(Sender: TObject);
@@ -2802,7 +2863,7 @@ var
   AskForPath: Boolean;
 begin
   AskForPath := Settings.MovieNameAlwaysConfirm or not FileExists(MovieInfo.target_filename) or (MovieInfo.target_filename = '');
-  if not BatchMode and AskForPath then
+  if not batchMode and AskForPath then
   begin
     selectFileDlg := TOpenDialog.Create(Self);
     try
@@ -2933,8 +2994,6 @@ begin
         searchDir := PathCombine(ExtractFileDir(MovieInfo.current_filename), searchDir);
     end;
 
-    FCutlistSearchResults.MovieTypeName := FileNameToFormatName(MovieInfo.current_filename);
-
     fileBase := ChangeFileExt(ExtractFileName(MovieInfo.current_filename), '');
     lvLinks  := FCutlistSearchResults.lvLinklist;
 
@@ -3007,18 +3066,19 @@ end;
 
 function TFMain.SearchCutlistsByFileSize_XML(SearchType: TCutlistSearchType; IgnorePrefix: Boolean = False): Integer;
 const
-  php_name                         = 'getxml.php';
+  php_name           = 'getxml.php';
 var
-  WebResult                        : Boolean;
-  url, Error_message               : string;
-  Response                         : string;
-  cutFilename                      : string;
-  Node, CutNode                    : TJCLSimpleXMLElems;
-  idx                              : Integer;
-  lvLinks                          : TListView;
+  WebResult          : Boolean;
+  url, Error_message : string;
+  Response           : string;
+  cutFilename        : string;
+  Node, CutNode      : TJCLSimpleXMLElems;
+  idx                : Integer;
+  lvLinks            : TListView;
 begin
   Result := 0;
   Error_message := RsErrorUnknown;
+
   case SearchType of
     cstBySize: begin
         if (MovieInfo.current_filesize = 0) then
@@ -3037,7 +3097,7 @@ begin
         // '%HH' octet, and if so then preserve the whole sequence as-is...
 
         // So first encode
-        url := TIdURI.ParamsEncode(ExtractBaseFileNameOTR(MovieInfo.current_filename));
+        url := TIdURI.ParamsEncode(MovieInfo.MovieBaseName);
 
         // Then add % as prefix
         if IgnorePrefix then
@@ -3057,13 +3117,13 @@ begin
 
   if WebResult and (Length(response) > 5) then
   begin
-    FCutlistSearchResults.MovieTypeName := FileNameToFormatName(MovieInfo.current_filename);
-
     lvLinks := FCutlistSearchResults.lvLinklist;
     lvLinks.Items.BeginUpdate;
     try
       try
         XMLResponse.LoadFromString(Response);
+
+        // XMLResponse.SaveToFile(FormatDateTime('"H:\"yymmdd-hhnnss".xml"', Now));
 
         if XMLResponse.Root.ChildsCount > 0 then
         begin
@@ -3073,26 +3133,31 @@ begin
             CutNode := node.Item[idx].Items;
             if Assigned(lvLinks.FindCaption(0, CutNode.ItemNamed['id'].Value, False, True, False)) then
               Continue;
-            with lvLinks.Items.Add do
+
+            cutFilename := CutNode.ItemNamed['name'].Value;
+            if not AnsiEndsText(CUTLIST_EXTENSION, cutFilename) then
+              cutFilename := cutFilename + CUTLIST_EXTENSION;
+
+            if not batchmode or StringContains(MovieInfo.MovieBaseName, cutFilename) then
             begin
-              Caption := CutNode.ItemNamed['id'].Value;
-              cutFilename := CutNode.ItemNamed['name'].Value;
-              if not AnsiEndsText(CUTLIST_EXTENSION, cutFilename) then
-                cutFilename := cutFilename + CUTLIST_EXTENSION;
-              SubItems.Add(cutFilename);
-              SubItems.Add(FileNameToFormatName(cutFilename));
-              SubItems.Add(CutNode.ItemNamed['rating'].Value);
-              SubItems.Add(CutNode.ItemNamed['ratingcount'].Value);
-              SubItems.Add(CutNode.ItemNamed['ratingbyauthor'].Value);
-              SubItems.Add(CutNode.ItemNamed['author'].Value);
-              SubItems.Add(CutNode.ItemNamed['filename'].Value);
-              SubItems.Add(CutNode.ItemNamed['usercomment'].Value);
-              SubItems.Add(CutNode.ItemNamed['actualcontent'].Value);
-              SubItems.Add(RsServerCutlist);
-              SubItems.Add(''); // download timestamp
-              SubItems.Add(''); // path information
+              with lvLinks.Items.Add do
+              begin
+                Caption := CutNode.ItemNamed['id'].Value;
+                SubItems.Add(cutFilename);
+                SubItems.Add(FileNameToFormatName(cutFilename));
+                SubItems.Add(CutNode.ItemNamed['rating'].Value);
+                SubItems.Add(CutNode.ItemNamed['ratingcount'].Value);
+                SubItems.Add(CutNode.ItemNamed['ratingbyauthor'].Value);
+                SubItems.Add(CutNode.ItemNamed['author'].Value);
+                SubItems.Add(CutNode.ItemNamed['filename'].Value);
+                SubItems.Add(CutNode.ItemNamed['usercomment'].Value);
+                SubItems.Add(CutNode.ItemNamed['actualcontent'].Value);
+                SubItems.Add(RsServerCutlist);
+                SubItems.Add(''); // download timestamp
+                SubItems.Add(''); // path information
+              end;
+              Inc(Result);
             end;
-            Inc(Result);
           end;
         end;
       except
@@ -3179,9 +3244,9 @@ begin
 
   if AutoOpen and (numFound = 1) then
     selectedItem := FCutlistSearchResults.lvLinklist.Items[0]
-  else if BatchMode and (numFound = 1) then
+  else if batchMode and (numFound = 1) then
     selectedItem := FCutlistSearchResults.lvLinklist.Items[0]
-  else if BatchMode and (Settings.Additional['ShowSearchResultInBatch'] <> '1') then
+  else if batchMode and (Settings.Additional['ShowSearchResultInBatch'] <> '1') then
     selectedItem := FCutlistSearchResults.lvLinklist.Items[0]
   else if FCutlistSearchResults.ShowModal = mrOK then
     selectedItem := FCutlistSearchResults.lvLinklist.Selected
@@ -4415,7 +4480,7 @@ procedure TFMain.FormShow(Sender: TObject);
 begin
   if settings.NewSettingsCreated then
     actEditSettings.Execute
-  else if not BatchMode then
+  else if not batchMode then
   begin
     // Verify settings
     if settings.url_info_file <> DEFAULT_UPDATE_XML then
