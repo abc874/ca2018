@@ -34,11 +34,12 @@ type
     CanStepForward: Boolean;
     FFourCC: FOURCC;
     TimeFormat: TGUID;
+    org_ratio: Double;
     ratio: Double;
     nat_w, nat_h: Integer;
     current_file_duration, frame_duration: Double;
     frame_duration_source: Char;
-    current_filename, target_filename: string;
+    current_filename, target_filename, MovieTypeName, MovieBaseName: string;
     current_filesize: Int64;
     property FrameCount: Int64 read GetFrameCount;
     property MovieType: TMovieType read FMovieType write SetMovieType;
@@ -175,6 +176,9 @@ begin
       end else
         MovieType := mtUnknown;
     end;
+
+    MovieTypeName := FileNameToFormatName(current_filename);
+    MovieBaseName := ExtractBaseFileNameOTR(current_filename);
   end;
 end;
 
