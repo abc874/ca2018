@@ -2,7 +2,7 @@ New in 0.26.3.8 (development)
 - Small changes for batchmode (I still won't recommend it)
 - Display video resolution and aspect ratio
 - Buttons for change the aspect ratio of video window (4:3, 16:9, w:h)
-- Auto change from 5:4 to 16:9 for HD-type (file name) video
+- Auto change from 5:4 to 16:9 for HQ-type (file name) video
 - Highlight cutlists for wrong file
 
 New in 0.24.1.25 (development)
