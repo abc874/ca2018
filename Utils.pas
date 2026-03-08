@@ -296,6 +296,10 @@ function CountLines(const Msg: string): Integer;
 
 procedure CopyX264RegistrySettings(const ASrc, ADst: string);
 
+function StringContains(const SubStr, Strng: string): Boolean;
+
+function SimplifyFraction(var ANumerator, ADenominator: Integer): Boolean;
+
 implementation
 
 uses
@@ -1604,6 +1608,44 @@ begin
     Lst.Free;
     RDst.Free;
     RSrc.Free;
+  end;
+end;
+
+function StringContains(const SubStr, Strng: string): Boolean;
+begin
+  Result := Pos(AnsiLowerCase(SubStr), AnsiLowerCase(Strng)) > 0;
+end;
+
+function SimplifyFraction(var ANumerator, ADenominator: Integer): Boolean;
+
+  function GCF(A, B: Integer): Integer;
+  var
+    I: Integer;
+  begin
+    while B <> 0 do
+    begin
+      I := B;
+      B := A mod B;
+      A := I;
+    end;
+    Result := A;
+  end;
+
+var
+  D: Integer;
+begin
+  Result := False;
+
+  if ADenominator <> 0 then
+  begin
+    D := GCF(ANumerator, ADenominator);
+
+    if D <> 0 then
+    begin
+      ANumerator   := ANumerator div D;
+      ADenominator := ADenominator div D;
+      Result       := True;
+    end;
   end;
 end;
 
