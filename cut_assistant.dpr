@@ -120,9 +120,14 @@ begin
       FMain.ProcessFileList(FileList, true);
     finally
       FileList.Free;
-      if BatchMode or exit_after_commandline then
-        Application.Terminate
-      else
+
+      if batchmode or exit_after_commandline then
+      begin
+        for iParam := Pred(Screen.FormCount) downto 0 do
+          Screen.Forms[iParam].Free;
+
+        Application.Terminate;
+      end else
         Application.Run;
     end;
   finally
