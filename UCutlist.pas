@@ -782,7 +782,7 @@ var
   myCutAppVersionWords, intendedCutAppVersionWords: ARFileVersion;
   iCUt, cCuts, ACut, iFramesDifference: Integer;
   cut: TCut;
-  _pos_from, _pos_to: Double;
+  FrameFactor, _pos_from, _pos_to: Double;
   _frame_from, _frame_to: Integer;
   CutAppAsfBin: TCutApplicationAsfbin;
   cutChecksum: Cardinal;
@@ -848,12 +848,16 @@ begin
       // Number of Cuts
       cCuts := cutlistfile.ReadInteger(section, 'NoOfCuts', 0);
       FrameRate := cutlistfile.ReadFloat(section, 'FramesPerSecond', 0);
+      FrameFactor := 1;
 
       if (FrameRate > 0) and (FMovieInfo.frame_duration > 0) then
       begin
         iFramesDifference := FMovieInfo.FrameCount - Trunc(FrameRate * FMovieInfo.current_file_duration);
         if not noWarnings and (Abs(iFramesDifference) > 1) and not NoYesMsgFmt(RsMsgCutlistFrameRateMismatch, [FrameRate, 1 / FMovieInfo.frame_duration, Abs(iFramesDifference)]) then
+        begin
+          FrameFactor   := FrameRate * FMovieInfo.frame_duration; // should be always near 2
           FrameDuration := FMovieInfo.frame_duration;
+        end;
       end else
         FrameDuration := FMovieInfo.frame_duration;
 
@@ -906,8 +910,8 @@ begin
           cut := TCut.Create(_pos_from, _pos_to);
           if (_frame_from >= 0) and (_frame_to >= 0) then
           begin
-            cut.frame_from := _Frame_from;
-            cut.frame_to   := _frame_to;
+            cut.frame_from := Round(_Frame_from / FrameFactor);
+            cut.frame_to   := Round(_frame_to / FrameFactor);
           end else
             FramesPresent := False;
 
