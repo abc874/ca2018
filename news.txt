@@ -1,3 +1,13 @@
+New in 0.26.5.6 (development)
+- Buttons for change the aspect ratio of video window (4:3, 16:9, w:h) better readable
+- Different frame rate of cutlist and movie: option "use movie, not cutlist" recalculates frame numbers
+
+Example:
+FramesPerSecond=59.94 --> 29.97
+StartFrame=20980      --> 10490
+DurationFrames=8483   --> 4242
+
+
 New in 0.26.3.8 (development)
 - Small changes for batchmode (I still won't recommend it)
 - Display video resolution and aspect ratio
