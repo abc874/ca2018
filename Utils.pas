@@ -1394,10 +1394,18 @@ end;
 function ExtractBaseFileNameOTR(const S: string): string;
 var
   I: Integer;
+  U: string;
 begin
   Result := ExtractFileName(S);
 
-  I := Pos('.MPG.', AnsiUpperCase(Result));
+  U := AnsiUpperCase(Result);
+  I := Pos('.MPG.', U);
+
+  if I = 0 then
+    I := Pos('.LQ.', U);
+
+  if I = 0 then
+    I := Pos('.HQ.', U);
 
   if I > 0 then
     SetLength(Result, Pred(I));
@@ -1408,11 +1416,12 @@ const
   C = '.cutlist';
 var
   I: Integer;
-  E: string;
+  E,U: string;
 begin
   Result := '?';
 
-  I := Pos('.MPG.', AnsiUpperCase(S));
+  U := AnsiUpperCase(S);
+  I := Pos('.MPG.', U);
 
   if I > 0 then
   begin
@@ -1428,6 +1437,13 @@ begin
       2 : Result := 'HQ';
       3 : Result := 'MP4';
     end;
+  end else
+  begin
+    if Pos('.HQ.', U) > 0 then
+      Result := 'HQ'
+    else
+      if Pos('.LQ.', U) > 0 then
+        Result := 'MP4';
   end;
 end;
 
